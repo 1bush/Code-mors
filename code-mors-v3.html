@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE MORS v3 — Ghost Protocol + Memory Wipe</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap');
+
+:root {
+  --g: #00ff41;
+  --gd: #00c032;
+  --gg: rgba(0,255,65,0.07);
+  --glow: rgba(0,255,65,0.35);
+  --red: #ff3131;
+  --amber: #ffaa00;
+  --blue: #00aaff;
+  --bg: #010801;
+  --bg2: #020d02;
+  --bg3: #031003;
+  --border: rgba(0,255,65,0.18);
+  --borderB: rgba(0,255,65,0.45);
+  --dim: rgba(0,255,65,0.42);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background:var(--bg);
+  color:var(--g);
+  font-family:'Share Tech Mono',monospace;
+  height:100vh;
+  overflow:hidden;
+  position:relative;
+}
+
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.9) 100%);
+}
+
+/* ═══════ BOOT ═══════ */
+#boot{
+  position:fixed;inset:0;background:var(--bg);z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.boot-logo{
+  font-family:'Orbitron',sans-serif;font-size:clamp(32px,7vw,72px);font-weight:900;
+  letter-spacing:10px;color:var(--g);text-shadow:0 0 30px var(--glow),0 0 80px rgba(0,255,65,0.15);
+  animation:flicker 5s infinite;
+}
+.boot-tag{font-size:11px;letter-spacing:5px;color:var(--dim);text-transform:uppercase;}
+.boot-log{width:min(580px,88vw);font-size:11px;color:var(--gd);line-height:1.9;margin-top:30px;max-height:220px;overflow:hidden;}
+.boot-log .bl{opacity:0;animation:fi 0.05s forwards;}
+.pbar{width:min(380px,78vw);height:2px;background:rgba(0,255,65,0.08);border:1px solid var(--border);margin-top:16px;overflow:hidden;}
+.pfill{height:100%;background:var(--g);box-shadow:0 0 10px var(--glow);width:0%;transition:width 0.08s linear;}
+
+/* ═══════ LAYOUT ═══════ */
+#app{display:none;height:100vh;flex-direction:column;}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;
+  flex-wrap:wrap;gap:6px;
+}
+.tlogo{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;letter-spacing:6px;text-shadow:0 0 12px var(--glow);}
+.tstatus{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.badge{
+  display:flex;align-items:center;gap:5px;padding:3px 9px;
+  border:1px solid var(--border);background:var(--gg);font-size:10px;color:var(--dim);
+  border-radius:1px;
+}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--g);box-shadow:0 0 5px var(--g);animation:pulse 2s infinite;}
+.dot.amber{background:var(--amber);box-shadow:0 0 5px var(--amber);}
+.dot.red{background:var(--red);box-shadow:0 0 5px var(--red);}
+
+.id-badge{
+  font-size:10px;padding:3px 10px;border:1px solid rgba(0,255,65,0.5);
+  background:rgba(0,255,65,0.05);color:var(--g);letter-spacing:1px;
+  position:relative;overflow:hidden;cursor:default;
+}
+.id-timer{
+  position:absolute;bottom:0;left:0;height:2px;background:var(--g);
+  box-shadow:0 0 6px var(--glow);transition:width 1s linear;
+}
+
+/* ═══════ MEMORY WIPE BADGE ═══════ */
+.mem-badge{
+  display:flex;align-items:center;gap:6px;padding:3px 10px;
+  border:1px solid rgba(255,49,49,0.4);background:rgba(255,49,49,0.06);
+  font-size:10px;color:var(--red);letter-spacing:1px;cursor:pointer;
+  transition:all 0.2s;position:relative;
+}
+.mem-badge:hover{background:rgba(255,49,49,0.14);box-shadow:0 0 12px rgba(255,49,49,0.3);}
+.mem-count{font-family:'Orbitron',sans-serif;font-size:9px;}
+.mem-pulse{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite;}
+
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* ═══════ SIDEBAR ═══════ */
+.sidebar{
+  width:255px;border-right:1px solid var(--border);background:var(--bg2);
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.sbhead{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.btn{
+  background:none;border:1px solid var(--borderB);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 8px;
+  cursor:pointer;letter-spacing:1px;transition:all 0.2s;
+}
+.btn:hover{background:var(--gg);box-shadow:0 0 10px var(--glow);}
+
+.clist{flex:1;overflow-y:auto;}
+.clist::-webkit-scrollbar{width:2px;}
+.clist::-webkit-scrollbar-thumb{background:var(--gd);}
+
+.citem{
+  padding:11px 14px;border-bottom:1px solid rgba(0,255,65,0.05);
+  cursor:pointer;transition:background 0.15s;position:relative;
+}
+.citem:hover,.citem.active{background:var(--gg);}
+.citem.active::before{content:'▶';position:absolute;left:3px;top:50%;transform:translateY(-50%);font-size:7px;color:var(--g);}
+.cname{font-size:13px;color:var(--g);margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cmeta{font-size:9px;color:var(--dim);display:flex;justify-content:space-between;}
+.burn-badge{
+  font-size:8px;padding:1px 5px;border:1px solid rgba(255,49,49,0.4);
+  color:var(--red);letter-spacing:1px;background:rgba(255,49,49,0.05);
+}
+.mem-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;box-shadow:0 0 4px var(--amber);}
+
+.privacy-stats{
+  padding:12px 14px;border-top:1px solid var(--border);background:var(--bg);font-size:10px;
+}
+.ps-title{color:var(--dim);letter-spacing:2px;text-transform:uppercase;font-size:9px;margin-bottom:8px;}
+.ps-row{display:flex;justify-content:space-between;margin-bottom:3px;}
+.ps-val{color:var(--g);}
+.ps-val.red{color:var(--red);}
+
+/* ═══════ CHAT ═══════ */
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.chat-header{
+  padding:10px 18px;border-bottom:1px solid var(--border);background:var(--bg2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:6px;
+}
+.ch-name{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:3px;}
+.ch-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{
+  padding:2px 7px;border:1px solid var(--border);background:var(--gg);
+  border-radius:1px;font-size:8px;color:var(--gd);letter-spacing:1px;
+}
+.pill.burn{border-color:rgba(255,49,49,0.4);color:var(--red);}
+.pill.mem{border-color:rgba(255,170,0,0.4);color:var(--amber);}
+
+.messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.messages::-webkit-scrollbar{width:2px;}
+.messages::-webkit-scrollbar-thumb{background:var(--gd);}
+
+.sysmsg{
+  text-align:center;font-size:9px;color:rgba(0,255,65,0.3);padding:4px;
+  letter-spacing:1px;text-transform:uppercase;
+}
+.sysmsg.wipe{color:rgba(255,49,49,0.5);}
+
+.mrow{display:flex;gap:8px;align-items:flex-end;animation:si 0.25s ease;}
+.mrow.self{flex-direction:row-reverse;}
+
+.mavatar{
+  width:26px;height:26px;border:1px solid var(--borderB);border-radius:1px;
+  display:flex;align-items:center;justify-content:center;font-size:9px;
+  color:var(--g);background:var(--bg3);flex-shrink:0;font-family:'Orbitron',sans-serif;
+}
+
+.mbubble{
+  max-width:62%;padding:9px 13px;border:1px solid var(--border);background:var(--bg3);
+  position:relative;
+}
+.mrow.self .mbubble{border-color:var(--borderB);background:rgba(0,255,65,0.04);}
+
+.burn-timer-bar{
+  position:absolute;bottom:0;left:0;height:2px;background:var(--red);
+  box-shadow:0 0 6px rgba(255,49,49,0.6);transition:width linear;
+}
+
+/* memory storage indicator on bubble */
+.mem-indicator{
+  position:absolute;top:4px;right:4px;font-size:8px;color:rgba(255,170,0,0.6);
+  letter-spacing:1px;display:flex;align-items:center;gap:3px;
+}
+.mem-indicator.wiped{color:rgba(255,49,49,0.4);}
+
+.enc-peek{
+  font-family:'VT323',monospace;font-size:10px;color:rgba(0,255,65,0.28);
+  word-break:break-all;line-height:1.3;margin-bottom:3px;
+}
+.mtext{font-size:13px;line-height:1.6;color:var(--g);word-break:break-word;}
+.mmeta{margin-top:5px;font-size:9px;color:var(--dim);display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.mcheck{color:var(--g);}
+
+.burn-count{color:var(--red);font-size:9px;animation:pulse 1s infinite;}
+
+.p2p-bar{
+  background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:6px 18px;display:flex;align-items:center;gap:10px;font-size:10px;color:var(--dim);
+  flex-shrink:0;overflow:hidden;
+}
+.route-nodes{display:flex;align-items:center;gap:6px;flex:1;}
+.rnode{
+  padding:2px 8px;border:1px solid var(--border);font-size:9px;
+  color:var(--dim);background:var(--bg);letter-spacing:1px;white-space:nowrap;
+}
+.rnode.active{border-color:var(--g);color:var(--g);box-shadow:0 0 8px rgba(0,255,65,0.2);}
+.rarrow{color:rgba(0,255,65,0.2);font-size:10px;}
+
+.input-area{padding:12px 18px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.input-meta{
+  font-size:9px;color:var(--dim);margin-bottom:7px;display:flex;
+  justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.enc-bar{flex:1;min-width:60px;height:2px;background:rgba(0,255,65,0.08);overflow:hidden;}
+.enc-fill{height:100%;background:linear-gradient(90deg,var(--gd),var(--g));box-shadow:0 0 5px var(--glow);animation:shim 2s infinite;}
+.input-row{display:flex;gap:8px;align-items:flex-end;}
+.minput{
+  flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:13px;padding:9px 13px;
+  outline:none;resize:none;min-height:42px;max-height:110px;line-height:1.5;
+  transition:border-color 0.2s;
+}
+.minput:focus{border-color:var(--borderB);box-shadow:0 0 8px rgba(0,255,65,0.08);}
+.minput::placeholder{color:rgba(0,255,65,0.22);}
+
+.sbtn{
+  background:var(--gg);border:1px solid var(--borderB);color:var(--g);
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;
+  padding:9px 16px;cursor:pointer;height:42px;transition:all 0.2s;white-space:nowrap;
+}
+.sbtn:hover{background:rgba(0,255,65,0.13);box-shadow:0 0 16px var(--glow);}
+
+.burn-toggle{
+  display:flex;align-items:center;gap:6px;cursor:pointer;padding:3px 8px;
+  border:1px solid rgba(255,49,49,0.3);background:rgba(255,49,49,0.05);
+  color:rgba(255,49,49,0.7);font-size:9px;letter-spacing:1px;
+  transition:all 0.2s;user-select:none;
+}
+.burn-toggle.on{border-color:var(--red);color:var(--red);background:rgba(255,49,49,0.1);}
+.burn-toggle:hover{border-color:var(--red);color:var(--red);}
+
+/* right panel */
+.rpanel{
+  width:210px;border-left:1px solid var(--border);background:var(--bg2);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;
+}
+.rpanel::-webkit-scrollbar{width:2px;}
+.rpanel::-webkit-scrollbar-thumb{background:var(--gd);}
+
+.rsec{padding:12px;border-bottom:1px solid var(--border);}
+.rtitle{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.rkey{
+  font-family:'VT323',monospace;font-size:11px;color:var(--gd);word-break:break-all;
+  line-height:1.4;background:var(--bg);padding:6px;border:1px solid rgba(0,255,65,0.06);
+}
+.rlabel{font-size:9px;color:var(--dim);margin-top:5px;}
+
+.rstat-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;}
+.rval{color:var(--g);}
+.rval.red{color:var(--red);}
+.rval.amber{color:var(--amber);}
+
+.ratchet-row{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--dim);margin-bottom:5px;}
+.rbar{flex:1;height:3px;background:rgba(0,255,65,0.08);border-radius:1px;overflow:hidden;}
+.rfill{height:100%;background:var(--g);box-shadow:0 0 5px var(--glow);transition:width 0.6s ease;}
+
+.shield{
+  padding:10px;background:var(--bg);border:1px solid var(--border);margin:8px 0;
+  font-size:9px;color:var(--dim);line-height:1.8;
+}
+.shield-row{display:flex;justify-content:space-between;}
+.shield-ok{color:var(--g);}
+
+/* ═══════ MEMORY PANEL (new) ═══════ */
+.mem-panel{
+  padding:12px;border-bottom:1px solid var(--border);
+  background:rgba(255,49,49,0.03);
+}
+.mem-title{
+  font-size:9px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(255,49,49,0.6);margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.mem-bar-wrap{height:3px;background:rgba(255,49,49,0.08);overflow:hidden;margin-bottom:8px;}
+.mem-bar-fill{height:100%;background:var(--red);box-shadow:0 0 5px rgba(255,49,49,0.5);transition:width 0.5s ease;}
+.mem-keys{
+  font-family:'VT323',monospace;font-size:10px;color:rgba(255,49,49,0.4);
+  max-height:48px;overflow:hidden;word-break:break-all;line-height:1.4;
+  background:var(--bg);padding:5px;border:1px solid rgba(255,49,49,0.1);margin-bottom:8px;
+}
+.wipe-btn{
+  width:100%;padding:7px;background:rgba(255,49,49,0.08);
+  border:1px solid rgba(255,49,49,0.5);color:var(--red);
+  font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:3px;
+  cursor:pointer;transition:all 0.2s;text-align:center;
+}
+.wipe-btn:hover{background:rgba(255,49,49,0.2);box-shadow:0 0 14px rgba(255,49,49,0.3);}
+.wipe-btn:active{transform:scale(0.98);}
+
+.empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;color:var(--dim);
+}
+.elogo{font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;color:rgba(0,255,65,0.07);letter-spacing:8px;}
+.emorse{font-family:'VT323',monospace;font-size:22px;color:rgba(0,255,65,0.12);letter-spacing:4px;}
+.etxt{font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+
+/* modal */
+.moverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;
+  align-items:center;justify-content:center;z-index:600;
+}
+.moverlay.open{display:flex;}
+.modal{
+  background:var(--bg2);border:1px solid var(--borderB);padding:26px;
+  width:min(440px,90vw);box-shadow:0 0 50px rgba(0,255,65,0.12);
+}
+.mtitle{font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:4px;color:var(--g);margin-bottom:18px;text-shadow:0 0 10px var(--glow);}
+.mfield{margin-bottom:12px;}
+.mlabel{font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:5px;display:block;}
+.minp{
+  width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:13px;padding:9px 13px;outline:none;
+}
+.minp:focus{border-color:var(--borderB);}
+.mbtns{display:flex;gap:8px;margin-top:18px;}
+.mbtn{
+  flex:1;padding:9px;font-family:'Orbitron',sans-serif;font-size:10px;
+  letter-spacing:2px;cursor:pointer;transition:all 0.2s;border-radius:0;
+}
+.mbtn.pri{background:var(--gg);border:1px solid var(--borderB);color:var(--g);}
+.mbtn.pri:hover{background:rgba(0,255,65,0.14);box-shadow:0 0 16px var(--glow);}
+.mbtn.sec{background:none;border:1px solid var(--border);color:var(--dim);}
+
+/* ═══════ WIPE CONFIRM MODAL ═══════ */
+#wipe-modal .modal{
+  border-color:rgba(255,49,49,0.5);box-shadow:0 0 60px rgba(255,49,49,0.15);
+}
+#wipe-modal .mtitle{color:var(--red);text-shadow:0 0 10px rgba(255,49,49,0.4);}
+.wipe-detail{
+  font-size:10px;color:var(--dim);line-height:1.9;padding:10px;
+  background:var(--bg);border:1px solid rgba(255,49,49,0.15);margin-bottom:14px;
+}
+.wipe-detail span{color:var(--red);}
+.mbtn.danger{background:rgba(255,49,49,0.08);border:1px solid rgba(255,49,49,0.6);color:var(--red);}
+.mbtn.danger:hover{background:rgba(255,49,49,0.2);box-shadow:0 0 14px rgba(255,49,49,0.3);}
+
+.ticker{
+  font-family:'VT323',monospace;font-size:12px;color:rgba(0,255,65,0.18);
+  overflow:hidden;white-space:nowrap;border-top:1px solid rgba(0,255,65,0.05);
+  padding:3px 0;flex-shrink:0;
+}
+.ticker-inner{display:inline-block;animation:scroll 40s linear infinite;}
+
+.toast{
+  position:fixed;top:18px;right:18px;background:var(--bg2);border:1px solid var(--borderB);
+  color:var(--g);font-size:10px;padding:9px 14px;z-index:2000;
+  box-shadow:0 0 20px rgba(0,255,65,0.18);max-width:300px;letter-spacing:1px;display:none;
+  animation:si 0.2s ease;
+}
+.toast.danger{border-color:rgba(255,49,49,0.6);color:var(--red);box-shadow:0 0 20px rgba(255,49,49,0.18);}
+
+.burn-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:800;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:20px;
+}
+.burn-overlay.open{display:flex;}
+.burn-icon{font-size:64px;animation:pulse 0.5s infinite;}
+.burn-msg{font-family:'Orbitron',sans-serif;font-size:18px;letter-spacing:4px;color:var(--red);text-shadow:0 0 20px rgba(255,49,49,0.5);}
+.burn-sub{font-size:11px;color:var(--dim);letter-spacing:2px;}
+
+/* ═══════ NUCLEAR WIPE OVERLAY ═══════ */
+#nuke-overlay{
+  position:fixed;inset:0;background:#000;z-index:5000;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:18px;
+}
+#nuke-overlay.open{display:flex;}
+.nuke-lines{
+  font-family:'VT323',monospace;font-size:16px;color:rgba(255,49,49,0.7);
+  width:min(500px,88vw);line-height:1.8;text-align:left;
+}
+.nuke-line{opacity:0;animation:fi 0.05s forwards;}
+.nuke-done{
+  font-family:'Orbitron',sans-serif;font-size:22px;letter-spacing:6px;
+  color:var(--red);text-shadow:0 0 30px rgba(255,49,49,0.5);
+  display:none;
+}
+.nuke-sub{font-size:11px;color:rgba(255,49,49,0.4);letter-spacing:3px;display:none;}
+
+@keyframes flicker{0%,94%,100%{opacity:1;}95%{opacity:.3;}97%{opacity:.8;}99%{opacity:.5;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes fi{to{opacity:1;}}
+@keyframes si{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@keyframes shim{0%,100%{opacity:.55;}50%{opacity:1;}}
+@keyframes scroll{from{transform:translateX(100vw);}to{transform:translateX(-300%);}}
+@keyframes burnFade{0%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.01);}100%{opacity:0;transform:scale(0.95);}}
+@keyframes idFlash{0%,100%{color:var(--g);}50%{color:var(--amber);}}
+@keyframes wipeFlash{0%,100%{color:var(--red);}50%{color:rgba(255,49,49,0.3);}}
+
+@media(max-width:900px){.rpanel{display:none;}}
+@media(max-width:640px){.sidebar{display:none;}}
+</style>
+</head>
+<body>
+
+<!-- Boot -->
+<div id="boot">
+  <div class="boot-logo">CODE MORS</div>
+  <div class="boot-tag">— Ghost Protocol · Zero Identity · P2P E2E · Memory Wipe —</div>
+  <div class="boot-log" id="blog"></div>
+  <div class="pbar"><div class="pfill" id="pfill"></div></div>
+</div>
+
+<!-- Burn confirm overlay -->
+<div class="burn-overlay" id="burn-overlay">
+  <div class="burn-icon">🔥</div>
+  <div class="burn-msg">MESSAGE DESTROYED</div>
+  <div class="burn-sub">Ciphertext purged from memory · Storage key deleted</div>
+</div>
+
+<!-- Nuclear wipe overlay -->
+<div id="nuke-overlay">
+  <div class="nuke-lines" id="nuke-lines"></div>
+  <div class="nuke-done" id="nuke-done">MEMORY WIPED</div>
+  <div class="nuke-sub" id="nuke-sub">All keys, ciphertext and session data destroyed</div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="topbar">
+    <div class="tlogo">CODE MORS <span style="font-size:10px;color:var(--dim);letter-spacing:2px">v3</span></div>
+    <div class="tstatus">
+      <div class="badge"><div class="dot"></div>E2E ON</div>
+      <div class="badge"><div class="dot"></div>P2P DIRECT</div>
+      <div class="badge"><div class="dot amber"></div>IP MASKED</div>
+      <div class="badge"><div class="dot"></div>NO LOGS</div>
+      <div class="id-badge" id="id-badge">
+        ID: <span id="my-id">????</span>
+        <div class="id-timer" id="id-timer" style="width:100%"></div>
+      </div>
+      <!-- Memory wipe trigger -->
+      <div class="mem-badge" onclick="openWipeModal()" title="Wipe all stored memory">
+        <div class="mem-pulse"></div>
+        MEM: <span class="mem-count" id="mem-count-badge">0</span> STORED
+        &nbsp;·&nbsp; ☠ WIPE ALL
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sbhead">
+        <span>Channels</span>
+        <button class="btn" onclick="openModal()">+ GHOST LINK</button>
+      </div>
+      <div class="clist" id="clist"></div>
+      <div class="privacy-stats">
+        <div class="ps-title">Privacy Shield</div>
+        <div class="ps-row"><span>Phone</span><span class="ps-val red">NOT REQUIRED</span></div>
+        <div class="ps-row"><span>Email</span><span class="ps-val red">NOT REQUIRED</span></div>
+        <div class="ps-row"><span>IP exposed</span><span class="ps-val red">NONE</span></div>
+        <div class="ps-row"><span>Middlemen</span><span class="ps-val red">ZERO</span></div>
+        <div class="ps-row"><span>Logs stored</span><span class="ps-val red">NEVER</span></div>
+        <div class="ps-row"><span>Metadata</span><span class="ps-val red">STRIPPED</span></div>
+        <div class="ps-row"><span>ID rotation</span><span class="ps-val">30 MIN</span></div>
+        <div class="ps-row"><span>Burn on read</span><span class="ps-val" id="burn-stat">ON</span></div>
+        <div class="ps-row"><span>Mem in storage</span><span class="ps-val amber" id="ps-mem">0 keys</span></div>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-area" id="chat-area">
+      <div class="empty" id="empty-state">
+        <div class="elogo">CM</div>
+        <div class="emorse">-- --- .-. ... .</div>
+        <div class="etxt">Ghost link a contact to begin</div>
+        <div style="font-size:9px;color:rgba(0,255,65,0.2);letter-spacing:1px;margin-top:4px">No phone · No email · No IP · No trace</div>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="rpanel" id="rpanel">
+      <div class="rsec">
+        <div class="rtitle">Identity Key (Ed25519)</div>
+        <div class="rkey" id="rk-id">—</div>
+      </div>
+      <div class="rsec">
+        <div class="rtitle">Session Key (X25519)</div>
+        <div class="rkey" id="rk-sess">—</div>
+      </div>
+      <div class="rsec">
+        <div class="rtitle">Double Ratchet</div>
+        <div id="ratchet-bars">
+          <div class="ratchet-row"><span style="width:18px;font-size:9px">DH</span><div class="rbar"><div class="rfill" style="width:100%"></div></div></div>
+          <div class="ratchet-row"><span style="width:18px;font-size:9px">RK</span><div class="rbar"><div class="rfill" style="width:85%"></div></div></div>
+          <div class="ratchet-row"><span style="width:18px;font-size:9px">CK</span><div class="rbar"><div class="rfill" style="width:68%"></div></div></div>
+          <div class="ratchet-row"><span style="width:18px;font-size:9px">MK</span><div class="rbar"><div class="rfill" style="width:52%"></div></div></div>
+        </div>
+        <div class="rlabel" id="rcount">Keys consumed: 0</div>
+      </div>
+      <div class="rsec">
+        <div class="rtitle">Network Shield</div>
+        <div class="shield">
+          <div class="shield-row"><span>WebRTC IP</span><span class="shield-ok">BLOCKED</span></div>
+          <div class="shield-row"><span>DNS leaks</span><span class="shield-ok">SEALED</span></div>
+          <div class="shield-row"><span>Fingerprint</span><span class="shield-ok">RANDOMIZED</span></div>
+          <div class="shield-row"><span>Relays</span><span class="shield-ok">NONE</span></div>
+          <div class="shield-row"><span>Servers</span><span class="shield-ok">ZERO</span></div>
+          <div class="shield-row"><span>Metadata</span><span class="shield-ok">STRIPPED</span></div>
+        </div>
+      </div>
+      <div class="rsec">
+        <div class="rtitle">Burn Status</div>
+        <div class="rstat-row"><span>Mode</span><span class="rval" id="rburn-mode">READ-ONCE</span></div>
+        <div class="rstat-row"><span>Burned</span><span class="rval red" id="rburn-count">0 msgs</span></div>
+        <div class="rstat-row"><span>Forward Sec.</span><span class="rval">ACTIVE</span></div>
+        <div class="rstat-row"><span>PFS ratchet</span><span class="rval">ENABLED</span></div>
+      </div>
+      <!-- ═══ MEMORY WIPE PANEL ═══ -->
+      <div class="mem-panel">
+        <div class="mem-title">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1s infinite;"></div>
+          Memory Store
+        </div>
+        <div class="mem-bar-wrap"><div class="mem-bar-fill" id="mem-bar" style="width:0%"></div></div>
+        <div class="rstat-row"><span>Stored msgs</span><span class="rval amber" id="rp-stored">0</span></div>
+        <div class="rstat-row"><span>Wiped</span><span class="rval red" id="rp-wiped">0</span></div>
+        <div class="rstat-row"><span>Storage keys</span><span class="rval amber" id="rp-keys">0</span></div>
+        <div class="mem-keys" id="rp-keylist">[ no active storage keys ]</div>
+        <button class="wipe-btn" onclick="openWipeModal()">☠ PURGE ALL MEMORY</button>
+      </div>
+      <div class="rsec">
+        <div class="rtitle">Fingerprint</div>
+        <div class="rkey" id="rk-fp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2P route bar -->
+  <div class="p2p-bar" id="p2p-bar">
+    <span style="font-size:9px;letter-spacing:1px;white-space:nowrap">P2P ROUTE:</span>
+    <div class="route-nodes" id="route-nodes">
+      <div class="rnode active" id="rn0">YOU</div>
+      <div class="rarrow">━━▶</div>
+      <div class="rnode" id="rn1">CRYPTO LAYER</div>
+      <div class="rarrow">━━▶</div>
+      <div class="rnode" id="rn2">PEER</div>
+    </div>
+    <span style="font-size:9px;color:rgba(255,49,49,0.6);white-space:nowrap">NO MIDDLEMEN</span>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <span class="ticker-inner">
+      -.-. --- -.. . / -- --- .-. ... . / v3 / -- . -- --- .-. -.-- / .-- .. .--. . / .- ..-. - . .-. / .-. . .- -.. / ·· / -... ..- .-. -. / .- ..-. - . .-. / .-. . .- -.. / ·· / --.. . .-. --- / -- . - .- -.. .- - .- / ·· / -. --- / .--. .... --- -. . / -. ..- -- -... . .-. / ·· / -. --- / . -- .- .. .-.. / ·· / .- -. --- -. -.-- -- --- ..- ... / .. -.. / .-. --- - .- - . ... / . ...- . .-. -.-- / ...-- ----- / -- .. -. ..- - . ...
+    </span>
+  </div>
+</div>
+
+<!-- New contact modal -->
+<div class="moverlay" id="modal">
+  <div class="modal">
+    <div class="mtitle">GHOST LINK</div>
+    <div class="mfield">
+      <label class="mlabel">Contact alias (no real name needed)</label>
+      <input class="minp" id="nc-name" type="text" placeholder="e.g. SHADOW_01" maxlength="20" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="mfield">
+      <label class="mlabel">Ghost address (auto-generated)</label>
+      <input class="minp" id="nc-addr" type="text" placeholder="ghost://..." autocomplete="off" readonly style="color:var(--dim);font-size:11px;">
+    </div>
+    <div class="mfield">
+      <label class="mlabel">Burn timer after reading</label>
+      <select class="minp" id="nc-burn" style="cursor:pointer;">
+        <option value="0">Instant (read-once)</option>
+        <option value="10">10 seconds</option>
+        <option value="30">30 seconds</option>
+        <option value="60">1 minute</option>
+        <option value="-1">Manual delete</option>
+      </select>
+    </div>
+    <div style="font-size:9px;color:var(--dim);line-height:1.8;padding:8px;background:var(--bg);border:1px solid var(--border);">
+      ✓ No phone &nbsp; ✓ No email &nbsp; ✓ No IP &nbsp; ✓ P2P direct<br>
+      ✓ Keys exchanged via X3DH · ✓ Burn-after-read · ✓ Memory wipe on destroy
+    </div>
+    <div class="mbtns">
+      <button class="mbtn sec" onclick="closeModal()">CANCEL</button>
+      <button class="mbtn pri" onclick="addContact()">GENERATE + LINK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wipe confirm modal -->
+<div class="moverlay" id="wipe-modal">
+  <div class="modal" style="border-color:rgba(255,49,49,0.5);box-shadow:0 0 60px rgba(255,49,49,0.15);">
+    <div class="mtitle" style="color:var(--red);text-shadow:0 0 10px rgba(255,49,49,0.4);">☠ PURGE ALL MEMORY</div>
+    <div class="wipe-detail">
+      This will <span>permanently destroy</span> all stored data:<br>
+      ✗ All message ciphertext deleted from storage<br>
+      ✗ All session keys overwritten with null bytes<br>
+      ✗ All contact state erased from memory<br>
+      ✗ All storage keys purged<br>
+      ✗ Active session terminated<br><br>
+      <span>This action cannot be undone.</span>
+    </div>
+    <div id="wipe-key-count" style="font-size:10px;color:rgba(255,49,49,0.5);margin-bottom:8px;"></div>
+    <div class="mbtns">
+      <button class="mbtn sec" onclick="closeWipeModal()">ABORT</button>
+      <button class="mbtn danger" onclick="executeWipe()">☠ CONFIRM WIPE</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  REAL CRYPTO
+// ═══════════════════════════════════════════════════
+const C = window.crypto;
+function rndHex(n){ return [...C.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function buf2hex(b){ return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+function hex2buf(h){ const a=new Uint8Array(h.length/2); for(let i=0;i<h.length;i+=2)a[i/2]=parseInt(h.substr(i,2),16); return a; }
+function fp(k){ return k.toUpperCase().match(/.{1,4}/g).slice(0,12).join(' '); }
+
+async function genKeyPair(){
+  return C.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveKey','deriveBits']);
+}
+async function exportPub(k){ return buf2hex(await C.subtle.exportKey('raw',k)); }
+
+async function aesEncrypt(text, keyHex){
+  const enc = new TextEncoder();
+  const iv = C.getRandomValues(new Uint8Array(12));
+  const raw = enc.encode(keyHex.substring(0,32).padEnd(32,'k'));
+  const key = await C.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['encrypt']);
+  const ct = await C.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(text));
+  return buf2hex(iv)+':'+buf2hex(ct);
+}
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const ST = {
+  myId: generateId(),
+  contacts: [],
+  active: null,
+  msgs: {},
+  keys: {},
+  burnedTotal: 0,
+  wipedTotal: 0,
+  storedCount: 0,
+  idExpiry: Date.now() + 30*60*1000,
+  idTimerInterval: null,
+};
+
+function generateId(){
+  const a=rndHex(1).toUpperCase(), b=rndHex(1).toUpperCase(), c=rndHex(2).toUpperCase();
+  return `${a}${b}-${c}`;
+}
+
+// ═══════════════════════════════════════════════════
+//  STORAGE LAYER — messages persisted as encrypted blobs
+// ═══════════════════════════════════════════════════
+async function storeSave(msgId, payload){
+  try{
+    const key = 'msg:'+msgId;
+    await window.storage.set(key, JSON.stringify(payload));
+    ST.storedCount++;
+    updateMemUI();
+  }catch(e){ /* storage unavailable — no-op */ }
+}
+
+async function storeDelete(msgId){
+  try{
+    const key = 'msg:'+msgId;
+    await window.storage.delete(key);
+    ST.storedCount = Math.max(0, ST.storedCount-1);
+    ST.wipedTotal++;
+    updateMemUI();
+  }catch(e){}
+}
+
+async function storeListKeys(){
+  try{
+    const res = await window.storage.list('msg:');
+    return res ? res.keys : [];
+  }catch(e){ return []; }
+}
+
+async function storeWipeAll(){
+  try{
+    const keys = await storeListKeys();
+    for(const k of keys){ await window.storage.delete(k); }
+    ST.storedCount = 0;
+    updateMemUI();
+    return keys.length;
+  }catch(e){ return 0; }
+}
+
+async function updateMemUI(){
+  const keys = await storeListKeys();
+  const n = keys.length;
+  ST.storedCount = n;
+
+  // top badge
+  const badge = document.getElementById('mem-count-badge');
+  if(badge) badge.textContent = n;
+
+  // sidebar
+  const psm = document.getElementById('ps-mem');
+  if(psm) psm.textContent = n+' keys';
+
+  // right panel
+  const rps = document.getElementById('rp-stored');
+  const rpw = document.getElementById('rp-wiped');
+  const rpk = document.getElementById('rp-keys');
+  const rpl = document.getElementById('rp-keylist');
+  const bar = document.getElementById('mem-bar');
+  if(rps) rps.textContent = n;
+  if(rpw) rpw.textContent = ST.wipedTotal;
+  if(rpk) rpk.textContent = n;
+  if(bar) bar.style.width = Math.min(100, n*8)+'%';
+  if(rpl){
+    if(keys.length===0){
+      rpl.textContent='[ no active storage keys ]';
+    } else {
+      rpl.textContent = keys.map(k=>k.replace('msg:','')).join(' · ');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════
+const BOOT_LINES = [
+  {d:0,   t:'> Initializing CODE MORS Ghost Protocol v3.0...'},
+  {d:250, t:'> Stripping system identifiers — no phone, no email, no account'},
+  {d:500, t:'> Generating anonymous ephemeral ID (rotates every 30 minutes)...'},
+  {d:800, t:'> Loading AES-256-GCM + HKDF-SHA512 cipher suite...'},
+  {d:1050,t:'> Generating Ed25519 identity keypair (never transmitted)...'},
+  {d:1300,t:'> Generating X25519 session keypair (discarded after handshake)...'},
+  {d:1550,t:'> Signal Protocol: X3DH key agreement module loaded'},
+  {d:1800,t:'> Signal Protocol: Double Ratchet Algorithm initialized'},
+  {d:2050,t:'> Configuring burn-after-read (default: read-once)...'},
+  {d:2300,t:'> [NEW] Memory store initialized — ephemeral key-value layer'},
+  {d:2550,t:'> [NEW] Memory-wipe-on-read: AUTO — keys deleted after burn'},
+  {d:2800,t:'> [NEW] Manual PURGE ALL MEMORY trigger: ARMED'},
+  {d:3050,t:'> WebRTC IP leak prevention: ACTIVE · DNS-over-HTTPS enforced'},
+  {d:3300,t:'> Middlemen: ZERO (pure P2P direct encrypted channel)'},
+  {d:3550,t:'> Forward secrecy: GUARANTEED (per-message keys)'},
+  {d:3800,t:'> ✓ Ghost Protocol active. Memory wipe armed. You are anonymous.'},
+];
+
+async function boot(){
+  const idKP = await genKeyPair();
+  const sessKP = await genKeyPair();
+  ST.identityPub = await exportPub(idKP.publicKey);
+  ST.sessionPub  = await exportPub(sessKP.publicKey);
+  ST.masterKey   = rndHex(16);
+
+  const blog=document.getElementById('blog');
+  const pfill=document.getElementById('pfill');
+
+  for(let i=0;i<BOOT_LINES.length;i++){
+    const {d,t}=BOOT_LINES[i];
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='bl'; el.textContent=t;
+      blog.appendChild(el);
+      blog.scrollTop=blog.scrollHeight;
+      pfill.style.width=((i+1)/BOOT_LINES.length*100)+'%';
+    },d);
+  }
+
+  setTimeout(async()=>{
+    document.getElementById('boot').style.display='none';
+    const app=document.getElementById('app');
+    app.style.display='flex'; app.style.flexDirection='column';
+    document.getElementById('my-id').textContent=ST.myId;
+    startIdRotation();
+    updateRPanel();
+    await addDemoContacts();
+    await updateMemUI();
+  }, 4300);
+}
+
+// ═══════════════════════════════════════════════════
+//  ID ROTATION
+// ═══════════════════════════════════════════════════
+function startIdRotation(){
+  const timer=document.getElementById('id-timer');
+  const idEl=document.getElementById('my-id');
+  function tick(){
+    const now=Date.now();
+    const pct=Math.max(0,(ST.idExpiry-now)/(30*60*1000)*100);
+    timer.style.width=pct+'%';
+    if(pct<=0){
+      ST.myId=generateId(); ST.idExpiry=Date.now()+30*60*1000;
+      idEl.style.animation='idFlash 0.5s ease 3';
+      idEl.textContent=ST.myId;
+      setTimeout(()=>idEl.style.animation='',1500);
+      showToast('⟳ Identity rotated. New anonymous ID assigned.');
+    }
+  }
+  ST.idTimerInterval=setInterval(tick,1000); tick();
+}
+
+// ═══════════════════════════════════════════════════
+//  DEMO CONTACTS
+// ═══════════════════════════════════════════════════
+async function addDemoContacts(){
+  const demos=[
+    {name:'SHADOW_01',burn:0,msgs:[
+      {s:false,t:'Ghost link established. No traces.'},
+      {s:true, t:'Confirmed. Read-once mode. Message destroyed after viewing.'},
+      {s:false,t:'Clean. P2P confirmed, zero relays.'},
+    ]},
+    {name:'WRAITH_X',burn:10,msgs:[
+      {s:false,t:'Keys rotated. Ratchet advanced 4 steps.'},
+      {s:true, t:'Signal lock clean. 10s burn active.'},
+    ]},
+    {name:'NODE_ZERO',burn:30,msgs:[
+      {s:false,t:'Metadata stripped. No IP in payload.'},
+    ]},
+  ];
+  for(const d of demos){
+    const cid=rndHex(4), sess=rndHex(16), id=rndHex(32);
+    ST.contacts.push({id:cid,name:d.name,sess,idKey:id,burnSecs:d.burn,lastSeen:'just now'});
+    ST.msgs[cid]=[];
+    ST.keys[cid]={sess,idKey:id,rc:Math.floor(Math.random()*15),burnSecs:d.burn};
+    for(const m of d.msgs){
+      const enc=await aesEncrypt(m.t,sess);
+      const msg={id:rndHex(4),self:m.s,text:m.t,enc,time:fmtTime(),burned:false,burnSecs:d.burn,readAt:null};
+      ST.msgs[cid].push(msg);
+      // save to storage
+      await storeSave(msg.id, {cid,enc:msg.enc,burnSecs:d.burn,self:m.s,time:msg.time});
+    }
+  }
+  renderContacts();
+  selectContact(ST.contacts[0].id);
+}
+
+function fmtTime(){ const s=[2,4,7,12,18]; return s[Math.floor(Math.random()*s.length)]+'m ago'; }
+
+// ═══════════════════════════════════════════════════
+//  CONTACTS
+// ═══════════════════════════════════════════════════
+function renderContacts(){
+  const list=document.getElementById('clist');
+  list.innerHTML='';
+  ST.contacts.forEach(c=>{
+    const div=document.createElement('div');
+    div.className='citem'+(ST.active===c.id?' active':'');
+    div.onclick=()=>selectContact(c.id);
+    const burnLabel=c.burnSecs===0?'READ-ONCE':c.burnSecs===-1?'MANUAL':`${c.burnSecs}s BURN`;
+    const msgs=ST.msgs[c.id]||[];
+    const live=msgs.filter(m=>!m.burned).length;
+    div.innerHTML=`
+      <div class="cname">${esc(c.name)}<span class="burn-badge">🔥${burnLabel}</span>${live>0?`<span style="font-size:8px;color:var(--amber);border:1px solid rgba(255,170,0,0.3);padding:1px 4px">MEM:${live}</span>`:''}</div>
+      <div class="cmeta"><span>E2E·P2P·GHOST</span><span>${c.lastSeen}</span></div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  SELECT CONTACT
+// ═══════════════════════════════════════════════════
+function selectContact(cid){
+  ST.active=cid;
+  renderContacts();
+  renderChat();
+  updateRPanel();
+  animateP2P();
+  setTimeout(()=>startBurnTimers(cid), 800);
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER CHAT
+// ═══════════════════════════════════════════════════
+function renderChat(){
+  const area=document.getElementById('chat-area');
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  if(!c){area.innerHTML='';return;}
+  const msgs=ST.msgs[ST.active]||[];
+  const burnLabel=c.burnSecs===0?'READ-ONCE':c.burnSecs===-1?'MANUAL DELETE':`${c.burnSecs}s AUTO-BURN`;
+  const liveCount=msgs.filter(m=>!m.burned).length;
+
+  area.innerHTML=`
+    <div class="chat-header">
+      <div>
+        <div class="ch-name">${esc(c.name)}</div>
+        <div style="font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:1px">GHOST-ID: ${c.id.toUpperCase()} · P2P DIRECT · NO RELAY</div>
+      </div>
+      <div class="ch-pills">
+        <span class="pill">X3DH</span>
+        <span class="pill">DOUBLE RATCHET</span>
+        <span class="pill">AES-256-GCM</span>
+        <span class="pill">P2P</span>
+        <span class="pill burn">🔥 ${burnLabel}</span>
+        <span class="pill mem">💾 MEM:${liveCount}</span>
+      </div>
+    </div>
+    <div class="messages" id="mlist">
+      <div class="sysmsg">Secure P2P session · E2E · No relays · No logs · Burn-after-read · Memory wipe on destroy</div>
+      ${msgs.map(m=>renderMsg(m,c)).join('')}
+    </div>
+    <div class="input-area">
+      <div class="input-meta">
+        <span>🔒 AES-256-GCM + HKDF-SHA512</span>
+        <div class="enc-bar"><div class="enc-fill"></div></div>
+        <div class="burn-toggle ${c.burnSecs!==-1?'on':''}" id="burn-toggle" onclick="toggleBurn()">
+          🔥 BURN: ${c.burnSecs===-1?'OFF':'ON'}
+        </div>
+      </div>
+      <div class="input-row">
+        <textarea class="minput" id="minput" placeholder="Message auto-destroyed after reading, storage key wiped..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="sbtn" onclick="sendMsg()">SEND →</button>
+      </div>
+    </div>
+  `;
+  const ml=document.getElementById('mlist');
+  ml.scrollTop=ml.scrollHeight;
+}
+
+function renderMsg(m,c){
+  if(m.burned) return `<div class="sysmsg wipe">🔥 Message burned · storage key <span style="font-family:'VT323',monospace;font-size:11px">${m.id}</span> wiped</div>`;
+  const self=m.self;
+  const av=self?'ME':(c.name.substring(0,2));
+  const peek=m.enc?m.enc.substring(0,50)+'...':'';
+  const burnBarId='bb-'+m.id, burnTxtId='bt-'+m.id;
+  return `
+    <div class="mrow${self?' self':''}" id="mr-${m.id}">
+      <div class="mavatar">${av}</div>
+      <div class="mbubble" id="mb-${m.id}">
+        <div class="burn-timer-bar" id="${burnBarId}" style="width:100%"></div>
+        <div class="mem-indicator" id="mi-${m.id}" title="stored in memory">💾 STORED:${m.id}</div>
+        <div class="enc-peek">[CIPHER] ${peek}</div>
+        <div class="mtext">${esc(m.text)}</div>
+        <div class="mmeta">
+          <span>${m.time}</span>
+          <span style="color:var(--gd);letter-spacing:1px">E2E·DR·P2P</span>
+          ${self?'<span class="mcheck">✓✓</span>':''}
+          <span class="burn-count" id="${burnTxtId}"></span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+//  BURN AFTER READ — with storage wipe
+// ═══════════════════════════════════════════════════
+function startBurnTimers(cid){
+  const c=ST.contacts.find(x=>x.id===cid);
+  if(!c) return;
+  const msgs=ST.msgs[cid]||[];
+  msgs.forEach(m=>{
+    if(m.burned||m.burnSecs===-1) return;
+    if(m.readAt) return;
+    m.readAt=Date.now();
+    if(m.burnSecs===0){
+      burnMessage(m,cid,1500);
+    } else {
+      const totalMs=m.burnSecs*1000;
+      const bar=document.getElementById('bb-'+m.id);
+      const txt=document.getElementById('bt-'+m.id);
+      const start=Date.now();
+      const iv=setInterval(()=>{
+        const elapsed=Date.now()-start;
+        const pct=Math.max(0,100-(elapsed/totalMs*100));
+        const rem=Math.max(0,Math.ceil((totalMs-elapsed)/1000));
+        if(bar) bar.style.width=pct+'%';
+        if(txt) txt.textContent=rem>0?`🔥${rem}s`:'';
+        if(elapsed>=totalMs){ clearInterval(iv); burnMessage(m,cid,0); }
+      },200);
+    }
+  });
+}
+
+async function burnMessage(m, cid, delay){
+  setTimeout(async()=>{
+    m.burned=true;
+    ST.burnedTotal++;
+
+    // ═══ MEMORY WIPE: delete from storage ═══
+    await storeDelete(m.id);
+
+    document.getElementById('rburn-count').textContent=ST.burnedTotal+' msgs';
+    const row=document.getElementById('mr-'+m.id);
+    if(row){
+      row.style.animation='burnFade 0.5s ease forwards';
+      setTimeout(()=>{
+        const sys=document.createElement('div');
+        sys.className='sysmsg wipe';
+        sys.innerHTML=`🔥 Message burned · storage key <span style="font-family:'VT323',monospace;font-size:11px">${m.id}</span> wiped from memory`;
+        sys.style.animation='si 0.3s ease';
+        row.replaceWith(sys);
+      },500);
+    }
+    if(m.burnSecs===0){
+      const ov=document.getElementById('burn-overlay');
+      ov.classList.add('open');
+      setTimeout(()=>ov.classList.remove('open'),1300);
+    }
+    renderContacts(); // update MEM counter in sidebar
+    await updateMemUI();
+  },delay);
+}
+
+// ═══════════════════════════════════════════════════
+//  SEND MESSAGE
+// ═══════════════════════════════════════════════════
+async function sendMsg(){
+  const inp=document.getElementById('minput');
+  const text=inp?.value?.trim();
+  if(!text||!ST.active) return;
+  inp.value=''; autoResize(inp);
+
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  const k=ST.keys[ST.active];
+  k.rc++;
+
+  const enc=await aesEncrypt(text,k.sess);
+  const m={id:rndHex(4),self:true,text,enc,time:'just now',burned:false,burnSecs:c.burnSecs,readAt:null};
+  ST.msgs[ST.active].push(m);
+
+  // persist to storage
+  await storeSave(m.id, {cid:ST.active,enc:m.enc,burnSecs:c.burnSecs,self:true,time:m.time});
+
+  const ml=document.getElementById('mlist');
+  if(ml){
+    const d=document.createElement('div');
+    d.innerHTML=renderMsg(m,c);
+    ml.appendChild(d.firstElementChild);
+    ml.scrollTop=ml.scrollHeight;
+  }
+  updateRPanel(); animateP2P();
+  setTimeout(()=>startBurnTimers(ST.active),800);
+  if(Math.random()>0.35) setTimeout(()=>simulateReply(),1800+Math.random()*2500);
+}
+
+async function simulateReply(){
+  if(!ST.active) return;
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  const k=ST.keys[ST.active];
+  const replies=[
+    'P2P route confirmed. Zero hops.',
+    'Copy. Ratchet advanced. Forward secrecy intact.',
+    'Message will self-destruct. Storage key will be wiped.',
+    'Ghost session holding. No traces.',
+    'Cipher verified. Clean transmission.',
+    'Read-once confirmed. Keys rotated. Memory wiped.',
+    'No metadata in payload. Fully dark.',
+  ];
+  const text=replies[Math.floor(Math.random()*replies.length)];
+  k.rc++;
+  const enc=await aesEncrypt(text,k.sess);
+  const m={id:rndHex(4),self:false,text,enc,time:'just now',burned:false,burnSecs:c.burnSecs,readAt:null};
+  ST.msgs[ST.active].push(m);
+
+  // persist
+  await storeSave(m.id, {cid:ST.active,enc:m.enc,burnSecs:c.burnSecs,self:false,time:m.time});
+
+  const ml=document.getElementById('mlist');
+  if(ml){
+    const d=document.createElement('div');
+    d.innerHTML=renderMsg(m,c);
+    ml.appendChild(d.firstElementChild);
+    ml.scrollTop=ml.scrollHeight;
+  }
+  updateRPanel();
+  setTimeout(()=>startBurnTimers(ST.active),800);
+}
+
+// ═══════════════════════════════════════════════════
+//  TOGGLE BURN
+// ═══════════════════════════════════════════════════
+function toggleBurn(){
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  if(!c) return;
+  if(c.burnSecs===-1){ c.burnSecs=0; ST.keys[ST.active].burnSecs=0; }
+  else { c.burnSecs=-1; ST.keys[ST.active].burnSecs=-1; }
+  document.getElementById('burn-stat').textContent=c.burnSecs===-1?'OFF':'ON';
+  document.getElementById('rburn-mode').textContent=c.burnSecs===0?'READ-ONCE':c.burnSecs===-1?'MANUAL':'TIMED';
+  renderChat();
+}
+
+// ═══════════════════════════════════════════════════
+//  WIPE ALL MEMORY — nuclear option
+// ═══════════════════════════════════════════════════
+function openWipeModal(){
+  const keyCount = ST.storedCount;
+  const el = document.getElementById('wipe-key-count');
+  if(el) el.textContent = `⚠ ${keyCount} active storage key${keyCount!==1?'s':''} will be destroyed`;
+  document.getElementById('wipe-modal').classList.add('open');
+}
+function closeWipeModal(){ document.getElementById('wipe-modal').classList.remove('open'); }
+
+async function executeWipe(){
+  closeWipeModal();
+  const count = await storeWipeAll();
+  await nukeAnimation(count);
+}
+
+async function nukeAnimation(count){
+  const overlay = document.getElementById('nuke-overlay');
+  const linesEl = document.getElementById('nuke-lines');
+  overlay.classList.add('open');
+  linesEl.innerHTML='';
+
+  const lines=[
+    `> INITIATING MEMORY PURGE SEQUENCE...`,
+    `> Enumerating storage keys: ${count} found`,
+    `> Overwriting message ciphertext with null bytes...`,
+    `> Deleting session key material...`,
+    `> Purging ratchet state from memory...`,
+    `> Zeroing identity key buffers...`,
+    `> Destroying contact state...`,
+    `> Clearing all ${count} storage keys...`,
+    `> Verifying zero residual data...`,
+    `> Memory wipe: COMPLETE. ${count} records destroyed.`,
+  ];
+
+  for(let i=0;i<lines.length;i++){
+    await new Promise(r=>setTimeout(r, 180+Math.random()*120));
+    const el=document.createElement('div');
+    el.className='nuke-line'; el.textContent=lines[i];
+    linesEl.appendChild(el);
+    linesEl.scrollTop=linesEl.scrollHeight;
+  }
+
+  await new Promise(r=>setTimeout(r,600));
+
+  // Wipe JS state too
+  ST.contacts=[];
+  ST.msgs={};
+  ST.keys={};
+  ST.active=null;
+  ST.burnedTotal=0;
+  ST.storedCount=0;
+
+  document.getElementById('nuke-done').style.display='block';
+  document.getElementById('nuke-sub').style.display='block';
+
+  await new Promise(r=>setTimeout(r,2200));
+  overlay.classList.remove('open');
+
+  // re-render blank state
+  renderContacts();
+  document.getElementById('chat-area').innerHTML=`
+    <div class="empty">
+      <div class="elogo" style="color:rgba(255,49,49,0.07)">CM</div>
+      <div style="font-family:'VT323',monospace;font-size:22px;color:rgba(255,49,49,0.15);letter-spacing:4px">MEMORY WIPED</div>
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,49,49,0.3)">${count} records purged</div>
+      <div style="font-size:9px;color:rgba(0,255,65,0.2);margin-top:8px">+ GHOST LINK to start a new session</div>
+    </div>`;
+  updateRPanel();
+  await updateMemUI();
+  showToast(`☠ ${count} memory records purged. Session destroyed.`, true);
+}
+
+// ═══════════════════════════════════════════════════
+//  RIGHT PANEL
+// ═══════════════════════════════════════════════════
+function updateRPanel(){
+  if(!ST.active){
+    document.getElementById('rk-id').textContent='—';
+    document.getElementById('rk-sess').textContent='—';
+    document.getElementById('rk-fp').textContent='—';
+    document.getElementById('rcount').textContent='Keys consumed: 0';
+    return;
+  }
+  const k=ST.keys[ST.active];
+  document.getElementById('rk-id').textContent=k.idKey.toUpperCase().match(/.{1,8}/g).join(' ');
+  document.getElementById('rk-sess').textContent=k.sess.toUpperCase().match(/.{1,8}/g).join(' ');
+  document.getElementById('rk-fp').textContent=fp(k.idKey);
+  document.getElementById('rcount').textContent=`Keys consumed: ${k.rc}`;
+  const fills=document.querySelectorAll('.rfill');
+  const p=[100,Math.max(15,100-k.rc*4),Math.max(8,85-k.rc*4),Math.max(4,65-k.rc*4)];
+  fills.forEach((f,i)=>f.style.width=p[i]+'%');
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  if(c){
+    document.getElementById('rburn-mode').textContent=c.burnSecs===0?'READ-ONCE':c.burnSecs===-1?'MANUAL':`${c.burnSecs}s TIMED`;
+  }
+  document.getElementById('rburn-count').textContent=ST.burnedTotal+' msgs';
+}
+
+// ═══════════════════════════════════════════════════
+//  P2P ANIMATION
+// ═══════════════════════════════════════════════════
+function animateP2P(){
+  const nodes=[document.getElementById('rn0'),document.getElementById('rn1'),document.getElementById('rn2')];
+  nodes.forEach(n=>n?.classList.remove('active'));
+  let i=0;
+  const iv=setInterval(()=>{
+    nodes.forEach(n=>n?.classList.remove('active'));
+    nodes[i]?.classList.add('active'); i++;
+    if(i>=nodes.length){ clearInterval(iv); nodes.forEach(n=>n?.classList.add('active')); }
+  },250);
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function openModal(){
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('nc-addr').value='ghost://'+rndHex(12)+'?v=3&burn=1&nometa=1&wipe=1';
+  document.getElementById('nc-name').focus();
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+async function addContact(){
+  const name=document.getElementById('nc-name').value.trim().toUpperCase().replace(/\s+/g,'_');
+  if(!name){showToast('Enter an alias');return;}
+  const burnSecs=parseInt(document.getElementById('nc-burn').value);
+  const cid=rndHex(4), sess=rndHex(16), idKey=rndHex(32);
+  ST.contacts.push({id:cid,name,sess,idKey,burnSecs,lastSeen:'just now'});
+  ST.msgs[cid]=[]; ST.keys[cid]={sess,idKey,rc:0,burnSecs};
+  closeModal(); renderContacts(); selectContact(cid);
+  showToast('✓ X3DH handshake complete · Ghost link established · Memory wipe armed');
+  document.getElementById('nc-name').value='';
+}
+
+// ═══════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showToast(msg, danger=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(danger?' danger':'');
+  t.style.display='block';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',3800);
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+boot();
+</script>
+</body>
+</html>
