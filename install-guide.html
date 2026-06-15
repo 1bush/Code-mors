@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE MORS — Udhëzuesi i Instalimit</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+:root{--g:#00ff41;--gd:#00c032;--red:#ff3131;--amber:#ffaa00;--bg:#010801;--bg2:#020d02;--border:rgba(0,255,65,0.2);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--g);font-family:'Share Tech Mono',monospace;padding:20px;max-width:800px;margin:0 auto;line-height:1.7;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);}
+h1{font-family:'Orbitron',sans-serif;font-size:clamp(22px,5vw,42px);font-weight:900;letter-spacing:6px;text-shadow:0 0 20px rgba(0,255,65,0.4);margin-bottom:8px;}
+h2{font-family:'Orbitron',sans-serif;font-size:16px;letter-spacing:4px;color:var(--gd);margin:32px 0 14px;border-bottom:1px solid var(--border);padding-bottom:8px;}
+h3{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;color:var(--amber);margin:20px 0 10px;}
+p{font-size:13px;color:rgba(0,255,65,0.8);margin-bottom:10px;}
+.tag{font-size:10px;letter-spacing:3px;color:rgba(0,255,65,0.4);margin-bottom:24px;}
+.step-block{
+  border:1px solid var(--border);padding:16px;margin-bottom:12px;
+  background:rgba(0,255,65,0.03);position:relative;
+}
+.step-num{
+  position:absolute;top:-1px;left:-1px;
+  background:var(--g);color:#000;font-family:'Orbitron',sans-serif;
+  font-size:10px;font-weight:900;padding:2px 8px;letter-spacing:2px;
+}
+.step-title{font-size:13px;color:var(--g);margin-top:4px;margin-bottom:8px;padding-left:4px;}
+.step-desc{font-size:12px;color:rgba(0,255,65,0.65);padding-left:4px;}
+.cmd{
+  background:rgba(0,0,0,0.6);border:1px solid rgba(0,255,65,0.15);
+  padding:10px 14px;margin:8px 0;font-size:12px;color:var(--gd);
+  word-break:break-all;position:relative;
+}
+.cmd::before{content:'$ ';color:rgba(0,255,65,0.3);}
+.alert{
+  border:1px solid var(--amber);padding:12px 16px;margin:16px 0;
+  background:rgba(255,170,0,0.04);color:var(--amber);font-size:12px;
+}
+.alert.red{border-color:var(--red);background:rgba(255,49,49,0.04);color:var(--red);}
+.alert.green{border-color:var(--g);background:rgba(0,255,65,0.04);color:var(--g);}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;}
+.grid-card{border:1px solid var(--border);padding:14px;background:rgba(0,255,65,0.02);}
+.gc-title{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;color:var(--gd);margin-bottom:8px;}
+.gc-item{font-size:11px;color:rgba(0,255,65,0.6);margin-bottom:3px;}
+.gc-item::before{content:'✓ ';color:var(--g);}
+.platform-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.ptab{
+  padding:6px 14px;border:1px solid var(--border);cursor:pointer;
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--dim);
+  background:none;transition:all 0.2s;
+}
+.ptab.active{border-color:var(--g);color:var(--g);background:rgba(0,255,65,0.07);}
+.section{display:none;}
+.section.active{display:block;}
+.link{
+  display:inline-block;padding:10px 18px;border:1px solid var(--g);
+  background:rgba(0,255,65,0.07);color:var(--g);text-decoration:none;
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:3px;
+  transition:all 0.2s;margin-top:8px;
+}
+.link:hover{background:rgba(0,255,65,0.15);box-shadow:0 0 14px rgba(0,255,65,0.2);}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);font-size:10px;color:rgba(0,255,65,0.3);letter-spacing:2px;}
+@media(max-width:500px){.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<h1>CODE MORS</h1>
+<div class="tag">v4.0 · GHOST PROTOCOL · PWA EDITION · UDHËZUES INSTALIMI</div>
+
+<div class="alert green">
+  ✓ CODE MORS v4 është një <strong>Progressive Web App (PWA)</strong> — instalohet direkt nga shfletuesi pa App Store, pa Google Play, pa asnjë llogari. Funksionon offline.
+</div>
+
+<!-- PLATFORM TABS -->
+<div class="platform-tabs">
+  <button class="ptab active" onclick="showTab('android')">📱 ANDROID</button>
+  <button class="ptab" onclick="showTab('ios')">🍎 iPHONE / iOS</button>
+  <button class="ptab" onclick="showTab('desktop')">💻 DESKTOP / PC</button>
+  <button class="ptab" onclick="showTab('publish')">🚀 PUBLIKO ONLINE</button>
+</div>
+
+<!-- ANDROID -->
+<div class="section active" id="tab-android">
+<h2>INSTALIM NË ANDROID</h2>
+
+<p>Dy metoda: <strong>Metoda 1</strong> (e rekomanduar) — instalo PWA direkt nga Chrome. <strong>Metoda 2</strong> — bëj APK real me Bubblewrap.</p>
+
+<h3>METODA 1 — PWA NGA CHROME (E LEHTË, 30 sekonda)</h3>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">Hap Chrome në Android</div>
+  <div class="step-desc">Shko te URL-ja e aplikacionit (faqja ku ke publikuar CODE MORS).<br>Shembull: <code>https://code-mors.vercel.app</code></div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">02</div>
+  <div class="step-title">Shfaqet banner-i "Add to Home Screen"</div>
+  <div class="step-desc">Chrome e njeh automatikisht si PWA dhe shfaq banner-in në fund. Kliko <strong>"Install"</strong> ose <strong>"Add to Home Screen"</strong>.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">03</div>
+  <div class="step-title">Konfirmo instalimin</div>
+  <div class="step-desc">Shfaqet dialog-u i konfirmimit. Kliko <strong>"Install"</strong>. Aplikacioni shtohet në home screen si ikonë.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">04</div>
+  <div class="step-title">Hap nga Home Screen</div>
+  <div class="step-desc">CODE MORS hapet si app i plotë — pa adresë URL, pa browser UI. Duket dhe ndjehet si app nativ.</div>
+</div>
+
+<div class="alert">
+  ⚠ Nëse Chrome nuk shfaq banner-in automatikisht: Menu (⋮) → <strong>"Add to Home screen"</strong> → Install.
+</div>
+
+<h3>METODA 2 — APK REAL (Bubblewrap — për distribut si .apk)</h3>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">Instalo Node.js dhe Bubblewrap</div>
+  <div class="step-desc">Hap terminal-in në PC:</div>
+  <div class="cmd">npm install -g @bubblewrap/cli</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">02</div>
+  <div class="step-title">Inicializo projektin APK</div>
+  <div class="step-desc">Zëvendëso URL-në me adresën reale të faqes suaj:</div>
+  <div class="cmd">bubblewrap init --manifest https://code-mors.vercel.app/manifest.json</div>
+  <div class="step-desc">Bubblewrap lexon manifest.json dhe konfiguron APK-në automatikisht.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">03</div>
+  <div class="step-title">Build APK</div>
+  <div class="cmd">bubblewrap build</div>
+  <div class="step-desc">Krijohet skedari <strong>app-release-signed.apk</strong> në folder-in app/.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">04</div>
+  <div class="step-title">Instalo APK-në në Android</div>
+  <div class="step-desc">
+    1. Dërgo APK-në në telefon (Bluetooth, USB, Drive)<br>
+    2. Aktivizo "Unknown Sources": Settings → Security → Unknown Sources ✓<br>
+    3. Kliko APK-në → Install
+  </div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">05</div>
+  <div class="step-title">Publiko në Google Play (opsionale)</div>
+  <div class="step-desc">Me APK nga Bubblewrap mund ta ngarkosh direkt në Google Play Console si <strong>Trusted Web Activity (TWA)</strong>.</div>
+</div>
+</div>
+
+<!-- iOS -->
+<div class="section" id="tab-ios">
+<h2>INSTALIM NË iPHONE / iOS</h2>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">Hap Safari (jo Chrome)</div>
+  <div class="step-desc">Në iOS, vetëm Safari e mbështet "Add to Home Screen" me plotë funksionalitet PWA.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">02</div>
+  <div class="step-title">Navigo te CODE MORS</div>
+  <div class="step-desc">Shko te: <strong>https://code-mors.vercel.app</strong> (ose URL-ja jote)</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">03</div>
+  <div class="step-title">Kliko Share Icon</div>
+  <div class="step-desc">Kliko ikonën Share (katror me shigjetë lart ↑) në fund të Safari.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">04</div>
+  <div class="step-title">Add to Home Screen</div>
+  <div class="step-desc">Scroll poshtë dhe kliko <strong>"Add to Home Screen"</strong>. Emri është "CODE MORS". Kliko <strong>Add</strong>.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">05</div>
+  <div class="step-title">Gati!</div>
+  <div class="step-desc">Ikona CODE MORS shfaqet në Home Screen. Hapet si fullscreen app.</div>
+</div>
+
+<div class="alert">
+  ⚠ iOS 16.4+ mbështet PWA me njoftimet push. iOS 15 mbështet bazën. LocalStorage funksionon në të gjitha versionet.
+</div>
+</div>
+
+<!-- DESKTOP -->
+<div class="section" id="tab-desktop">
+<h2>INSTALIM NË DESKTOP / PC / MAC</h2>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">Hap Chrome ose Edge</div>
+  <div class="step-desc">Navigo te URL-ja e CODE MORS.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">02</div>
+  <div class="step-title">Kliko ikonën Install</div>
+  <div class="step-desc">Në address bar shfaqet ikona ⊕ (Install App). Kliko → Install.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">03</div>
+  <div class="step-title">Hap si dritare e veçantë</div>
+  <div class="step-desc">CODE MORS hapet si desktop app i plotë pa UI të browser-it.</div>
+</div>
+</div>
+
+<!-- PUBLIKIM -->
+<div class="section" id="tab-publish">
+<h2>🚀 PUBLIKO ONLINE (Hosting Falas)</h2>
+
+<h3>OPSIONI 1 — VERCEL (Rekomanduar, 2 minuta)</h3>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">Krijo llogari falas në Vercel</div>
+  <div class="step-desc">Shko te <strong>vercel.com</strong> → Sign Up me GitHub.</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">02</div>
+  <div class="step-title">Shto skedarët në GitHub</div>
+  <div class="step-desc">Ngarko 4 skedarë në repository-n tënd: <strong>index.html, manifest.json, sw.js, icon-512.svg</strong></div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">03</div>
+  <div class="step-title">Import nga Vercel</div>
+  <div class="step-desc">Vercel → New Project → Import Git Repository → Zgjidh <strong>Code-mors</strong> → Deploy.<br>
+  URL jote: <strong>code-mors.vercel.app</strong></div>
+</div>
+
+<h3>OPSIONI 2 — GITHUB PAGES (Direkt, falas)</h3>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">Shko te repo-ja Code-mors</div>
+  <div class="step-desc">github.com/1bush/Code-mors</div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">02</div>
+  <div class="step-title">Ngarko skedarët e rinj</div>
+  <div class="step-desc">Kliko "Add file" → Upload files. Ngarko: <strong>index.html, manifest.json, sw.js, icon-512.svg, icon-192.svg</strong></div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">03</div>
+  <div class="step-title">Aktivizo GitHub Pages</div>
+  <div class="step-desc">Settings → Pages → Source: <strong>Deploy from branch: main</strong> → Folder: <strong>/ (root)</strong> → Save.<br>
+  URL jote: <strong>1bush.github.io/Code-mors</strong></div>
+</div>
+
+<div class="step-block">
+  <div class="step-num">04</div>
+  <div class="step-title">Prit 2-3 minuta</div>
+  <div class="step-desc">GitHub builds dhe publikon automatikisht. Hap URL-në → instalo PWA!</div>
+</div>
+
+<h3>OPSIONI 3 — NETLIFY (Drag & Drop)</h3>
+
+<div class="step-block">
+  <div class="step-num">01</div>
+  <div class="step-title">netlify.com → Sites → Drag folder</div>
+  <div class="step-desc">Tërhiq folder-in code-mors/ direkt te Netlify. Publikohet menjëherë me URL unike.</div>
+</div>
+
+<div class="alert green">
+  ✓ Të 3 opsionet janë <strong>100% falas</strong> dhe mbështesin HTTPS (i domosdoshëm për PWA dhe Service Worker).
+</div>
+
+<h3>STRUKTURA E SKEDARËVE PËR UPLOAD</h3>
+<div class="cmd" style="padding-left:14px;">
+code-mors/<br>
+├── index.html      ← Aplikacioni kryesor<br>
+├── manifest.json   ← Konfigurim PWA/Android<br>
+├── sw.js           ← Service Worker (offline)<br>
+├── icon-192.svg    ← Ikonë 192×192<br>
+└── icon-512.svg    ← Ikonë 512×512
+</div>
+
+</div>
+
+<!-- FEATURES GRID -->
+<h2>ÇFARË PËRFSHIN v4</h2>
+<div class="grid">
+  <div class="grid-card">
+    <div class="gc-title">🔒 KRIPTOGRAFI</div>
+    <div class="gc-item">AES-256-GCM encryption</div>
+    <div class="gc-item">ECDH P-256 key exchange</div>
+    <div class="gc-item">X3DH handshake simulation</div>
+    <div class="gc-item">Double Ratchet (DR)</div>
+    <div class="gc-item">Forward secrecy</div>
+    <div class="gc-item">HKDF-SHA512</div>
+  </div>
+  <div class="grid-card">
+    <div class="gc-title">👻 PRIVATËSI</div>
+    <div class="gc-item">Pa telefon, pa email</div>
+    <div class="gc-item">ID anonime 30-minutëshe</div>
+    <div class="gc-item">Burn-after-read</div>
+    <div class="gc-item">Memory wipe / Nuke</div>
+    <div class="gc-item">Zero metadata</div>
+    <div class="gc-item">P2P zero middlemen</div>
+  </div>
+  <div class="grid-card">
+    <div class="gc-title">📱 PWA / ANDROID</div>
+    <div class="gc-item">Installable (manifest.json)</div>
+    <div class="gc-item">Offline mode (Service Worker)</div>
+    <div class="gc-item">Home screen icon</div>
+    <div class="gc-item">Fullscreen standalone</div>
+    <div class="gc-item">APK via Bubblewrap</div>
+    <div class="gc-item">Android 8+ supported</div>
+  </div>
+  <div class="grid-card">
+    <div class="gc-title">🎨 UI / UX</div>
+    <div class="gc-item">Dark terminal aesthetic</div>
+    <div class="gc-item">Responsive (mobile/desktop)</div>
+    <div class="gc-item">Mobile sidebar</div>
+    <div class="gc-item">Touch-optimized</div>
+    <div class="gc-item">CRT scanline overlay</div>
+    <div class="gc-item">Boot animation</div>
+  </div>
+</div>
+
+<footer>
+  CODE MORS v4 · GHOST PROTOCOL · PWA EDITION · 2026<br>
+  github.com/1bush/Code-mors · Military Grade · Zero Identity · No Trace
+</footer>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

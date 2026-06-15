@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#010801"/>
+  <!-- Outer border glow -->
+  <rect x="16" y="16" width="480" height="480" fill="none" stroke="#00ff41" stroke-width="4" opacity="0.5"/>
+  <rect x="28" y="28" width="456" height="456" fill="none" stroke="#00ff41" stroke-width="2" opacity="0.2"/>
+  <!-- Corner marks -->
+  <polyline points="16,16 56,16 56,56" fill="none" stroke="#00ff41" stroke-width="6"/>
+  <polyline points="496,16 456,16 456,56" fill="none" stroke="#00ff41" stroke-width="6"/>
+  <polyline points="16,496 56,496 56,456" fill="none" stroke="#00ff41" stroke-width="6"/>
+  <polyline points="496,496 456,496 456,456" fill="none" stroke="#00ff41" stroke-width="6"/>
+  <!-- CM letters -->
+  <text x="256" y="290" 
+        font-family="monospace" font-size="180" font-weight="900"
+        fill="#00ff41" text-anchor="middle" 
+        filter="url(#glow)">CM</text>
+  <!-- v4 tag -->
+  <text x="256" y="360" 
+        font-family="monospace" font-size="40"
+        fill="#00ff41" text-anchor="middle" opacity="0.5">v4</text>
+  <!-- Morse code dots at bottom -->
+  <text x="256" y="420"
+        font-family="monospace" font-size="22"
+        fill="#00ff41" text-anchor="middle" opacity="0.3">-- --- .-. ... .</text>
+  <!-- Glow filter -->
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
