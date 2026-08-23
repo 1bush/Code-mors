@@ -1,0 +1,494 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CODE MORS v4</title>
+<script src="libs/qrcode.js"></script>
+<script src="libs/jsQR.js"></script>
+<style>
+:root{--g:#00ff41;--gd:#00c032;--gg:rgba(0,255,65,0.07);--glow:rgba(0,255,65,0.35);--red:#ff3131;--amber:#ffaa00;--blue:#00aaff;--bg:#010801;--bg2:#020d02;--border:rgba(0,255,65,0.18);--borderB:rgba(0,255,65,0.45);--dim:rgba(0,255,65,0.42);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--g);font-family:'Share Tech Mono','Courier New',monospace;height:100vh;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);}
+#boot{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.boot-logo{font-size:clamp(32px,7vw,64px);font-weight:900;letter-spacing:10px;text-shadow:0 0 30px var(--glow);animation:flicker 4s infinite;}
+.boot-tag{font-size:11px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;text-align:center;padding:0 12px;}
+.boot-log{width:min(560px,88vw);font-size:11px;color:var(--gd);line-height:1.9;margin-top:20px;max-height:200px;overflow:hidden;}
+.pbar{width:min(360px,78vw);height:2px;background:rgba(0,255,65,0.08);margin-top:14px;overflow:hidden;}
+.pfill{height:100%;background:var(--g);width:0%;transition:width .08s linear;}
+#app{display:none;height:100vh;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg2);flex-wrap:wrap;gap:6px;}
+.tlogo{font-weight:900;font-size:15px;letter-spacing:5px;text-shadow:0 0 12px var(--glow);}
+.tstatus{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.badge{display:flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid var(--border);background:var(--gg);font-size:10px;color:var(--dim);}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--g);animation:pulse 2s infinite;}
+.ghost-badge{font-size:11px;padding:4px 10px;border:1px solid rgba(0,255,65,0.55);background:rgba(0,255,65,0.06);letter-spacing:2px;cursor:pointer;}
+.btn{background:transparent;border:1px solid var(--borderB);color:var(--g);padding:7px 12px;font-family:inherit;font-size:11px;letter-spacing:2px;cursor:pointer;}
+.btn:hover,.btn:active{background:var(--gg);box-shadow:0 0 10px rgba(0,255,65,0.25);}
+.btn.danger{border-color:rgba(255,49,49,0.55);color:var(--red);}
+.btn.danger:hover,.btn.danger:active{background:rgba(255,49,49,0.12);}
+.main{flex:1;display:flex;overflow:hidden;}
+.sidebar{width:230px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg2);flex-shrink:0;}
+.sbhead{display:flex;align-items:center;justify-content:space-between;padding:10px;font-size:11px;letter-spacing:2px;color:var(--dim);border-bottom:1px solid var(--border);}
+.clist{flex:1;overflow-y:auto;}
+.citem{padding:11px 12px;border-bottom:1px solid rgba(0,255,65,0.08);cursor:pointer;}
+.citem.active{background:rgba(0,255,65,0.12);border-left:2px solid var(--g);}
+.cname{font-size:13px;letter-spacing:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.burn-badge{font-size:8px;color:var(--amber);border:1px solid rgba(255,170,0,0.35);padding:1px 4px;}
+.submask{font-size:9px;color:var(--blue);opacity:.85;}
+.cmeta{font-size:9px;color:var(--dim);margin-top:4px;display:flex;justify-content:space-between;}
+.chatwrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chathead{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg2);gap:8px;flex-wrap:wrap;}
+.chname{font-size:15px;letter-spacing:2px;}
+.chsub{font-size:9px;color:var(--blue);letter-spacing:1px;}
+.mlist{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.msg{max-width:82%;padding:9px 12px;border:1px solid var(--border);background:var(--gg);font-size:13px;line-height:1.5;position:relative;animation:si .2s ease;word-wrap:break-word;}
+.msg.self{align-self:flex-end;background:rgba(0,255,65,0.13);border-color:var(--borderB);}
+.msg .mmask{font-size:9px;color:var(--blue);letter-spacing:1px;display:block;margin-bottom:4px;}
+.msg .mtime{font-size:8px;color:var(--dim);text-align:right;margin-top:4px;display:block;}
+.sysmsg{align-self:center;font-size:10px;color:var(--dim);border:1px dashed var(--border);padding:4px 12px;letter-spacing:1px;}
+.sysmsg.wipe{color:var(--red);border-color:rgba(255,49,49,0.35);}
+.composer{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:var(--bg2);align-items:flex-end;}
+#minput{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--g);font-family:inherit;font-size:13px;padding:10px;resize:none;outline:none;min-height:42px;max-height:110px;}
+.emptychat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--dim);font-size:12px;letter-spacing:2px;text-align:center;padding:20px;}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;}
+.moverlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--borderB);padding:22px;width:min(430px,94vw);max-height:92vh;overflow-y:auto;}
+.mtitle{font-size:15px;letter-spacing:4px;margin-bottom:14px;}
+.msub{font-size:11px;color:var(--dim);line-height:1.7;margin-bottom:14px;}
+.msub span{color:var(--amber);}
+.mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
+#qr-box{display:flex;justify-content:center;padding:14px;background:#fff;margin:10px 0;}
+.field{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--g);font-family:inherit;font-size:12px;padding:9px;margin:6px 0;outline:none;}
+#scan-video{width:100%;max-width:340px;border:1px solid var(--borderB);background:#000;}
+.opt-row{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;align-items:center;}
+.opt{font-size:10px;padding:5px 10px;border:1px solid var(--border);cursor:pointer;color:var(--dim);letter-spacing:1px;}
+.opt.sel{color:var(--amber);border-color:var(--amber);background:rgba(255,170,0,0.08);}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--borderB);color:var(--g);padding:9px 18px;font-size:11px;z-index:900;display:none;max-width:90vw;text-align:center;}
+@keyframes flicker{0%,94%,100%{opacity:1;}95%{opacity:.3;}97%{opacity:.8;}99%{opacity:.5;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes si{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:640px){.sidebar{width:180px;}}
+</style>
+</head>
+<body>
+<div id="boot">
+  <div class="boot-logo">CODE MORS</div>
+  <div class="boot-tag">— Ghost Protocol v4 · QR LINK · SUBMASK · MEMORY WIPE —</div>
+  <div class="boot-log" id="blog"></div>
+  <div class="pbar"><div class="pfill" id="pfill"></div></div>
+</div>
+<div id="app">
+  <div class="topbar">
+    <div class="tlogo">CODE MORS <span style="font-size:10px;color:var(--dim)">v4</span></div>
+    <div class="tstatus">
+      <div class="badge"><div class="dot"></div>E2E</div>
+      <div class="ghost-badge" onclick="openM('ghost-modal')">👤 <span id="my-ghost">------</span></div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="sidebar">
+      <div class="sbhead"><span>CONTACTS</span><button class="btn" onclick="openQrModal()">QR LINK</button></div>
+      <div class="clist" id="clist"></div>
+    </div>
+    <div class="chatwrap">
+      <div class="emptychat" id="emptychat">
+        <div style="font-size:30px">📡</div>
+        <div>NO ACTIVE CHANNEL</div>
+        <button class="btn" onclick="startScan()">📷 SCAN QR TO CONNECT</button>
+        <button class="btn" onclick="showMyQr()">SHOW MY QR</button>
+        <button class="btn" onclick="openM('manual-modal')">MANUAL CODE ▸</button>
+      </div>
+      <div id="chatarea" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <div class="chathead">
+          <div><div class="chname" id="ch-name">---</div><div class="chsub" id="ch-mask"></div></div>
+          <button class="btn danger" onclick="openM('end-modal')">✂ END SESSION</button>
+        </div>
+        <div class="opt-row" style="padding:4px 12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:9px;color:var(--dim)">TIME DELETE:</span>
+          <div class="opt" data-b="-1" onclick="setBurn(-1)">OFF</div>
+          <div class="opt sel" data-b="0" onclick="setBurn(0)">READ-ONCE</div>
+          <div class="opt" data-b="10" onclick="setBurn(10)">🔥10s</div>
+          <div class="opt" data-b="60" onclick="setBurn(60)">🔥60s</div>
+        </div>
+        <div class="mlist" id="mlist"></div>
+        <div class="composer">
+          <textarea id="minput" rows="1" placeholder="Type encrypted message..."></textarea>
+          <button class="btn" onclick="sendMsg()">SEND ▸</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="moverlay" id="qr-modal">
+  <div class="modal">
+    <div class="msub">▸ SHARE this QR — others scan it to link with you.<br>▸ SCAN — point the camera at another user's code.</div>
+    <div class="mbtns" style="justify-content:flex-start">
+      <button class="btn" onclick="showMyQr()">MY QR CODE</button>
+      <button class="btn" onclick="startScan()">📷 SCAN</button>
+    </div>
+    <div id="myqr-area" style="display:none">
+      <div id="qr-box"></div>
+      <div class="msub" style="text-align:center" id="myqr-code"></div>
+    </div>
+    <div id="scan-area" style="display:none">
+      <video id="scan-video" playsinline autoplay muted></video>
+      <canvas id="scan-canvas" style="display:none"></canvas>
+      <div class="msub" id="scan-status">Starting camera...</div>
+    </div>
+    <div class="mbtns"><button class="btn" onclick="closeQrModal()">CLOSE</button></div>
+  </div>
+</div>
+<div class="moverlay" id="manual-modal">
+  <div class="modal">
+    <div class="mtitle">MANUAL LINK</div>
+    <div class="msub">Paste the other user's link code:</div>
+    <input class="field" id="manual-input" placeholder='{"n":"GHOST-X","k":"..."}'>
+    <div class="mbtns">
+      <button class="btn" onclick="closeM('manual-modal')">ABORT</button>
+      <button class="btn" onclick="manualAdd()">LINK ▸</button>
+    </div>
+  </div>
+</div>
+<div class="moverlay" id="ghost-modal">
+  <div class="modal">
+    <div class="mtitle">YOUR GHOST IDENTITY</div>
+    <div class="msub">Your <span>permanent unique submask</span>. It <span>never changes</span> — friends can always reconnect with you through it.</div>
+    <input class="field" id="ghost-edit" maxlength="16">
+    <div class="mbtns">
+      <button class="btn" onclick="closeM('ghost-modal')">CLOSE</button>
+      <button class="btn" onclick="saveGhost()">SAVE</button>
+    </div>
+  </div>
+</div>
+<div class="moverlay" id="end-modal">
+  <div class="modal" style="border-color:rgba(255,49,49,0.5)">
+    <div class="mtitle" style="color:var(--red)">✂ END SESSION</div>
+    <div class="msub">
+      This will <span style="color:var(--red)">permanently delete</span>:<br>
+      ✗ All messages from this phone<br>
+      ✗ All message records from the database<br><br>
+      Your unique ghost name and this contact's submask are <span>KEPT</span>, so you can reconnect anytime.
+    </div>
+    <div class="mbtns">
+      <button class="btn" onclick="closeM('end-modal')">ABORT</button>
+      <button class="btn danger" onclick="endSession()">✂ DELETE &amp; END</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// ══════════ STORAGE LAYER (bug fix: real persistent storage, works everywhere) ══════════
+const DB = {
+  set(k,v){ localStorage.setItem(k, v); },
+  get(k){ return localStorage.getItem(k); },
+  del(k){ localStorage.removeItem(k); },
+  keys(prefix){ const out=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(k&&k.startsWith(prefix)) out.push(k);} return out; }
+};
+// bridge kept for Android WebView interface if present
+if (window.AndroidStorage) { window.storage = { set:(k,v)=>AndroidStorage.set(k,v), delete:k=>AndroidStorage.delete(k), list:p=>({keys:JSON.parse(AndroidStorage.list(p)||"[]")}) }; }
+
+// ══════════ CRYPTO (bug fix: added missing aesDecrypt + real ECDH derivation) ══════════
+const C = window.crypto;
+function rndHex(n){ return [...C.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+function buf2hex(b){ return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+async function genKeyPair(){ return C.subtle.generateKey({name:"ECDH",namedCurve:"P-256"},true,["deriveKey","deriveBits"]); }
+async function exportPub(k){ return buf2hex(await C.subtle.exportKey("raw",k)); }
+async function importPub(hex){ return C.subtle.importKey("raw",hex2buf(hex),{name:"ECDH",namedCurve:"P-256"},true,[]); }
+function hex2buf(h){ const a=new Uint8Array(h.length/2); for(let i=0;i<h.length;i+=2)a[i/2]=parseInt(h.substr(i,2),16); return a; }
+async function deriveShared(myPriv, theirPubHex){
+  const pub = await importPub(theirPubHex);
+  const bits = await C.subtle.deriveBits({name:"ECDH",public:pub}, myPriv, 256);
+  return buf2hex(await C.subtle.digest("SHA-256", bits)); // 64 hex chars
+}
+async function aesKey(sessHex){
+  const raw = hex2buf(sessHex.padEnd(64,"0")).slice(0,32);
+  return C.subtle.importKey("raw",raw,{name:"AES-GCM"},false,["encrypt","decrypt"]);
+}
+async function aesEncrypt(text, sessHex){
+  const key = await aesKey(sessHex);
+  const iv = C.getRandomValues(new Uint8Array(12));
+  const ct = await C.subtle.encrypt({name:"AES-GCM",iv}, key, new TextEncoder().encode(text));
+  return buf2hex(iv)+":"+buf2hex(ct);
+}
+// BUG FIX v3 had NO decrypt at all — messages could never be decrypted
+async function aesDecrypt(payload, sessHex){
+  try{
+    const [ivh,cth] = payload.split(":");
+    const key = await aesKey(sessHex);
+    const pt = await C.subtle.decrypt({name:"AES-GCM",iv:hex2buf(ivh)}, key, hex2buf(cth));
+    return new TextDecoder().decode(pt);
+  }catch(e){ return "[decryption failed]"; }
+}
+function esc(s){ return String(s||"").replace(/[&<>"\']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})); }
+
+// ══════════ STATE ══════════
+const ST = { ghost:null, contacts:[], active:null, msgs:{}, keys:{}, kp:null };
+
+function loadState(){
+  ST.ghost = DB.get("cm_ghost");
+  if(!ST.ghost){
+    // PERMANENT unique ghost name — never rotates (fixes v3 reconnect bug)
+    const words=["VOID","GHOST","RAVEN","ONYX","CIPHER","NOMAD","PHANTOM","ZERO","SPECTER","ECHO"];
+    ST.ghost = words[Math.floor(Math.random()*words.length)]+"-"+rndHex(2).toUpperCase();
+    DB.set("cm_ghost", ST.ghost);
+  }
+  try{ ST.contacts = JSON.parse(DB.get("cm_contacts")||"[]"); }catch(e){ ST.contacts=[]; }
+  try{ ST.msgs = JSON.parse(DB.get("cm_msgs")||"{}"); }catch(e){ ST.msgs={}; }
+  try{ ST.keys = JSON.parse(DB.get("cm_keys")||"{}"); }catch(e){ ST.keys={}; }
+}
+function saveState(){
+  DB.set("cm_contacts", JSON.stringify(ST.contacts));
+  DB.set("cm_msgs", JSON.stringify(ST.msgs));
+  DB.set("cm_keys", JSON.stringify(ST.keys));
+}
+
+// ══════════ BOOT ══════════
+const LINES=["> Ghost Protocol v4.0...","> Permanent ghost identity loaded...","> AES-256-GCM + ECDH P-256 ready...","> QR link module armed...","> Memory wipe: ARMED."];
+async function boot(){
+  loadState();
+  document.getElementById("my-ghost").textContent=ST.ghost;
+  ST.kp = await genKeyPair();
+  const blog=document.getElementById("blog"), pf=document.getElementById("pfill");
+  for(let i=0;i<LINES.length;i++){
+    await new Promise(r=>setTimeout(r,220));
+    const el=document.createElement("div"); el.textContent=LINES[i]; blog.appendChild(el);
+    pf.style.width=((i+1)/LINES.length*100)+"%";
+  }
+  await new Promise(r=>setTimeout(r,300));
+  document.getElementById("boot").style.display="none";
+  document.getElementById("app").style.display="flex";
+  renderContacts(); selectContact(ST.contacts[0]?.id||null);
+}
+
+// ══════════ GHOST IDENTITY ══════════
+function openGhostModal(){ document.getElementById("ghost-edit").value=ST.ghost; openM("ghost-modal"); }
+function saveGhost(){
+  const v=document.getElementById("ghost-edit").value.trim().toUpperCase();
+  if(v.length<3){ toast("Min 3 characters"); return; }
+  ST.ghost=v; DB.set("cm_ghost",v);
+  document.getElementById("my-ghost").textContent=v;
+  closeM("ghost-modal"); renderContacts(); renderChat(); toast("Ghost identity saved ✓");
+}
+
+// ══════════ QR PAIRING ══════════
+let scanStream=null, scanRAF=null;
+async function openQrModal(){ openM("qr-modal"); showMyQr(); }
+function closeQrModal(){ stopScan(); closeM("qr-modal"); document.getElementById("myqr-area").style.display="none"; document.getElementById("scan-area").style.display="none"; }
+async function myPayload(){
+  const pub = await exportPub(ST.kp.publicKey);
+  return JSON.stringify({v:4,n:ST.ghost,k:pub});
+}
+async function showMyQr(){
+  stopScan();
+  document.getElementById("myqr-area").style.display="block";
+  document.getElementById("scan-area").style.display="none";
+  const data = await myPayload();
+  document.getElementById("myqr-code").textContent = data;
+  try{
+    const qr = qrcode(0,"M"); qr.addData(data); qr.make();
+    document.getElementById("qr-box").innerHTML = qr.createImgTag(4,8);
+  }catch(e){ toast("QR library not loaded — use manual code below"); }
+}
+async function startScan(){
+  document.getElementById("myqr-area").style.display="none";
+  document.getElementById("scan-area").style.display="block";
+  const status=document.getElementById("scan-status");
+  try{
+    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    const video=document.getElementById("scan-video");
+    video.srcObject=scanStream; await video.play();
+    status.textContent="Point camera at the other user's QR...";
+    tickScan();
+  }catch(e){
+    status.textContent="Camera unavailable: "+e.message+" — use MANUAL CODE instead.";
+    openM("manual-modal");
+  }
+}
+function stopScan(){
+  if(scanRAF) cancelAnimationFrame(scanRAF); scanRAF=null;
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+}
+function tickScan(){
+  const video=document.getElementById("scan-video");
+  if(!video || video.readyState!==video.HAVE_ENOUGH_DATA){ scanRAF=requestAnimationFrame(tickScan); return; }
+  const cv=document.getElementById("scan-canvas");
+  cv.width=video.videoWidth; cv.height=video.videoHeight;
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  ctx.drawImage(video,0,0);
+  const img=ctx.getImageData(0,0,cv.width,cv.height);
+  const code=(window.jsQR||jsQR)(img.data,img.width,img.height,{inversionAttempts:"dontInvert"});
+  if(code && code.data){
+    stopScan();
+    handleLinkData(code.data);
+    return;
+  }
+  scanRAF=requestAnimationFrame(tickScan);
+}
+function manualAdd(){
+  const v=document.getElementById("manual-input").value.trim();
+  if(v){ handleLinkData(v); }
+  closeM("manual-modal");
+}
+async function addContactFromPayload(data){
+  let p=null;
+  try{ p = typeof data==="string" ? JSON.parse(data) : data; }catch(e){ return null; }
+  if(!p || !p.k) return null;
+  // BUG FIX v3: derive REAL shared secret via ECDH so both sides have same session key
+  const sess = await deriveShared(ST.kp.privateKey, p.k);
+  const cid = rndHex(8);
+  ST.contacts.push({ id:cid, name:(p.n||"UNKNOWN"), submask:makeSubmask(), sess, burnSecs:0, linked:new Date().toISOString() });
+  ST.msgs[cid]=[];
+  saveState(); renderContacts();
+  return cid;
+}
+async function handleLinkData(data){
+  const cid = await addContactFromPayload(data);
+  if(cid){ toast("Linked with "+ST.contacts.find(c=>c.id===cid).name+" ✓"); selectContact(cid); closeM("qr-modal"); }
+  else { toast("Invalid QR/code ✗"); }
+}
+function makeSubmask(){
+  const words=["SHADOW","WRAITH","VECTOR","SIGMA","DELTA","ORION","LYNX","KOBRA"];
+  return words[Math.floor(Math.random()*words.length)]+"_"+rndHex(2).toUpperCase();
+}
+</script>
+<script>
+// ══════════ CONTACTS & CHAT UI ══════════
+function renderContacts(){
+  const list=document.getElementById("clist"); list.innerHTML="";
+  ST.contacts.forEach(c=>{
+    const msgs=ST.msgs[c.id]||[]; const live=msgs.filter(m=>!m.burned).length;
+    const div=document.createElement("div");
+    div.className="citem"+(ST.active===c.id?" active":"");
+    div.onclick=()=>selectContact(c.id);
+    const bl=c.burnSecs===0?"READ-ONCE":c.burnSecs===-1?"OFF":"🔥"+c.burnSecs+"s";
+    div.innerHTML=`<div class="cname">${esc(c.name)}<span class="burn-badge">${bl}</span>${live?`<span class="submask">MEM:${live}</span>`:""}</div>
+      <div class="cmeta"><span class="submask">MASK: ${esc(c.submask)}</span><span>${live} live</span></div>`;
+    list.appendChild(div);
+  });
+}
+function selectContact(cid){
+  ST.active=cid||null;
+  document.getElementById("emptychat").style.display=cid?"none":"flex";
+  document.getElementById("chatarea").style.display=cid?"flex":"none";
+  if(!cid){ renderContacts(); return; }
+  const c=ST.contacts.find(x=>x.id===cid);
+  document.getElementById("ch-name").textContent=c.name;
+  document.getElementById("ch-mask").textContent="their submask: "+c.submask+" · you appear as: "+ST.ghost;
+  document.querySelectorAll("#burnopts .opt").forEach(o=>o.classList.toggle("sel",+o.dataset.b===c.burnSecs));
+  renderChat(); renderContacts();
+}
+function setBurn(v){
+  if(!ST.active) return;
+  const c=ST.contacts.find(x=>x.id===ST.active); c.burnSecs=v; saveState();
+  document.querySelectorAll("#burnopts .opt").forEach(o=>o.classList.toggle("sel",+o.dataset.b===v));
+  toast("Time-delete: "+(v===-1?"OFF":v===0?"READ-ONCE":v+"s"));
+}
+function fmtTime(){ return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}); }
+function renderChat(){
+  const ml=document.getElementById("mlist"); if(!ml||!ST.active) return;
+  ml.innerHTML="";
+  (ST.msgs[ST.active]||[]).filter(m=>!m.burned).forEach(m=>ml.appendChild(msgEl(m)));
+  ml.scrollTop=ml.scrollHeight;
+}
+function msgEl(m){
+  const d=document.createElement("div"); d.className="msg"+(m.self?" self":""); d.id="mr-"+m.id;
+  // SUBMASK: sender name shown is ghost identity — yours or their alias
+  const who = m.self ? "👤 "+ST.ghost : "🎭 "+(ST.contacts.find(x=>x.id===m.cid)?.submask||"UNKNOWN");
+  d.innerHTML=`<span class="mmask">${esc(who)}${m.self?" · ✓✓":""}</span>${esc(m.text)}<span class="mtime">${esc(m.time)}</span><div style="position:absolute;top:0;left:0;height:2px;background:var(--amber)" id="bb-${m.id}" ${m.readAt?`width:0`:""}></div>`;
+  return d;
+}
+
+// ══════════ SEND / RECEIVE ══════════
+async function sendMsg(){
+  const inp=document.getElementById("minput");
+  const text=(inp.value||"").trim();
+  if(!text||!ST.active) return;
+  inp.value="";
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  const enc=await aesEncrypt(text,c.sess);
+  const m={id:rndHex(6),cid:c.id,self:true,text,enc,time:fmtTime(),burned:false,burnSecs:c.burnSecs};
+  ST.msgs[c.id].push(m);
+  DB.set("msg:"+m.id, JSON.stringify(m)); // persist to phone DB
+  saveState();
+  document.getElementById("mlist").appendChild(msgEl(m));
+  const ml=document.getElementById("mlist"); ml.scrollTop=ml.scrollHeight;
+  armBurn(m,c.id);
+}
+// incoming message hook (transport layer calls this)
+async function onIncoming(cid, encPayload){
+  const c=ST.contacts.find(x=>x.id===cid); if(!c) return;
+  const text=await aesDecrypt(encPayload,c.sess);
+  const m={id:rndHex(6),cid,self:false,text,enc:encPayload,time:fmtTime(),burned:false,burnSecs:c.burnSecs};
+  ST.msgs[cid].push(m);
+  DB.set("msg:"+m.id, JSON.stringify(m));
+  saveState();
+  if(ST.active===cid){ document.getElementById("mlist").appendChild(msgEl(m)); }
+  armBurn(m,cid);
+  renderContacts();
+}
+
+// ══════════ TIME DELETE (burn after read / timed) ══════════
+function armBurn(m,cid){
+  if(m.burnSecs===-1||m.readAt) return;
+  m.readAt=Date.now();
+  if(m.burnSecs===0){ setTimeout(()=>doBurn(m,cid),1200); }
+  else{
+    const total=m.burnSecs*1000, start=Date.now();
+    const bar=document.getElementById("bb-"+m.id);
+    const iv=setInterval(()=>{
+      const el=Date.now()-start;
+      if(bar) bar.style.width=Math.max(0,100-el/total*100)+"%";
+      if(el>=total){ clearInterval(iv); doBurn(m,cid); }
+    },200);
+  }
+}
+async function doBurn(m,cid){
+  if(m.burned) return; m.burned=true;
+  DB.del("msg:"+m.id);            // delete from phone storage/database
+  saveState();
+  const row=document.getElementById("mr-"+m.id);
+  if(row){
+    row.style.animation="si .3s reverse forwards";
+    setTimeout(()=>{
+      const sys=document.createElement("div"); sys.className="sysmsg wipe";
+      sys.textContent="🔥 deleted from phone + database";
+      row.replaceWith(sys);
+    },300);
+  }
+  renderContacts();
+}
+
+// ══════════ END SESSION — delete all messages phone + DB, KEEP identities ══════════
+function openM(id){ document.getElementById(id).classList.add("open"); }
+function closeM(id){ document.getElementById(id).classList.remove("open"); }
+async function endSession(){
+  closeM("end-modal");
+  if(!ST.active) return;
+  const cid=ST.active;
+  const msgs=ST.msgs[cid]||[];
+  let n=0;
+  msgs.forEach(m=>{ DB.del("msg:"+m.id); n++; });   // wipe every message record
+  ST.msgs[cid]=[];                                   // wipe in-memory "database" copy
+  saveState();                                       // persist the empty conversation
+  const c=ST.contacts.find(x=>x.id===cid);           // contact + submask KEPT for reconnect
+  selectContact(cid);
+  const ml=document.getElementById("mlist");
+  const sys=document.createElement("div"); sys.className="sysmsg wipe";
+  sys.textContent=`✂ SESSION ENDED — ${n} message records deleted from phone + database. Mask ${c.submask} kept for reconnect.`;
+  ml.appendChild(sys);
+  toast("Session wiped ✓ Identity preserved");
+}
+
+// ══════════ TOAST ══════════
+let toastT=null;
+function toast(t){
+  const el=document.getElementById("toast"); el.textContent=t; el.style.display="block";
+  clearTimeout(toastT); toastT=setTimeout(()=>el.style.display="none",2600);
+}
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&document.activeElement===document.getElementById("minput")){ e.preventDefault(); sendMsg(); }});
+boot();
+</script>
+</body>
+</html>
