@@ -1,0 +1,234 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap');
+
+:root {
+  --g: #00ff41;
+  --gd: #00c032;
+  --gg: rgba(0,255,65,0.07);
+  --glow: rgba(0,255,65,0.35);
+  --red: #ff3131;
+  --amber: #ffaa00;
+  --blue: #00aaff;
+  --bg: #010801;
+  --bg2: #020d02;
+  --bg3: #031003;
+  --border: rgba(0,255,65,0.18);
+  --borderB: rgba(0,255,65,0.45);
+  --dim: rgba(0,255,65,0.42);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  height:100%;overflow:hidden;background:var(--bg);color:var(--g);
+  font-family:'Share Tech Mono',monospace;overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+
+/* CRT Scanlines & Screen Glow */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.85) 100%);
+}
+
+/* Flashlight / Screen Strobe Overlay */
+#flash-overlay {
+  position:fixed;inset:0;background:#ffffff;z-index:9990;opacity:0;pointer-events:none;transition:opacity 0.03s ease;
+}
+#flash-overlay.active { opacity:1; }
+
+/* ═══════ BOOT SCREEN ═══════ */
+#boot{
+  position:fixed;inset:0;background:var(--bg);z-index:10000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.boot-logo{
+  font-family:'Orbitron',sans-serif;font-size:clamp(28px,6vw,64px);font-weight:900;
+  letter-spacing:8px;color:var(--g);text-shadow:0 0 30px var(--glow),0 0 80px rgba(0,255,65,0.1);
+  animation:flicker 5s infinite;
+}
+.boot-tag{font-size:10px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;text-align:center;padding:0 16px;}
+.boot-log{width:min(560px,90vw);font-size:10px;color:var(--gd);line-height:1.9;margin-top:24px;max-height:200px;overflow:hidden;}
+.boot-log .bl{opacity:0;animation:fi 0.05s forwards;}
+.pbar{width:min(360px,80vw);height:2px;background:rgba(0,255,65,0.08);border:1px solid var(--border);margin-top:16px;overflow:hidden;}
+.pfill{height:100%;background:var(--g);box-shadow:0 0 10px var(--glow);width:0%;transition:width 0.08s linear;}
+.boot-v{font-size:9px;color:rgba(0,255,65,0.25);letter-spacing:3px;margin-top:6px;}
+
+@keyframes flicker{0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.6} 94%{opacity:1} 98%{opacity:0.4} 99%{opacity:1}}
+@keyframes fi{to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1} 50%{opacity:0.3}}
+
+/* ═══════ MAIN LAYOUT ═══════ */
+#app{display:none;height:100vh;flex-direction:column;}
+
+/* Top Bar */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;
+  flex-wrap:wrap;gap:6px;min-height:48px;
+}
+.tlogo{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;letter-spacing:5px;text-shadow:0 0 12px var(--glow);display:flex;align-items:center;gap:8px;}
+.tlogo span{font-size:9px;color:var(--dim);letter-spacing:2px;}
+.tstatus{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.badge{
+  display:flex;align-items:center;gap:5px;padding:3px 8px;
+  border:1px solid var(--border);background:var(--gg);font-size:10px;color:var(--dim);
+  border-radius:1px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:pulse 2s infinite;}
+.dot.amber{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.dot.red{background:var(--red);box-shadow:0 0 6px var(--red);}
+
+
+/* Navigation Tabs Bar */
+.nav-tabs {
+  display:flex;overflow-x:auto;background:var(--bg3);border-bottom:1px solid var(--border);
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;flex-shrink:0;
+}
+.nav-tabs::-webkit-scrollbar { display:none; }
+.tab-btn {
+  padding:10px 14px;border:none;background:none;color:var(--dim);
+  font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;
+  white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;
+  display:flex;align-items:center;gap:6px;
+}
+.tab-btn:hover, .tab-btn.active {
+  color:var(--g);border-bottom-color:var(--g);background:var(--gg);
+  text-shadow:0 0 10px var(--glow);
+}
+
+/* Content Area */
+.content-area {
+  flex:1;overflow-y:auto;position:relative;background:var(--bg);
+  scrollbar-width:thin;scrollbar-color:var(--border) var(--bg);
+}
+.tab-pane { display:none;padding:16px;max-width:1100px;margin:0 auto;height:100%; }
+.tab-pane.active { display:block; }
+
+/* Control Panels & Cards */
+.panel {
+  border:1px solid var(--border);background:rgba(0,255,65,0.02);
+  padding:16px;margin-bottom:16px;position:relative;
+}
+.panel-header {
+  font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;
+  color:var(--gd);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);padding-bottom:6px;
+}
+.panel-header span { font-size:10px;color:var(--dim); }
+
+/* Form Controls */
+.btn {
+  padding:8px 14px;border:1px solid var(--border);background:var(--gg);
+  color:var(--g);font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:2px;cursor:pointer;transition:all 0.2s;display:inline-flex;
+  align-items:center;justify-content:center;gap:6px;text-transform:uppercase;
+}
+.btn:hover { background:rgba(0,255,65,0.15);border-color:var(--g);box-shadow:0 0 10px var(--glow); }
+.btn:active { transform:scale(0.97); }
+.btn.danger { border-color:var(--red);color:var(--red);background:rgba(255,49,49,0.08); }
+.btn.danger:hover { background:rgba(255,49,49,0.2);box-shadow:0 0 10px var(--red); }
+.btn.amber { border-color:var(--amber);color:var(--amber);background:rgba(255,170,0,0.08); }
+.btn.amber:hover { background:rgba(255,170,0,0.2);box-shadow:0 0 10px var(--amber); }
+
+.input-box {
+  width:100%;padding:10px;background:rgba(0,0,0,0.6);border:1px solid var(--border);
+  color:var(--g);font-family:'Share Tech Mono',monospace;font-size:14px;
+  outline:none;transition:border 0.2s;
+}
+.input-box:focus { border-color:var(--g);box-shadow:0 0 8px var(--glow); }
+textarea.input-box { resize:vertical;min-height:80px; }
+
+.slider-group { display:flex;align-items:center;gap:12px;margin-bottom:10px; }
+.slider-group label { font-size:11px;color:var(--dim);min-width:110px; }
+.slider-group input[type="range"] {
+  flex:1;accent-color:var(--g);height:4px;background:var(--bg3);cursor:pointer;
+}
+.slider-val { font-size:11px;color:var(--g);min-width:45px;text-align:right; }
+
+
+/* Grid Layouts */
+.grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+.grid-3 { display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:14px; }
+@media (max-width: 700px) {
+  .grid-2 { grid-template-columns:1fr; }
+}
+
+/* Oscilloscope Canvas */
+.osc-canvas {
+  width:100%;height:70px;background:#000;border:1px solid var(--border);
+  display:block;margin-top:8px;
+}
+
+/* Telegraph Key Touch Pad */
+.key-container {
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px;
+  background:rgba(0,0,0,0.4);border:1px solid var(--border);
+}
+.tap-key {
+  width:100%;max-width:340px;height:140px;border:2px solid var(--borderB);
+  background:radial-gradient(circle, rgba(0,255,65,0.1) 0%, rgba(0,0,0,0.8) 100%);
+  border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;touch-action:none;transition:all 0.05s;
+  box-shadow:0 0 20px rgba(0,255,65,0.05);
+}
+.tap-key.active {
+  background:rgba(0,255,65,0.3);border-color:var(--g);
+  box-shadow:0 0 35px var(--glow);transform:scale(0.98);
+}
+.tap-key-title { font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;letter-spacing:4px; }
+.tap-key-sub { font-size:10px;color:var(--dim);margin-top:6px;letter-spacing:2px; }
+
+/* Dual Paddle Keys */
+.paddle-container { display:flex;gap:12px;width:100%;max-width:480px; }
+.paddle-btn {
+  flex:1;height:110px;border:2px solid var(--border);background:rgba(0,255,65,0.05);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;touch-action:none;font-family:'Orbitron',sans-serif;
+  font-size:14px;font-weight:700;letter-spacing:2px;transition:all 0.05s;
+}
+.paddle-btn.active { background:rgba(0,255,65,0.25);border-color:var(--g);box-shadow:0 0 25px var(--glow); }
+
+/* Morse Code Displays */
+.morse-code-display {
+  font-family:'VT323',monospace;font-size:26px;color:var(--g);letter-spacing:4px;
+  background:#000;padding:12px;border:1px solid var(--border);word-break:break-all;
+  min-height:50px;
+}
+
+/* Quiz & Training Cards */
+.quiz-card {
+  text-align:center;padding:24px;border:1px solid var(--border);background:rgba(0,255,65,0.02);
+}
+.quiz-symbol {
+  font-family:'Orbitron',sans-serif;font-size:64px;font-weight:900;color:var(--g);
+  text-shadow:0 0 20px var(--glow);margin:16px 0;
+}
+.quiz-options { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px; }
+
+/* Library Grid Cards */
+.lib-card {
+  border:1px solid var(--border);padding:10px;background:rgba(0,255,65,0.02);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.lib-char { font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--g); }
+.lib-code { font-family:'VT323',monospace;font-size:20px;color:var(--amber);letter-spacing:2px; }
+.lib-phonetic { font-size:10px;color:var(--dim); }
+
+/* Toast Notification */
+.toast {
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--bg2);border:1px solid var(--g);color:var(--g);
+  padding:10px 20px;font-size:11px;letter-spacing:2px;z-index:9995;
+  box-shadow:0 0 20px var(--glow);display:none;
+}
+.toast.danger { border-color:var(--red);color:var(--red);box-shadow:0 0 20px rgba(255,49,49,0.3); }
+
+/* PWA Install Banner */
+.install-bar {
+  position:fixed;bottom:0;inset-x:0;background:var(--bg2);border-top:1px solid var(--g);
+  padding:12px;z-index:9980;display:none;align-items:center;justify-content:space-between;
+}
+.install-bar.show { display:flex; }

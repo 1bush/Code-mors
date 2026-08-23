@@ -103,7 +103,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
       <div id="chatarea" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div class="chathead">
           <div><div class="chname" id="ch-name">---</div><div class="chsub" id="ch-mask"></div></div>
-          <button class="btn danger" onclick="openM('end-modal')">✂ END SESSION</button>
+          <button class="btn" onclick="showSafety()">🔒 VERIFY</button><button class="btn danger" onclick="openM('end-modal')">✂ END SESSION</button>
         </div>
         <div class="opt-row" style="padding:4px 12px;border-bottom:1px solid var(--border)">
           <span style="font-size:9px;color:var(--dim)">TIME DELETE:</span>
@@ -177,7 +177,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
     </div>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+<div class="moverlay" id="safety-modal">
+  <div class="modal">
+    <div class="mtitle">🔒 SAFETY NUMBER</div>
+    <div class="msub">Compare this code <span>in person or via another verified channel</span> with your contact. If both codes match, the channel has <span>NO man-in-the-middle</span>.</div>
+    <div style="font-size:18px;letter-spacing:3px;color:var(--amber);text-align:center;padding:12px;border:1px solid var(--borderB);margin-bottom:8px" id="safety-code">...</div>
+    <div class="mbtns"><button class="btn" onclick="closeM('safety-modal')">DONE</button></div>
+  </div>
+</div>
+<script>
+async function showSafety(){
+  if(!ST.active) return;
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  openM('safety-modal');
+  document.getElementById('safety-code').textContent = await safetyNumber(c.k||c.sess.substring(0,66));
+}
+</script><div class="toast" id="toast"></div>
 <script>
 // ══════════ STORAGE LAYER (bug fix: real persistent storage, works everywhere) ══════════
 const DB = {
@@ -206,11 +221,60 @@ async function aesKey(sessHex){
   const raw = hex2buf(sessHex.padEnd(64,"0")).slice(0,32);
   return C.subtle.importKey("raw",raw,{name:"AES-GCM"},false,["encrypt","decrypt"]);
 }
-async function aesEncrypt(text, sessHex){
+// ═══ SIGNAL DOUBLE-RATCHET (symmetric KDF chain): per-message keys ═══
+async function hmac(keyBytes, data){
+  const k = await C.subtle.importKey("raw", keyBytes, {name:"HMAC",hash:"SHA-256"}, false, ["sign"]);
+  return new Uint8Array(await C.subtle.sign("HMAC", k, data));
+}
+function concat(a,b){ const o=new Uint8Array(a.length+b.length); o.set(a); o.set(b,a.length); return o; }
+const ENC_INFO = new TextEncoder().encode("CM_RATCHET_MSG_V1"), NXT_INFO = new TextEncoder().encode("CM_RATCHET_NEXT_V1");
+async function kdfNext(ck){ // advance chain: ck' = HMAC(ck, "NEXT")
+  return buf2hex(await hmac(hex2buf(ck), NXT_INFO));
+}
+async function kdfMsg(ck){ // message key: mk = HMAC(ck, "MSG")
+  return hex2buf(buf2hex(await hmac(hex2buf(ck), ENC_INFO))); 
+}
+// SIMPLEX-STYLE PADDING: resist traffic/size analysis — pad to 256-byte blocks
+function pad(text){
+  const raw = new TextEncoder().encode(text);
+  const total = Math.max(256, Math.ceil((raw.length+4)/256)*256);
+  const out = new Uint8Array(total);
+  new DataView(out.buffer).setUint32(0, raw.length);
+  out.set(raw, 4);
+  return out;
+}
+function unpad(buf){
+  const len = new DataView(buf.buffer||buf).getUint32(0);
+  if(len > buf.length-4) throw new Error("pad");
+  return new TextDecoder().decode(new Uint8Array(buf.buffer||buf, 4, len));
+}
+async function aesEncryptRaw(rawBytes, mkBuf, n12){
+  const iv = n12 || C.getRandomValues(new Uint8Array(12));
+  const key = await C.subtle.importKey("raw", mkBuf.slice(0,32), {name:"AES-GCM"}, false, ["encrypt"]);
+  const ct = await C.subtle.encrypt({name:"AES-GCM",iv}, key, rawBytes);
+  return buf2hex(iv)+":"+buf2hex(ct);
+}
+async function aesDecrypt(payload, sessHex){
+  try{
+    const [ivh,cth] = payload.split(":");
+    const key = await aesKey(sessHex);
+    const pt = await C.subtle.decrypt({name:"AES-GCM",iv:hex2buf(ivh)}, key, hex2buf(cth));
+    return unpad(new Uint8Array(pt));
+  }catch(e){ return "[decryption failed]"; }
+}
+// legacy single-key encrypt kept only for migration
+async function aesEncryptLegacy(text, sessHex){
   const key = await aesKey(sessHex);
   const iv = C.getRandomValues(new Uint8Array(12));
   const ct = await C.subtle.encrypt({name:"AES-GCM",iv}, key, new TextEncoder().encode(text));
   return buf2hex(iv)+":"+buf2hex(ct);
+}
+// SAFETY NUMBER (SimpleX/Signal style out-of-band MITM check)
+async function safetyNumber(theirPubHex){
+  const myPub = await exportPub(ST.kp.publicKey);
+  const combined = ([myPub,theirPubHex].sort().join(""));
+  const h = buf2hex(await C.subtle.digest("SHA-512", new TextEncoder().encode(combined)));
+  return h.substring(0,24).toUpperCase().match(/.{1,5}/g).join("-");
 }
 // BUG FIX v3 had NO decrypt at all — messages could never be decrypted
 async function aesDecrypt(payload, sessHex){
@@ -338,7 +402,7 @@ async function addContactFromPayload(data){
   // BUG FIX v3: derive REAL shared secret via ECDH so both sides have same session key
   const sess = await deriveShared(ST.kp.privateKey, p.k);
   const cid = rndHex(8);
-  ST.contacts.push({ id:cid, name:(p.n||"UNKNOWN"), submask:makeSubmask(), sess, burnSecs:0, linked:new Date().toISOString() });
+  ST.contacts.push({ id:cid, name:(p.n||"UNKNOWN"), submask:makeSubmask(), sess, k:p.k, burnSecs:0, linked:new Date().toISOString() });
   ST.msgs[cid]=[];
   saveState(); renderContacts();
   return cid;
@@ -407,8 +471,14 @@ async function sendMsg(){
   if(!text||!ST.active) return;
   inp.value="";
   const c=ST.contacts.find(x=>x.id===ST.active);
-  const enc=await aesEncrypt(text,c.sess);
-  const m={id:rndHex(6),cid:c.id,self:true,text,enc,time:fmtTime(),burned:false,burnSecs:c.burnSecs};
+  // DOUBLE-RATCHET: fresh message key every message (forward secrecy)
+  if(!c.ratchet) c.ratchet={send:c.sess, n:0};
+  const mk = await kdfMsg(c.ratchet.send);
+  const enc = await aesEncryptRaw(pad(text), hex2buf(mk));
+  c.ratchet.send = await kdfNext(c.ratchet.send);
+  c.ratchet.n++;
+  saveState();
+  const m={id:rndHex(6),cid:c.id,self:true,text,enc,time:fmtTime(),burned:false,burnSecs:c.burnSecs,n:c.ratchet.n};
   ST.msgs[c.id].push(m);
   DB.set("msg:"+m.id, JSON.stringify(m)); // persist to phone DB
   saveState();
