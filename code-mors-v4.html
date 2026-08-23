@@ -115,7 +115,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
         <div class="mlist" id="mlist"></div>
         <div class="composer">
           <textarea id="minput" rows="1" placeholder="Type encrypted message..."></textarea>
-          <button class="btn" onclick="sendMsg()">SEND ▸</button>
+          <button class="btn" <input type="file" id="photopick" accept="image/*" style="display:none" onchange="pickPhoto(this)"><button class="btn" onclick="document.getElementById('photopick').click()">??</button><button class="btn" onclick="sendMsg()">SEND ▸</button>
         </div>
       </div>
     </div>
@@ -449,19 +449,32 @@ function setBurn(v){
   document.querySelectorAll("#burnopts .opt").forEach(o=>o.classList.toggle("sel",+o.dataset.b===v));
   toast("Time-delete: "+(v===-1?"OFF":v===0?"READ-ONCE":v+"s"));
 }
+function msgEl(m){
+  const d=document.createElement("div"); d.className="msg"+(m.self?" self":""); d.id="mr-"+m.id;
+  const who = m.self ? ST.ghost : (ST.contacts.find(x=>x.id===m.cid)?.submask||"UNKNOWN");
+  let body;
+  if(m.type==="photo"){
+    body='<img data-pid="'+m.id+'" style="max-width:100%;border-radius:2px;display:block" alt="decrypting...">';
+  } else { body=esc(m.text); }
+  d.innerHTML='<span class="mmask">'+esc(who)+(m.self?" Â· âœ“âœ“":"")+'</span>'+body+'<span class="mtime">'+esc(m.time)+'</span>';
+  return d;
+}
+async function hydratePhotos(){
+  if(!ST.active) return;
+  (ST.msgs[ST.active]||[]).forEach(async m=>{
+    if(m.type!=="photo"||m.burned) return;
+    const img=document.querySelector('img[data-pid="'+m.id+'"]');
+    if(!img) return;
+    const url=await decryptPhoto(m);
+    if(url){ img.src=url; } else { img.alt="photo decrypt failed"; }
+  });
+}
 function fmtTime(){ return new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}); }
 function renderChat(){
   const ml=document.getElementById("mlist"); if(!ml||!ST.active) return;
   ml.innerHTML="";
-  (ST.msgs[ST.active]||[]).filter(m=>!m.burned).forEach(m=>ml.appendChild(msgEl(m)));
+  (ST.msgs[ST.active]||[]).filter(m=>!m.burned).forEach(m=>ml.appendChild(msgEl(m))); hydratePhotos();
   ml.scrollTop=ml.scrollHeight;
-}
-function msgEl(m){
-  const d=document.createElement("div"); d.className="msg"+(m.self?" self":""); d.id="mr-"+m.id;
-  // SUBMASK: sender name shown is ghost identity — yours or their alias
-  const who = m.self ? "👤 "+ST.ghost : "🎭 "+(ST.contacts.find(x=>x.id===m.cid)?.submask||"UNKNOWN");
-  d.innerHTML=`<span class="mmask">${esc(who)}${m.self?" · ✓✓":""}</span>${esc(m.text)}<span class="mtime">${esc(m.time)}</span><div style="position:absolute;top:0;left:0;height:2px;background:var(--amber)" id="bb-${m.id}" ${m.readAt?`width:0`:""}></div>`;
-  return d;
 }
 
 // ══════════ SEND / RECEIVE ══════════
@@ -556,6 +569,61 @@ let toastT=null;
 function toast(t){
   const el=document.getElementById("toast"); el.textContent=t; el.style.display="block";
   clearTimeout(toastT); toastT=setTimeout(()=>el.style.display="none",2600);
+}
+// === XFTP-STYLE ENCRYPTED PHOTOS (SimpleX-inspired) ===
+function b64enc(buf){ const u=new Uint8Array(buf); let s=''; for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); }
+function b64dec(s){ const bin=atob(s); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i); return u; }
+async function photoKey(sessHex, n){
+  const ikm = hex2buf(sessHex);
+  const salt = new TextEncoder().encode('CM_XFTP_PHOTO_V1:'+n);
+  const k = await C.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
+  const bits = await C.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:new Uint8Array(0)}, k, 256);
+  return new Uint8Array(bits);
+}
+async function pickPhoto(input){
+  if(!input.files || !input.files[0] || !ST.active) return;
+  const file=input.files[0]; input.value='';
+  const img=new Image();
+  img.onload=async()=>{
+    // EXIF stripping via canvas re-draw (anti-trace)
+    const max=1280, sc=Math.min(1,max/Math.max(img.width,img.height));
+    const cv=document.createElement('canvas'); cv.width=img.width*sc; cv.height=img.height*sc;
+    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+    await sendPhoto(cv.toDataURL('image/jpeg',0.85));
+  };
+  img.src=URL.createObjectURL(file);
+}
+async function sendPhoto(dataUrl){
+  const c=ST.contacts.find(x=>x.id===ST.active); if(!c) return;
+  const raw=new TextEncoder().encode(dataUrl);
+  const total=Math.max(4096, Math.ceil((raw.length+4)/4096)*4096);
+  const padded=new Uint8Array(total);
+  new DataView(padded.buffer).setUint32(0, raw.length);
+  padded.set(raw,4);
+  C.getRandomValues(padded.subarray(4+raw.length));   // random padding
+  if(!c.ratchet) c.ratchet={send:c.sess,n:0};
+  const n=(c.ratchet.n||0)+1000000;                   // photo key namespace
+  const mk=await photoKey(c.sess,n);
+  const iv=C.getRandomValues(new Uint8Array(12));
+  const key=await C.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['encrypt']);
+  const ct=await C.subtle.encrypt({name:'AES-GCM',iv},key,padded);
+  const payload=b64enc(iv)+'.'+b64enc(ct);
+  c.ratchet.send=await kdfNext(c.ratchet.send); c.ratchet.n++; saveState();
+  const m={id:rndHex(6),cid:c.id,self:true,type:'photo',payload,time:fmtTime(),burned:false,burnSecs:c.burnSecs,n:n};
+  ST.msgs[c.id].push(m);
+  DB.set('msg:'+m.id, JSON.stringify(m)); saveState();
+  renderChat(); armBurn(m,c.id);
+  toast('Photo encrypted & sent');
+}
+async function decryptPhoto(m){
+  try{
+    const parts=m.payload.split('.');
+    const mk=await photoKey(ST.contacts.find(x=>x.id===m.cid).sess,m.n||1000000);
+    const key=await C.subtle.importKey('raw',mk,{name:'AES-GCM'},false,['decrypt']);
+    const pt=await C.subtle.decrypt({name:'AES-GCM',iv:b64dec(parts[0])},key,b64dec(parts[1]));
+    const len=new DataView(pt.buffer).getUint32(0);
+    return new TextDecoder().decode(new Uint8Array(pt.buffer,4,len));
+  }catch(e){ return null; }
 }
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&document.activeElement===document.getElementById("minput")){ e.preventDefault(); sendMsg(); }});
 boot();
