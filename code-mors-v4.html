@@ -103,7 +103,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
       <div id="chatarea" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
         <div class="chathead">
           <div><div class="chname" id="ch-name">---</div><div class="chsub" id="ch-mask"></div></div>
-          <button class="btn" onclick="showSafety()">🔒 VERIFY</button><button class="btn danger" onclick="openM('end-modal')">✂ END SESSION</button>
+          <button class="btn" onclick="opticalSend()">OPTICAL SEND</button><button class="btn" onclick="showSafety()">VERIFY</button><button class="btn danger" onclick="openM('end-modal')">✂ END SESSION</button>
         </div>
         <div class="opt-row" style="padding:4px 12px;border-bottom:1px solid var(--border)">
           <span style="font-size:9px;color:var(--dim)">TIME DELETE:</span>
@@ -135,7 +135,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
     <div id="scan-area" style="display:none">
       <video id="scan-video" playsinline autoplay muted></video>
       <canvas id="scan-canvas" style="display:none"></canvas>
-      <div class="msub" id="scan-status">Starting camera...</div>
+      <button class="btn" onclick="otToggleReceive()" id="ot-btn">OPTICAL RECEIVE: OFF</button><div class="msub" id="scan-status">Starting camera...</div>
     </div>
     <div class="mbtns"><button class="btn" onclick="closeQrModal()">CLOSE</button></div>
   </div>
@@ -383,7 +383,7 @@ function tickScan(){
   ctx.drawImage(video,0,0);
   const img=ctx.getImageData(0,0,cv.width,cv.height);
   const code=(window.jsQR||jsQR)(img.data,img.width,img.height,{inversionAttempts:"dontInvert"});
-  if(code && code.data){
+  if(otRecvMode && code && code.data){ if(otHandleFrame(code.data)) return; } else if(code && code.data){
     stopScan();
     handleLinkData(code.data);
     return;
@@ -624,6 +624,77 @@ async function decryptPhoto(m){
     const len=new DataView(pt.buffer).getUint32(0);
     return new TextDecoder().decode(new Uint8Array(pt.buffer,4,len));
   }catch(e){ return null; }
+}
+// === DECIMEN OPTICAL TRANSFER (animated QR, screen-to-camera, fully offline) ===
+const OT = { sending:false };
+let otRecvMode=false, otRecvData={};
+function otChunkPayload(full, idx, n, id){
+  return 'CMOT'+JSON.stringify({id:id.slice(0,6),i:idx,n:n,d:full.substring(idx*400,(idx+1)*400)});
+}
+async function opticalSend(){
+  if(!ST.active){ toast('Open a chat first'); return; }
+  const msgs=(ST.msgs[ST.active]||[]).filter(m=>m.type==='photo'&&!m.burned);
+  const m=msgs[msgs.length-1];
+  if(!m){ toast('No encrypted photo in this chat'); return; }
+  const full=m.payload;
+  const n=Math.ceil(full.length/400);
+  const id=m.id;
+  const ov=document.createElement('div');
+  ov.id='ot-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:#000;z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;text-align:center';
+  ov.innerHTML='<div style="color:#00ff41;font-size:12px;letter-spacing:2px">DECIMEN OPTICAL TRANSFER - point other camera here</div><div id="ot-qr"></div><div style="color:#00ff41;font-size:11px" id="ot-prog"></div><button class="btn danger" onclick="document.getElementById(\'ot-overlay\').remove();OT.sending=false">STOP</button>';
+  document.body.appendChild(ov);
+  OT.sending=true;
+  let i=0;
+  const box=document.getElementById('ot-qr');
+  const prog=document.getElementById('ot-prog');
+  const timer=setInterval(()=>{
+    if(!OT.sending||!document.getElementById('ot-overlay')){ clearInterval(timer); return; }
+    try{
+      const qr=qrcode(0,'L');
+      qr.addData(otChunkPayload(full,i,n,id));
+      qr.make();
+      box.innerHTML=qr.createImgTag(5,2);
+      prog.textContent='frame '+(i+1)+' / '+n;
+    }catch(e){}
+    i=(i+1)%n;
+  },300);
+}
+function otToggleReceive(){
+  otRecvMode=!otRecvMode; otRecvData={};
+  const b=document.getElementById('ot-btn');
+  if(b) b.textContent=otRecvMode?'OPTICAL RECEIVE: ON':'OPTICAL RECEIVE: OFF';
+  toast(otRecvMode?'OPTICAL RECEIVE ON - scan sender screen':'OPTICAL RECEIVE OFF');
+  return otRecvMode;
+}
+function otHandleFrame(data){
+  if(data.indexOf('CMOT')!==0) return false;
+  try{
+    const j=JSON.parse(data.substring(4));
+    const key=j.id+':'+j.n;
+    if(!otRecvData[key]) otRecvData[key]={got:{},parts:{}};
+    const s=otRecvData[key];
+    if(j.n!==undefined){ s.total=j.n; }
+    if(!s.got[j.i]){ s.got[j.i]=true; s.parts[j.i]=j.d; }
+    toast('optical frames: '+Object.keys(s.got).length+' / '+j.n);
+    if(Object.keys(s.got).length===j.n){
+      let full='';
+      for(let k=0;k<j.n;k++) full+=s.parts[k];
+      delete otRecvData[key];
+      otRecvMode=false;
+      const b=document.getElementById('ot-btn'); if(b) b.textContent='OPTICAL RECEIVE: OFF';
+      (async()=>{
+        const cid=(ST.contacts[0]||{}).id; if(!cid){ toast('Link a contact first'); return; }
+        const c=ST.contacts.find(x=>x.id===cid);
+        const m={id:rndHex(6),cid,self:false,type:'photo',payload:full,time:fmtTime(),burned:false,burnSecs:c.burnSecs};
+        ST.msgs[cid].push(m);
+        DB.set('msg:'+m.id, JSON.stringify(m)); saveState();
+        selectContact(cid); armBurn(m,cid); renderContacts();
+        toast('Optical transfer COMPLETE');
+      })();
+    }
+    return true;
+  }catch(e){ return false; }
 }
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&document.activeElement===document.getElementById("minput")){ e.preventDefault(); sendMsg(); }});
 boot();
