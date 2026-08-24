@@ -1,0 +1,27 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.codemors.nativeapp'
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.codemors.nativeapp"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0-native"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+    constraints {
+        implementation('org.jetbrains.kotlin:kotlin-stdlib:1.8.22') { because 'align stdlib' }
+        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22') { because 'align stdlib jdk8' }
+    }
+}
