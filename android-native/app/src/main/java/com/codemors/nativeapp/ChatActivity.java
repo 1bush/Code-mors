@@ -71,6 +71,13 @@ public class ChatActivity extends AppCompatActivity {
         root.addView(composer);
         setContentView(root);
         renderMsgs();
+        // CM-HARD #1: continuous decoy traffic while a chat is open
+        GhostNoise.start();
+    }
+
+    @Override protected void onDestroy() {
+        super.onDestroy();
+        GhostNoise.stop();
     }
 
     private TextView opt(String label, int val) {

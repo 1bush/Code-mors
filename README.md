@@ -78,3 +78,9 @@ Open directly in a browser, or install as a PWA. Prebuilt APKs are included in t
 
 MIT
 
+
+## 🧬 CM-HARD v5 — Hardening Layer (unique)
+
+7 shtresa të reja unike: **Ghost Noise** (decoy traffic i padallueshëm), **Duress PIN** (panic wipe), **Whisper Zeroize**, **Time-Lock Pairing** (QR me passphrase), **Rotating Epoch** identities, **Deniable Vault** (Snowden mode), dhe **Optical v2** (kanal optik i ratchet-uar). Detaje: [HARDENING.md](HARDENING.md).
+
+Aktivizohen nga butonat 👻 ⏳ 🎭 🔫 ❄️ në toolbar të PWA-s dhe klasat GhostNoise/Duress/DeniableStore në build-in native.

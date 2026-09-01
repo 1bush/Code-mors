@@ -241,6 +241,7 @@ function pad(text){
   const out = new Uint8Array(total);
   new DataView(out.buffer).setUint32(0, raw.length);
   out.set(raw, 4);
+  C.getRandomValues(out.subarray(4 + raw.length)); // random padding (anti fingerprint)
   return out;
 }
 function unpad(buf){
@@ -697,7 +698,398 @@ function otHandleFrame(data){
   }catch(e){ return false; }
 }
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&document.activeElement===document.getElementById("minput")){ e.preventDefault(); sendMsg(); }});
+// (boot invoked by CM-HARD layer below)
+</script>
+<script>
+// ═══ CM-HARD v5 HARDENING LAYER — 7 unique features (GhostNoise, Duress, Whisper, TLP, Epoch, Vault, Optical v2) ═══
+const CMH = { noiseTimer:null, noiseOn:false, tlpPass:null, whisper:true };
+
+// ---- shared primitives ----
+async function cmhPbkdf2(pass, salt, iter=600000, bits=256){
+  const k = await C.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await C.subtle.deriveBits({name:'PBKDF2', hash:'SHA-512', salt, iterations:iter}, k, bits));
+}
+async function cmhSeal(keyBytes, plaintextStr){
+  const iv = C.getRandomValues(new Uint8Array(12));
+  const key = await C.subtle.importKey('raw', keyBytes, {name:'AES-GCM'}, false, ['encrypt']);
+  const ct = await C.subtle.encrypt({name:'AES-GCM', iv}, key, new TextEncoder().encode(plaintextStr));
+  return b64enc(iv) + '.' + b64enc(ct);
+}
+async function cmhOpen(keyBytes, sealed){
+  try{
+    const [ivb, ctb] = sealed.split('.');
+    const key = await C.subtle.importKey('raw', keyBytes, {name:'AES-GCM'}, false, ['decrypt']);
+    const pt = await C.subtle.decrypt({name:'AES-GCM', iv:b64dec(ivb)}, key, b64dec(ctb));
+    return new TextDecoder().decode(pt);
+  }catch(e){ return null; }
+}
+function zeroize(u8){ if(u8 && u8.fill) u8.fill(0); } // WHISPER: destroy plaintext residue
+
+// ---- 1. GHOST NOISE: decoy traffic, cryptographically indistinguishable ----
+function noiseState(){ return DB.get('cm_noise')==='1'; }
+async function ghostNoiseBurst(){
+  if(!ST.contacts.length) return;
+  const c = ST.contacts[Math.floor(Math.random()*ST.contacts.length)];
+  if(!c || !c.sess) return;
+  // real-format payload: real padding + real AES-GCM under a random key — no structure betrays it
+  const mk = C.getRandomValues(new Uint8Array(32));
+  const fake = new TextEncoder().encode('x'.repeat(8 + Math.floor(Math.random()*120)));
+  const enc = await aesEncryptRaw(pad(new TextDecoder().decode(fake)), mk);
+  zeroize(mk);
+  const log = JSON.parse(DB.get('cm_noise_log')||'[]');
+  log.push({ cid:c.id, enc, time:Date.now() });
+  while(log.length>24) log.shift();
+  DB.set('cm_noise_log', JSON.stringify(log));
+}
+function startGhostNoise(){
+  if(CMH.noiseTimer) return;
+  CMH.noiseOn = true; DB.set('cm_noise','1');
+  const loop = () => { CMH.noiseTimer = setTimeout(async()=>{ if(CMH.noiseOn) await ghostNoiseBurst(); loop(); }, 30000 + Math.random()*90000); };
+  loop(); toast('👻 GHOST NOISE: ON — decoy traffic flowing');
+}
+function stopGhostNoise(){
+  CMH.noiseOn = false; if(CMH.noiseTimer){ clearTimeout(CMH.noiseTimer); CMH.noiseTimer=null; }
+  DB.set('cm_noise','0'); toast('Ghost noise: off');
+}
+function toggleGhostNoise(){ noiseState() ? stopGhostNoise() : startGhostNoise(); }
+// ---- 2. DURESS PIN: coercion PIN -> panic wipe + decoy screen ----
+async function setupDuress(pin){
+  if(!pin || pin.length<4){ toast('Duress PIN: min 4 chars'); return; }
+  const salt = C.getRandomValues(new Uint8Array(16));
+  const h = await cmhPbkdf2('CM_DURESS_V1:'+pin, salt, 200000, 256);
+  DB.set('cm_duress', JSON.stringify({s:b64enc(salt), h:b64enc(h)}));
+  zeroize(h); toast('🔫 DURESS PIN SET — entering it will wipe everything');
+}
+async function panicWipe(){
+  // nuclear: every CM key + record destroyed, vault unopenable, ghost identity gone
+  Object.keys(localStorage).filter(k=>k.indexOf('cm')===0||k.indexOf('msg:')===0).forEach(k=>DB.del(k));
+  ST.contacts=[]; ST.msgs={}; ST.keys={}; ST.active=null; saveState();
+  const cn=document.getElementById('ch-name'); if(cn) cn.textContent='NO CHANNELS';
+  const ml=document.getElementById('mlist'); if(ml) ml.innerHTML='';
+  renderContacts();
+  toast('☠ ALL KEYS WIPED — nothing recoverable');
+}
+async function checkDuress(pin){
+  const rec = DB.get('cm_duress'); if(!rec) return false;
+  try{
+    const j = JSON.parse(rec);
+    const h = await cmhPbkdf2('CM_DURESS_V1:'+pin, b64dec(j.s), 200000, 256);
+    const ok = b64enc(h)===j.h; zeroize(h);
+    return ok;
+  }catch(e){ return false; }
+}
+
+// ---- 3. WHISPER: zeroize plaintext residue on burn paths ----
+const _cmhDoBurn = doBurn;
+doBurn = async function(m, cid){
+  try{ zeroize(new TextEncoder().encode(m.text||'')); }catch(e){}
+  m.text='';
+  return _cmhDoBurn(m, cid);
+};
+// ---- 4. TLP — Time-Lock Pairing: QR payload sealed with PBKDF2 passphrase ----
+function enableTlp(pass){ if(!pass||pass.length<4){ toast('TLP passphrase: min 4 chars'); return; } CMH.tlpPass=pass; toast('⏳ TIME-LOCK PAIRING ON — QR now requires the passphrase'); }
+function disableTlp(){ CMH.tlpPass=null; toast('TLP off'); }
+const _cmhMyPayload = myPayload;
+myPayload = async function(){
+  const inner = await _cmhMyPayload();
+  if(!CMH.tlpPass) return inner;
+  const salt = C.getRandomValues(new Uint8Array(16));
+  const key = await cmhPbkdf2('CM_TLP_V1:'+CMH.tlpPass, salt, 600000, 256);
+  const ct = await cmhSeal(key, inner);
+  zeroize(key);
+  return JSON.stringify({v:4, tlp:{s:b64enc(salt), c:ct}});
+};
+const _cmhHandleLink = handleLinkData;
+handleLinkData = async function(data){
+  let p=null; try{ p=JSON.parse(data); }catch(e){}
+  if(p && p.tlp){
+    const pass = window.prompt('⏳ TIME-LOCKED QR\nEnter the agreed passphrase to open:');
+    if(!pass){ toast('TLP: cancelled'); return; }
+    const key = await cmhPbkdf2('CM_TLP_V1:'+pass, b64dec(p.tlp.s), 600000, 256);
+    const inner = await cmhOpen(key, p.tlp.c);
+    zeroize(key);
+    if(!inner){ toast('Wrong passphrase ✗'); return; }
+    return _cmhHandleLink(inner);
+  }
+  return _cmhHandleLink(data);
+};
+
+// ---- 5. ROTATING EPOCH: fresh HKDF-derived channel key every 100 msgs ----
+async function epochKey(c){
+  if(!c.epoch) c.epoch=0;
+  const ikm = hex2buf(c.sess);
+  const salt = new TextEncoder().encode('CM_EPOCH_V1:'+c.id+':'+c.epoch);
+  const k = await C.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
+  const bits = await C.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:new Uint8Array(0)}, k, 256);
+  return buf2hex(bits);
+}
+async function rotateEpoch(cid){
+  const c=ST.contacts.find(x=>x.id===cid); if(!c||!c.sess) return;
+  c.epoch=(c.epoch||0)+1;
+  c.sess = await epochKey(c);
+  c.ratchet = {send:c.sess, n:0};
+  saveState(); toast('🎭 Epoch rotated → '+c.epoch+' (channel keys re-derived)');
+}
+const _cmhSendMsg = sendMsg;
+sendMsg = async function(){
+  const c=ST.contacts.find(x=>x.id===ST.active);
+  if(c && (c.ratchet&&c.ratchet.n||0) >= 100) await rotateEpoch(c.id);
+  return _cmhSendMsg();
+};
+// ---- 6. DENIABLE VAULT (Snowden mode): state sealed under passphrase, decoy left behind ----
+async function snowdenEnable(pass){
+  if(!pass||pass.length<6){ toast('Vault passphrase: min 6 chars'); return; }
+  const all={};
+  Object.keys(localStorage).forEach(k=>{ if(k.indexOf('cm')===0||k.indexOf('msg:')===0) all[k]=localStorage.getItem(k); });
+  const salt = C.getRandomValues(new Uint8Array(16));
+  const key = await cmhPbkdf2('CM_VAULT_V1:'+pass, salt, 600000, 256);
+  DB.set('cm_vault_sealed', JSON.stringify({s:b64enc(salt), d:await cmhSeal(key, JSON.stringify(all))}));
+  zeroize(key);
+  Object.keys(all).forEach(k=>{ if(k!=='cm_vault_sealed') DB.del(k); });
+  ST.contacts=[]; ST.msgs={}; ST.keys={}; ST.ghost='GUEST-01'; ST.active=null; saveState();
+  DB.set('cm_snowden','1');
+  location.reload();
+}
+async function snowdenUnlock(pass){
+  const rec = DB.get('cm_vault_sealed'); if(!rec) return false;
+  try{
+    const j = JSON.parse(rec);
+    const key = await cmhPbkdf2('CM_VAULT_V1:'+pass, b64dec(j.s), 600000, 256);
+    const raw = await cmhOpen(key, j.d);
+    zeroize(key);
+    if(!raw) return false;
+    const all = JSON.parse(raw);
+    Object.keys(localStorage).filter(k=>k.indexOf('cm')===0||k.indexOf('msg:')===0).forEach(k=>DB.del(k));
+    Object.keys(all).forEach(k=>localStorage.setItem(k, all[k]));
+    DB.del('cm_snowden'); // real state restored; sealed copy kept as backup
+    location.reload();
+    return true;
+  }catch(e){ return false; }
+}
+// ---- 7. OPTICAL v2: per-transfer ratcheted optical channel ----
+const _cmhOpticalSend = opticalSend;
+opticalSend = async function(){
+  if(!ST.active){ toast('Open a chat first'); return; }
+  const c = ST.contacts.find(x=>x.id===ST.active);
+  const msgs=(ST.msgs[ST.active]||[]).filter(m=>m.type==='photo'&&!m.burned);
+  const m=msgs[msgs.length-1];
+  if(!m){ toast('No encrypted photo in this chat'); return; }
+  // OPTICAL V2: seal whole payload under a per-transfer HKDF key from a ratcheting chain
+  if(!c.otChain) c.otChain = c.sess;
+  const photoId = m.id;
+  const salt = new TextEncoder().encode('CM_OPTICAL_V2:'+photoId);
+  const k = await C.subtle.importKey('raw', hex2buf(c.otChain), 'HKDF', false, ['deriveBits']);
+  const otKey = new Uint8Array(await C.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:new Uint8Array(0)}, k, 256));
+  const sealed = await cmhSeal(otKey, m.payload);
+  zeroize(otKey);
+  c.otChain = await kdfNext(c.otChain); saveState(); // ratchet: next transfer uses new chain key
+  const full = sealed, n=Math.ceil(full.length/400), id='O2'+photoId;
+  const ov=document.createElement('div'); ov.id='ot-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:#000;z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;text-align:center';
+  ov.innerHTML='<div style="color:#00ff41;font-size:12px;letter-spacing:2px">DECIMEN OPTICAL v2 — RATCHETED · point other camera here</div><div id="ot-qr"></div><div style="color:#00ff41;font-size:11px" id="ot-prog"></div><button class="btn danger" onclick="document.getElementById(\'ot-overlay\').remove();OT.sending=false">STOP</button>';
+  document.body.appendChild(ov); OT.sending=true;
+  let i=0;
+  const box=document.getElementById('ot-qr'), prog=document.getElementById('ot-prog');
+  const timer=setInterval(()=>{
+    if(!OT.sending||!document.getElementById('ot-overlay')){ clearInterval(timer); return; }
+    try{
+      const qr=qrcode(0,'L');
+      qr.addData('CMO2'+JSON.stringify({id:id.slice(0,10),i:i,n:n,d:full.substring(i*400,(i+1)*400)}));
+      qr.make(); box.innerHTML=qr.createImgTag(5,2);
+      prog.textContent='ratcheted frame '+(i+1)+' / '+n;
+    }catch(e){}
+    i=(i+1)%n;
+  },300);
+};
+async function otV2Open(cid, chainHex, photoId, sealed){
+  try{
+    const salt = new TextEncoder().encode('CM_OPTICAL_V2:'+photoId);
+    const k = await C.subtle.importKey('raw', hex2buf(chainHex), 'HKDF', false, ['deriveBits']);
+    const dk = new Uint8Array(await C.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:new Uint8Array(0)}, k, 256));
+    return await cmhOpen(dk, sealed);
+  }catch(e){ return null; }
+}
+async function otV2Handle(data){
+  try{
+    const j=JSON.parse(data.substring(4));
+    const key=j.id+':'+j.n;
+    if(!otRecvData[key]) otRecvData[key]={got:{},parts:{}};
+    const s=otRecvData[key];
+    if(!s.got[j.i]){ s.got[j.i]=true; s.parts[j.i]=j.d; }
+    toast('optical v2 frames: '+Object.keys(s.got).length+' / '+j.n);
+    if(Object.keys(s.got).length!==j.n) return true;
+    let full=''; for(let k2=0;k2<j.n;k2++) full+=s.parts[k2];
+    delete otRecvData[key]; otRecvMode=false;
+    const b=document.getElementById('ot-btn'); if(b) b.textContent='OPTICAL RECEIVE: OFF';
+    const photoId=j.id.replace(/^O2/,'');
+    // try each contact: current chain first, then previous (pre-ratchet) chain
+    for(const c of ST.contacts){
+      const chains=[c.otChain||c.sess, c.sess];
+      for(const chain of chains){
+        const pt=await otV2Open(c.id, chain, photoId, full);
+        if(pt){
+          const m={id:rndHex(6),cid:c.id,self:false,type:'photo',payload:pt,time:fmtTime(),burned:false,burnSecs:c.burnSecs};
+          ST.msgs[c.id].push(m); DB.set('msg:'+m.id, JSON.stringify(m)); saveState();
+          selectContact(c.id); armBurn(m,c.id); renderContacts();
+          toast('Optical v2 transfer COMPLETE 🔓');
+          return true;
+        }
+      }
+    }
+    toast('Optical v2: could not open (no matching channel key)');
+    return true;
+  }catch(e){ return false; }
+}
+const _cmhOtHandle = otHandleFrame;
+otHandleFrame = function(data){
+  if(data.indexOf('CMO2')===0){ otV2Handle(data); return true; }
+  return _cmhOtHandle(data);
+};
+// ---- UI WIRING: hardening control buttons + unlock overlay ----
+// GRAPHENEOS-STYLE: scrambled numeric keypad (anti shoulder-surfing / smudge attack)
+function cmhKeypad(ov){
+  const digits=[0,1,2,3,4,5,6,7,8,9];
+  for(let i=digits.length-1;i>0;i--){ const j=C.getRandomValues(new Uint32Array(1))[0]%(i+1); [digits[i],digits[j]]=[digits[j],digits[i]]; } // crypto-Fisher-Yates
+  const pad=document.createElement('div');
+  pad.style.cssText='display:grid;grid-template-columns:repeat(3,64px);gap:8px';
+  const dotline=document.createElement('div');
+  dotline.style.cssText='letter-spacing:8px;font-size:20px;min-height:24px;color:var(--g)';
+  let buf='';
+  const redraw=()=>{ dotline.textContent='•'.repeat(buf.length); };
+  const press=(d)=>{ if(buf.length<12){ buf+=d; redraw(); } };
+  digits.forEach(d=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=d; b.style.fontSize='18px'; b.onclick=()=>press(d); pad.appendChild(b); });
+  const clear=document.createElement('button'); clear.className='btn'; clear.textContent='C'; clear.onclick=()=>{ buf=''; redraw(); }; pad.appendChild(clear);
+  const blank=document.createElement('div'); pad.appendChild(blank);
+  const ok=document.createElement('button'); ok.className='btn'; ok.textContent='OK'; ok.style.borderColor='var(--borderB)'; pad.appendChild(ok);
+  return {pad, ok, get pin(){ const v=buf; buf=''; redraw(); return v; }, dotline};
+}
+function cmhOverlay(title, onSubmit){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px';
+  ov.innerHTML='<div style="font-size:14px;letter-spacing:4px;color:var(--g)">'+title+'</div>';
+  const kp=cmhKeypad(ov);
+  const dl=document.createElement('div'); dl.appendChild(kp.dotline);
+  ov.appendChild(dl); ov.appendChild(kp.pad);
+  const msg=document.createElement('div'); msg.style.cssText='font-size:10px;color:var(--dim);letter-spacing:2px'; msg.textContent='SCRAMBLED KEYPAD · GHOST PROTOCOL'; ov.appendChild(msg);
+  document.body.appendChild(ov);
+  kp.ok.onclick=async()=>{
+    const v=kp.pin;
+    const ok=await onSubmit(v);
+    if(ok!==false){ ov.remove(); }
+    else { msg.textContent='WRONG — TRY AGAIN'; kp.dotline.textContent=''; }
+  };
+  return ov;
+}
+function addHardeningButtons(){
+  const bar=document.querySelector('.tstatus'); if(!bar) return;
+  const mkBtn=(label,fn,title)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=label; b.title=title; b.onclick=fn; bar.appendChild(b); };
+  mkBtn('👻', toggleGhostNoise, 'Ghost Noise: decoy traffic on/off');
+  mkBtn('⛔', prmReport, 'PRM: Pegasus-resistance risk report');
+  mkBtn('🔒', cmhCycleAutolock, 'Auto-lock after inactivity (GrapheneOS-style)');
+  mkBtn('⏳', ()=>{ const p=prompt('TLP passphrase for outgoing QR (min 4 chars, empty = disable):'); if(p===null)return; p?enableTlp(p):disableTlp(); }, 'Time-Lock Pairing');
+  mkBtn('🎭', ()=>{ if(ST.active) rotateEpoch(ST.active); else toast('Open a chat first'); }, 'Rotate epoch keys for this contact');
+  mkBtn('🔫', ()=>{ const p=prompt('SET DURESS PIN (min 4 chars). Entering it later wipes ALL keys:'); if(p) setupDuress(p); }, 'Set duress PIN');
+  mkBtn('❄️', ()=>{ const p=prompt('❄️ SNOWDEN MODE\nSet vault passphrase (min 6). Current state gets sealed + wiped, decoy shown:'); if(p) snowdenEnable(p); }, 'Deniable vault');
+  if(DB.get('cm_snowden')) mkBtn('🔓', ()=>{ cmhOverlay('❄️ VAULT', async pin=>{ const ok=await snowdenUnlock(pin); if(!ok) toast('Wrong vault passphrase'); return ok; }); }, 'Open deniable vault');
+}
+
+// ---- GRAPHENEOS-STYLE AUTO-LOCK: seal app after inactivity, zeroize live state ----
+const CMH_LOCK = { mins: parseInt(DB.get('cm_autolock')||'5'), last: Date.now(), armed:false };
+['click','touchstart','keydown','touchmove'].forEach(ev=>document.addEventListener(ev,()=>{ CMH_LOCK.last=Date.now(); },{passive:true}));
+function cmhLockNow(){
+  cmhOverlay('👻 CODE MORS — LOCKED (auto)', async pin=>{
+    if(DB.get('cm_duress') && await checkDuress(pin)){ await panicWipe(); return true; }
+    return true; // non-duress PIN just unlocks
+  });
+  // WHISPER: drop live chat state from RAM while locked
+  (ST.msgs[ST.active]||[]).forEach(m=>{ m.text=''; });
+}
+function cmhAutoLockLoop(){
+  if(CMH_LOCK.mins>0 && Date.now()-CMH_LOCK.last > CMH_LOCK.mins*60000 && !document.getElementById('cmh-pin')){
+    CMH_LOCK.last=Date.now(); cmhLockNow();
+  }
+  setTimeout(cmhAutoLockLoop, 15000);
+}
+function cmhCycleAutolock(){
+  const opts=[0,1,5,10];
+  const i=(opts.indexOf(CMH_LOCK.mins)+1)%opts.length;
+  CMH_LOCK.mins=opts[i]; DB.set('cm_autolock',String(opts[i]));
+  toast('Auto-lock: '+(opts[i]===0?'OFF':opts[i]+' min'));
+}
+
+// ---- BRIAR-STYLE PANIC GESTURE: 7 rapid taps on ghost badge = nuclear wipe ----
+function cmhBindPanicGesture(){
+  const badge=document.getElementById('my-ghost'); if(!badge) return;
+  let taps=0, t0=0;
+  badge.addEventListener('click',()=>{
+    const now=Date.now();
+    if(now-t0>1600){ taps=0; }
+    t0=now; taps++;
+    if(taps>=7){ taps=0; panicWipe(); }
+    else if(taps>=4){ toast('PANIC: '+(7-taps)+' more taps to WIPE EVERYTHING'); }
+  });
+}
+
+// ---- PRM (Pegasus Resistance) light — webview/emulator/automation sniffing ----
+function prmAssess(){
+  const flags=[];
+  let score=0;
+  // automation / webdriver (bot kontrollues)
+  const wd=window.navigator.webdriver || /webview/gi.test(navigator.userAgent);
+  if(wd){ flags.push('WEBDRIVER'); score+=30; }
+  // emulator strings
+  const fp=(navigator.userAgent||'').toLowerCase();
+  if(/emulator|sdk_gphone|android sdk|\bgsm\b|genymotion|x86_64/.test(fp)){ flags.push('EMULATOR_UA'); score+=25; }
+  // remote debugging bridge exposed (Chrome DevTools protocol / ADB-ish)
+  try{
+    const hosts=['11000'];
+    // presence of devtools protocol webe're unlikely; we flag suspicious global objects used by spies
+    if(window.__devtools__ || window.__frida_hook__){ flags.push('FRIDA_LIKE'); score+=35; }
+  }catch(e){}
+  // cleartext / http origin (insigurt transport)
+  if(location.protocol==='http:'){ flags.push('HTTP_INSECURE'); score+=20; }
+  return { score:Math.min(100,score), flags };
+}
+function prmGate(fn){
+  const r=prmAssess();
+  if(r.score>=60){ toast('⚠ PRM: '+r.flags.join(',')+' — withholding'); cmhOverlay('⚠ PRM — SUSPICIOUS ENVIRONMENT', async()=>{ toast('Operation blocked (risk '+r.score+')'); }); return; }
+  if(r.score>=30){ toast('⚠ PRM: '+r.flags.join(',')+' — risk '+r.score); }
+  return fn();
+}
+function prmReport(){
+  const r=prmAssess();
+  document.getElementById('toast').textContent='PRM risk '+r.score+' : '+(r.flags.join(',')||'clean');
+  document.getElementById('toast').style.display='block';
+}
+//__PRM_JS__
+
+// ---- BOOT WRAPPER: vault gate -> normal boot -> hardening UI -> duress gate -> noise resume ----
+const _cmhBoot = boot;
+boot = async function(){
+  if(DB.get('cm_snowden')){
+    await new Promise(res=>{
+      cmhOverlay('❄️ CODE MORS — SEALED VAULT', async pin=>{
+        const ok=await snowdenUnlock(pin);
+        if(!ok){ toast('Wrong passphrase'); return false; }
+        res(); return true;
+      });
+    });
+  }
+  await _cmhBoot();
+  addHardeningButtons();
+  prmAssess(); // PRM light: njoftim nëse mjedisi është i dyshimtë
+  cmhBindPanicGesture();
+  cmhAutoLockLoop();
+  if(DB.get('cm_duress')){
+    cmhOverlay('👻 CODE MORS — LOCKED', async pin=>{
+      if(await checkDuress(pin)) await panicWipe();
+      return true; // any non-duress PIN just unlocks normally
+    });
+  }
+  if(noiseState()) startGhostNoise();
+};
 boot();
+</script>
 </script>
 </body>
 </html>

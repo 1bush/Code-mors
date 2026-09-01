@@ -116,6 +116,32 @@ public final class Crypto {
         return sb.toString().replaceAll("(.{5})", "$1-").substring(0, 29);
     }
 
+    /* ── CM-HARD v5 additions ──────────────────────────────────────────── */
+
+    /** PBKDF2-HMAC-SHA512 key derivation (TLP / duress / vault). */
+    public static byte[] pbkdf2(char[] pass, byte[] salt, int iterations, int bits) throws Exception {
+        javax.crypto.spec.PBEKeySpec spec = new javax.crypto.spec.PBEKeySpec(pass, salt, iterations, bits);
+        try {
+            return javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512").generateSecret(spec).getEncoded();
+        } finally { spec.clearPassword(); }
+    }
+
+    /** SHA-512 hash (hex) used for duress PIN verification. */
+    public static String sha512Hex(byte[] data) throws Exception {
+        return bytesToHex(MessageDigest.getInstance("SHA-512").digest(data));
+    }
+
+    /** WHISPER: overwrite key/plaintext material so it never lingers in the heap. */
+    public static void zeroize(byte[] b) { if (b != null) java.util.Arrays.fill(b, (byte) 0); }
+
+    /** ROTATING EPOCH: HKDF-style epoch key, epochKey = HMAC-SHA256(sess, "CM_EPOCH_V1" || epoch). */
+    public static String epochKey(String sessHex, int epoch) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(padChain(sessHex), "HmacSHA256"));
+        String info = "CM_EPOCH_V1:" + epoch;
+        return bytesToHex(mac.doFinal(info.getBytes(StandardCharsets.UTF_8)));
+    }
+
     public static String bytesToHex(byte[] b) { StringBuilder s = new StringBuilder(); for (byte x : b) s.append(String.format("%02x", x)); return s.toString(); }
     public static byte[] hexToBytes(String h) { h = h.replace(":", ""); byte[] o = new byte[h.length() / 2]; for (int i = 0; i < o.length; i++) o[i] = (byte) Integer.parseInt(h.substring(i * 2, i * 2 + 2), 16); return o; }
 }

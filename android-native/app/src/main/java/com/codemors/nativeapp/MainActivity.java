@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         loadIdentity();
         renderContacts();
     }
+// PRM: nese mjedisi eshte i komprometuar (root/Frida/Xposed), refuzo aksesin
+        if (!PrmPolicy.gate(this)) return;
 
     private TextView btn(String label, android.view.View.OnClickListener l) {
         TextView t = new TextView(this);
@@ -114,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
         list.setOnItemClickListener((p, v, pos, id) -> {
             Intent it = new Intent(this, ChatActivity.class);
             try { it.putExtra("cid", objs.get(pos).getString("id")); } catch (Exception ignored) {}
+// PRM gate para hapjes se kanalit
+            if (!PrmPolicy.gate(this)) return;
             startActivity(it);
         });
         list.setOnItemLongClickListener((p, v, pos, id) -> {
