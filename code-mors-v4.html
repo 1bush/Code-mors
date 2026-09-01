@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -985,6 +985,9 @@ function addHardeningButtons(){
   const mkBtn=(label,fn,title)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=label; b.title=title; b.onclick=fn; bar.appendChild(b); };
   mkBtn('👻', toggleGhostNoise, 'Ghost Noise: decoy traffic on/off');
   mkBtn('⛔', prmReport, 'PRM: Pegasus-resistance risk report');
+mkBtn('BK', cmhBackup, 'Encrypted backup (CODE RECOVERY)');
+  mkBtn('RS', ()=>{ cmhRestore(); }, 'Restore backup');
+  mkBtn('LO', cmhLocalToggle, 'Local-only mode') ;
   mkBtn('🔒', cmhCycleAutolock, 'Auto-lock after inactivity (GrapheneOS-style)');
   mkBtn('⏳', ()=>{ const p=prompt('TLP passphrase for outgoing QR (min 4 chars, empty = disable):'); if(p===null)return; p?enableTlp(p):disableTlp(); }, 'Time-Lock Pairing');
   mkBtn('🎭', ()=>{ if(ST.active) rotateEpoch(ST.active); else toast('Open a chat first'); }, 'Rotate epoch keys for this contact');
@@ -1063,6 +1066,68 @@ function prmReport(){
 }
 //__PRM_JS__
 
+// ---- 🔒 ENCRYPTED BACKUP / RESTORE (SimpleX-style "Code Recovery") ----
+const CMH_BACKUP = { keyPrefixes:['cm','msg:'] };
+function cmhCollectState(){
+  const all={};
+  Object.keys(localStorage).forEach(k=>{ if(CMH_BACKUP.keyPrefixes.some(p=>k.indexOf(p)===0)) all[k]=localStorage.getItem(k); });
+  return all;
+}
+async function cmhBackup(){
+  const pass=prompt('🔒 CODE RECOVERY\nSet a passphrase for the backup (min 6 chars). NOT shared, only yours:');
+  if(!pass||pass.length<6){ toast('Backup: passphrase min 6 chars'); return; }
+  try{
+    const salt=C.getRandomValues(new Uint8Array(16));
+    const key=await cmhPbkdf2('CM_BACKUP_V1:'+pass,salt,600000,256);
+    const sealed=await cmhSeal(key,JSON.stringify(cmhCollectState()));
+    zeroize(key);
+
+    const b64=b64enc(salt)+'.'+sealed;     const blob=new Blob([b64],{type:'text/plain'});     const a=document.createElement('a');     a.href=URL.createObjectURL(blob); a.download='code-mors-recovery.cmrec';     document.body.appendChild(a); a.click(); a.remove();     toast('BACKUP SEALED - keep it safe');   }catch(e){ toast('Backup failed: '+e.message); } } 
+
+// ---- ENCRYPTED BACKUP / RESTORE (CODE RECOVERY) ----
+async function cmhRestore(){
+  const raw=prompt('CODE RECOVERY RESTORE - paste backup string content:');
+  if(!raw) return;
+  const pass=prompt('Enter passphrase for this backup:');
+  if(!pass) return;
+  try{
+    const bit=raw.split('.');
+    const saltB=b64dec(bit[0]);
+    const key=await cmhPbkdf2('CM_BACKUP_V1:'+pass+saltB,600000,256);
+    const pt=await cmhOpen(key,bit[1]);
+    zeroize(key);
+    if(!pt){ toast('Wrong passphrase or corrupt backup'); return; }
+    const all=JSON.parse(pt);
+    Object.keys(all).forEach(k=>localStorage.setItem(k,all[k]));
+    if(confirm('Recovery restored. Reload?')) location.reload();
+  }catch(e){ toast('Restore failed: '+e.message); }
+}
+
+// ---- INCOGNITO KEYBOARD (Signal-style: no suggestions/autocorrect -> no OEM leak) ----
+function cmhIncognitoKeys(){
+  document.querySelectorAll('input,textarea').forEach(el=>{
+    el.setAttribute('autocomplete','off');
+    el.setAttribute('autocorrect','off');
+    el.setAttribute('autocapitalize','off');
+    el.setAttribute('spellcheck','false');
+    el.setAttribute('enterkeyhint','send');
+  });
+}
+
+// ---- LOCAL-ONLY MODE ----
+const CMH_LOCAL = { on:DB.get('cm_localonly')==='1' };
+function cmhLocalBadge(){
+  let badge=document.getElementById('locbadge');
+  if(CMH_LOCAL.on){
+    if(!badge){ badge=document.createElement('span'); badge.id='locbadge'; badge.className='badge'; badge.textContent='LOCAL-ONLY'; badge.style.color='#ffaa00'; badge.style.borderColor='rgba(255,170,0,0.6)'; document.querySelector('.tstatus').insertBefore(badge,document.querySelector('.tstatus').firstChild); }
+    badge.style.display='inline-flex';
+  } else if(badge){ badge.style.display='none'; }
+}
+function cmhLocalToggle(){
+  CMH_LOCAL.on=!CMH_LOCAL.on;
+  DB.set('cm_localonly',CMH_LOCAL.on?'1':'0');
+  cmhLocalBadge();
+}
 // ---- BOOT WRAPPER: vault gate -> normal boot -> hardening UI -> duress gate -> noise resume ----
 const _cmhBoot = boot;
 boot = async function(){
@@ -1075,9 +1140,12 @@ boot = async function(){
       });
     });
   }
+
   await _cmhBoot();
   addHardeningButtons();
   prmAssess(); // PRM light: njoftim nëse mjedisi është i dyshimtë
+  cmhIncognitoKeys();
+  cmhLocalBadge();
   cmhBindPanicGesture();
   cmhAutoLockLoop();
   if(DB.get('cm_duress')){

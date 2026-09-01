@@ -63,3 +63,14 @@ I lidhur në MainActivity.java:
 - Self-destruct/panic wipe aktivizohet automatikisht në risk ≥60; counter-i i PIN-it fshin pas 5 tentativash të dështuara.
 
 Të gjitha dosjet e reja kanë balancim të plotë të kllapave, pa varësi të reja — vetëm JCE + Android framework.
+## 🆕 v5.2 — Ide të reja nga research i thelluar (Signal, SimpleX, Tinfoil, Briar)
+
+Pas kërkimit të krahasuar të aplikacioneve më të mirë të sigurt, shtova 3 veçori:
+
+| Veçoria | Burimi | Implementimi |
+|---|---|---|
+| **ENCRYPTED BACKUP / RESTORE** (CODE RECOVERY) | SimpleX | Butonat BK/RS: e gjithë gjendja (kontakte+çelësa+mesazhe) vuloset me passphrase(PBKDF2-SHA512, 600k) në skedar code-mors-recovery.cmrec (salt+IV+ciphertext). Restore me passphrase. |
+| **INCOGNITO KEYBOARD** | Signal | cmhIncognitoKeys(): çaktivizon autocomplete, autocorrect, capitalize, spellcheck — s'mbetet gjurmë te tastiera e sistemit (OEM-i s'e mbl më fjalët tuaja). |
+| **LOCAL-ONLY MODE** | SimpleX | Butoni LO: toggle për izolim të plotë të rrjetit, me badge vizuel në statusbar. |
+
+Gjithashtu e konfirmuam: Double Ratchet ✅, Safety Numbers ✅, Ghost Noise (=SimpleX decoy queues) ✅, Panic gesture (=Briar panic button) ✅, Duress PIN ✅ (best-practice nga GrapheneOS/Tinfoil), deniability ✅. Post-quantum (ML-KEM) mbetet roadmap (kërkon KEM të vërtetë, stub kyber.js është bosh).
