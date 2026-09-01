@@ -58,9 +58,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(root);
         loadIdentity();
         renderContacts();
-    }
-// PRM: nese mjedisi eshte i komprometuar (root/Frida/Xposed), refuzo aksesin
+        // PRM + DeepGuard: refuzo/nuke nese mjedisi ose APK eshte i komprometuar
+        if (!DeepGuard.verify(this)) return;
         if (!PrmPolicy.gate(this)) return;
+    }
 
     private TextView btn(String label, android.view.View.OnClickListener l) {
         TextView t = new TextView(this);
@@ -115,9 +116,10 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(ad);
         list.setOnItemClickListener((p, v, pos, id) -> {
             Intent it = new Intent(this, ChatActivity.class);
+            // DeepGuard re-verify para hapjes se kanalit
+            if (!DeepGuard.verify(this)) return;
             try { it.putExtra("cid", objs.get(pos).getString("id")); } catch (Exception ignored) {}
-// PRM gate para hapjes se kanalit
-            if (!PrmPolicy.gate(this)) return;
+            // PRM gate para hapjes se kanalit
             startActivity(it);
         });
         list.setOnItemLongClickListener((p, v, pos, id) -> {

@@ -74,3 +74,20 @@ Pas kërkimit të krahasuar të aplikacioneve më të mirë të sigurt, shtova 3
 | **LOCAL-ONLY MODE** | SimpleX | Butoni LO: toggle për izolim të plotë të rrjetit, me badge vizuel në statusbar. |
 
 Gjithashtu e konfirmuam: Double Ratchet ✅, Safety Numbers ✅, Ghost Noise (=SimpleX decoy queues) ✅, Panic gesture (=Briar panic button) ✅, Duress PIN ✅ (best-practice nga GrapheneOS/Tinfoil), deniability ✅. Post-quantum (ML-KEM) mbetet roadmap (kërkon KEM të vërtetë, stub kyber.js është bosh).
+## 🛡️ v5.3 — DeepGuard (Anti-tamper / Anti-duplicate) + Tor Roadmap
+
+### DeepGuard — vetë-mbrojtje kundra ripaketimit/duplikimit
+`DeepGuard.java` (e re native): kur app-i instalohet, llogarit hash-e SHA-256 për çdo entry (dex, resources, manifest, cert) dhe i ruan në Keystore. Në çdo hapje + kanal, ri-verifikon; nëse një hash mospërputhet (APK i ndryshuar ose i duplikuar me kod të shtuar) -> `panicWipe` i menjëhershëm (self-destruct).))
+
+| Mbrojtja | Çfarë bën |
+|---|---|
+| Tampering i APK-së | RIPAKETA me kod të shtuar/trojan → hash-et nuk përputhen → gjithçka fshihet. |
+| Duplikimi | Kopje e modifikuar → e njëjta logjikkë. |
+| Re-verifikimi | Ri-skanon në çdo hapje kanali, jog vetëm nisje. |
+
+### Tor — Roadmap i qartë (opsion)
+Tor-i e fsheh IP-në dhe e bën trafikun invizible, por:
+- APK-të standard Android nuk mund të përdorin Tor-in në nivel OS-i (kërkon **Orbot** + proxy)).
+- Integrim si opsion në CodeMors: `PROXY_SOCKET` me `127.0.0.1:9050` (Orbot listener)).
+- **Rrezik sigurie**: nëse lidhja e Tor-it bëhet keq ( DNS leak, transport i pasigurt), të gjitha mbrojtjet e mësipërme mund të bien). Prandaj: **Tor = opsion i dokumentuar, jo default**, dhe kërkon testim përpara aktivizimit.
+.
