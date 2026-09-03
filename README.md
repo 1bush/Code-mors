@@ -22,6 +22,7 @@ E2E encrypted messaging with QR pairing, permanent ghost identities, self-destru
 
 ## ✨ Features
 
+### Core
 - 🔗 **QR Link** — scan another user's code to establish an E2E channel (no server involved)
 - 🎭 **Submask names** — you appear as your permanent Ghost Name; each contact gets a unique alias
 - ⏱️ **Time Delete** — per-conversation: OFF · READ-ONCE · 10s · 60s
@@ -29,6 +30,20 @@ E2E encrypted messaging with QR pairing, permanent ghost identities, self-destru
 - 📡 **Optical Send/Receive** — transfer photos between devices with **no internet at all**
 - ✂️ **END SESSION** — wipes every message from phone **and** database, while keeping the unique names so friends/family can reconnect
 - ☠️ Burn-after-read with visible countdown bars
+
+### New in v4.1
+- 🔍 **Message Search** — full-text search across all conversations with highlighted results
+- 👍 **Emoji Reactions** — react to messages with 8 emojis (👍❤️😂😮😢😡🔥👀)
+- ↩️ **Reply to Message** — quote-reply to specific messages
+- ➡️ **Message Forwarding** — forward messages to other contacts
+- ⭐ **Bookmarks** — save important messages, view in dedicated panel
+- 📌 **Contact Pinning** — pin contacts to top of sidebar
+- 🎨 **Chat Themes** — 5 color themes (Matrix Green, Amber Terminal, Ice Blue, Blood Red, Purple Haze)
+- ⏱️ **Custom Burn Timer** — configurable auto-destroy (OFF, READ-ONCE, 10s, 30s, 60s, custom)
+- ⌨️ **Typing Indicators** — shows when contact is typing
+- ✓✓ **Read Receipts** — sent/delivered/read status indicators
+- 🔒 **Auto-Lock** — auto-lock after inactivity with PIN protection
+- ⬇️ **Export Chat** — export conversations as formatted text files
 
 ## 📱 Two builds
 
