@@ -33,6 +33,28 @@
   --dim: rgba(0,255,65,0.42);
 }
 
+/* ═══════ THEMES ═══════ */
+body[data-theme="amber"] {
+  --g: #ffaa00; --gd: #cc8800; --gg: rgba(255,170,0,0.07); --glow: rgba(255,170,0,0.35);
+  --bg: #0a0600; --bg2: #0f0a00; --bg3: #140c00;
+  --border: rgba(255,170,0,0.18); --borderB: rgba(255,170,0,0.45); --dim: rgba(255,170,0,0.42);
+}
+body[data-theme="ice"] {
+  --g: #00ddff; --gd: #0099bb; --gg: rgba(0,221,255,0.07); --glow: rgba(0,221,255,0.35);
+  --bg: #00080a; --bg2: #001014; --bg3: #001418;
+  --border: rgba(0,221,255,0.18); --borderB: rgba(0,221,255,0.45); --dim: rgba(0,221,255,0.42);
+}
+body[data-theme="blood"] {
+  --g: #ff2222; --gd: #cc0000; --gg: rgba(255,34,34,0.07); --glow: rgba(255,34,34,0.35);
+  --bg: #0a0000; --bg2: #0f0000; --bg3: #140000;
+  --border: rgba(255,34,34,0.18); --borderB: rgba(255,34,34,0.45); --dim: rgba(255,34,34,0.42);
+}
+body[data-theme="purple"] {
+  --g: #cc44ff; --gd: #9933cc; --gg: rgba(204,68,255,0.07); --glow: rgba(204,68,255,0.35);
+  --bg: #060008; --bg2: #0a0010; --bg3: #0c0014;
+  --border: rgba(204,68,255,0.18); --borderB: rgba(204,68,255,0.45); --dim: rgba(204,68,255,0.42);
+}
+
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
 
@@ -350,6 +372,40 @@ body::after{
 @keyframes shim{0%,100%{opacity:.55;}50%{opacity:1;}}
 @keyframes scroll{from{transform:translateX(100vw);}to{transform:translateX(-300%);}}
 @keyframes idFlash{0%,100%{color:var(--g);}50%{color:var(--amber);}}
+/* ═══════ THEME VARIANTS ═══════ */
+body[data-theme="amber"]{--g:#ffaa00;--gd:#cc8800;--gg:rgba(255,170,0,0.07);--glow:rgba(255,170,0,0.35);--bg:#0a0601;--bg2:#0f0902;--bg3:#140c02;--border:rgba(255,170,0,0.18);--borderB:rgba(255,170,0,0.45);--dim:rgba(255,170,0,0.42);}
+body[data-theme="ice"]{--g:#00ddff;--gd:#00b0cc;--gg:rgba(0,221,255,0.07);--glow:rgba(0,221,255,0.35);--bg:#01080a;--bg2:#020d0f;--bg3:#031014;--border:rgba(0,221,255,0.18);--borderB:rgba(0,221,255,0.45);--dim:rgba(0,221,255,0.42);}
+body[data-theme="blood"]{--g:#ff2222;--gd:#cc1a1a;--gg:rgba(255,34,34,0.07);--glow:rgba(255,34,34,0.35);--bg:#0a0101;--bg2:#0f0202;--bg3:#140303;--border:rgba(255,34,34,0.18);--borderB:rgba(255,34,34,0.45);--dim:rgba(255,34,34,0.42);}
+body[data-theme="purple"]{--g:#cc44ff;--gd:#aa33cc;--gg:rgba(204,68,255,0.07);--glow:rgba(204,68,255,0.35);--bg:#06010a;--bg2:#09020f;--bg3:#0c0314;--border:rgba(204,68,255,0.18);--borderB:rgba(204,68,255,0.45);--dim:rgba(204,68,255,0.42);}
+
+/* ═══════ SEARCH OVERLAY STYLES ═══════ */
+.search-top{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.search-input{flex:1;background:var(--bg2);border:1px solid var(--borderB);color:var(--g);font-family:inherit;font-size:13px;padding:10px 14px;outline:none;}
+.search-input:focus{box-shadow:0 0 15px var(--glow);}
+.search-close{background:none;border:1px solid var(--border);color:var(--dim);font-size:14px;padding:6px 10px;cursor:pointer;}
+.search-close:hover{color:var(--g);border-color:var(--borderB);}
+.search-results{flex:1;overflow-y:auto;padding:8px 0;}
+.sr-item{padding:10px 16px;border-bottom:1px solid rgba(0,255,65,0.05);cursor:pointer;transition:background 0.15s;}
+.sr-item:hover{background:var(--gg);}
+.sr-contact{font-size:10px;color:var(--blue);letter-spacing:1px;margin-bottom:3px;}
+.sr-text{font-size:12px;color:var(--g);}
+.sr-text mark{background:var(--glow);color:var(--g);padding:0 2px;}
+.sr-empty{padding:20px;text-align:center;color:var(--dim);font-size:11px;}
+.msg-actions{position:absolute;top:-10px;right:8px;display:none;gap:2px;z-index:5;}
+.mrow:hover .msg-actions{display:flex;}
+.msg-action-btn{background:var(--bg2);border:1px solid var(--border);color:var(--dim);font-size:9px;padding:2px 5px;cursor:pointer;font-family:inherit;}
+.msg-action-btn:hover{color:var(--g);border-color:var(--borderB);}
+.reactions{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.reaction{background:var(--gg);border:1px solid var(--border);padding:1px 5px;font-size:10px;cursor:pointer;display:flex;align-items:center;gap:3px;}
+.reaction:hover{border-color:var(--borderB);}
+.reaction .rcount{font-size:8px;color:var(--dim);}
+.reaction-picker{position:absolute;background:var(--bg2);border:1px solid var(--borderB);padding:6px;display:flex;gap:4px;z-index:100;box-shadow:0 0 15px rgba(0,0,0,0.5);}
+.rpick-emoji{font-size:16px;cursor:pointer;padding:2px 4px;border:1px solid transparent;}
+.rpick-emoji:hover{border-color:var(--border);background:var(--gg);}
+.reply-preview{padding:6px 12px;border-top:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.reply-preview .rp-text{font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.reply-preview .rp-close{font-size:12px;color:var(--red);cursor:pointer;padding:2px 6px;}
+.reply-quote{border-left:2px solid var(--borderB);padding-left:6px;margin-bottom:3px;font-size:9px;color:var(--dim);}
 
 /* ═══════ RESPONSIVE — MOBILE ═══════ */
 @media(max-width:700px){
@@ -373,6 +429,204 @@ body::after{
   display:none;background:none;border:1px solid var(--border);color:var(--g);
   font-family:'Share Tech Mono',monospace;font-size:14px;padding:3px 9px;cursor:pointer;
 }
+
+/* ═══════ FEATURE: SEARCH OVERLAY ═══════ */
+.search-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;display:none;
+  flex-direction:column;
+}
+.search-overlay.open{display:flex;}
+.search-top{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-bottom:1px solid var(--border);
+}
+.search-input{
+  flex:1;background:var(--bg);border:1px solid var(--borderB);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:14px;padding:10px 14px;
+  outline:none;letter-spacing:1px;
+}
+.search-input:focus{box-shadow:0 0 15px var(--glow);}
+.search-close{
+  background:none;border:1px solid var(--border);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:16px;padding:8px 14px;cursor:pointer;
+}
+.search-results{flex:1;overflow-y:auto;padding:8px 0;}
+.search-results::-webkit-scrollbar{width:2px;}
+.search-results::-webkit-scrollbar-thumb{background:var(--gd);}
+.sr-item{
+  padding:10px 16px;border-bottom:1px solid rgba(0,255,65,0.05);
+  cursor:pointer;transition:background 0.15s;
+}
+.sr-item:hover,.sr-item:active{background:var(--gg);}
+.sr-meta{font-size:9px;color:var(--dim);margin-bottom:4px;display:flex;justify-content:space-between;}
+.sr-text{font-size:12px;color:var(--g);line-height:1.4;}
+.sr-text mark{background:rgba(0,255,65,0.2);color:var(--g);padding:0 2px;}
+.sr-empty{padding:40px 16px;text-align:center;color:var(--dim);font-size:11px;}
+
+/* ═══════ FEATURE: MESSAGE ACTIONS (hover) ═══════ */
+.mrow{position:relative;}
+.msg-actions{
+  display:none;position:absolute;top:-8px;right:8px;z-index:10;
+  gap:2px;align-items:center;
+}
+.mrow:hover .msg-actions{display:flex;}
+.msg-action-btn{
+  background:var(--bg2);border:1px solid var(--border);color:var(--dim);
+  font-size:11px;padding:3px 6px;cursor:pointer;transition:all 0.15s;line-height:1;
+}
+.msg-action-btn:hover{color:var(--g);background:var(--gg);box-shadow:0 0 8px var(--glow);}
+
+/* ═══════ FEATURE: EMOJI REACTIONS ═══════ */
+.reaction-picker{
+  display:none;position:absolute;background:var(--bg2);border:1px solid var(--borderB);
+  padding:6px;gap:4px;z-index:50;flex-wrap:wrap;max-width:220px;
+  box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+.reaction-picker.open{display:flex;}
+.rpicker-emoji{
+  font-size:18px;padding:4px;cursor:pointer;border:none;background:none;
+  transition:transform 0.1s;
+}
+.rpicker-emoji:hover{transform:scale(1.3);}
+.reactions-row{
+  display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;
+}
+.reaction-chip{
+  font-size:10px;padding:2px 6px;border:1px solid var(--border);background:var(--gg);
+  cursor:pointer;display:flex;align-items:center;gap:3px;
+}
+.reaction-chip .rc-count{font-size:9px;color:var(--dim);}
+
+/* ═══════ FEATURE: REPLY PREVIEW ═══════ */
+.reply-preview{
+  display:none;padding:8px 14px;border-top:1px solid var(--border);
+  background:var(--bg3);align-items:center;justify-content:space-between;gap:8px;
+}
+.reply-preview.show{display:flex;}
+.rp-text{font-size:11px;color:var(--dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rp-text strong{color:var(--g);font-weight:normal;}
+.rp-close{background:none;border:none;color:var(--dim);font-size:14px;cursor:pointer;padding:0 4px;}
+.reply-quote{
+  font-size:10px;color:var(--dim);border-left:2px solid var(--borderB);
+  padding-left:8px;margin-bottom:4px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* ═══════ FEATURE: READ RECEIPTS ═══════ */
+.mcheck.read{color:var(--blue) !important;text-shadow:0 0 5px var(--blue);}
+
+/* ═══════ FEATURE: TYPING INDICATOR ═══════ */
+.typing-indicator{
+  display:none;font-size:10px;color:var(--dim);letter-spacing:2px;
+  animation:shim 1.5s infinite;
+}
+.typing-indicator.show{display:inline;}
+
+/* ═══════ FEATURE: CONTACT PIN ═══════ */
+.cpin{
+  font-size:10px;cursor:pointer;opacity:0.3;transition:all 0.15s;
+}
+.cpin:hover{opacity:1;}
+.cpin.pinned{opacity:1;color:var(--amber);text-shadow:0 0 5px var(--amber);}
+.citem.pinned-contact{border-left:2px solid var(--amber);}
+
+/* ═══════ FEATURE: BOOKMARKS PANEL ═══════ */
+.bookmarks-panel{
+  position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;display:none;
+  flex-direction:column;
+}
+.bookmarks-panel.open{display:flex;}
+.bm-head{
+  display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  border-bottom:1px solid var(--border);
+}
+.bm-title{font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:3px;}
+.bm-list{flex:1;overflow-y:auto;padding:8px 0;}
+.bm-item{padding:10px 16px;border-bottom:1px solid rgba(0,255,65,0.05);cursor:pointer;}
+.bm-item:hover{background:var(--gg);}
+.bm-from{font-size:9px;color:var(--amber);margin-bottom:3px;}
+.bm-text{font-size:12px;color:var(--g);}
+.bm-time{font-size:8px;color:var(--dim);margin-top:3px;}
+
+/* ═══════ FEATURE: THEME SELECTOR ═══════ */
+.theme-selector{
+  position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+.theme-selector.open{display:flex;}
+.ts-title{font-family:'Orbitron',sans-serif;font-size:16px;letter-spacing:4px;margin-bottom:10px;}
+.ts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:400px;width:90%;}
+.ts-item{
+  padding:16px 12px;border:1px solid var(--border);background:var(--bg);
+  cursor:pointer;text-align:center;transition:all 0.2s;
+}
+.ts-item:hover,.ts-item.active{border-color:var(--borderB);box-shadow:0 0 15px var(--glow);}
+.ts-preview{width:30px;height:30px;border-radius:50%;margin:0 auto 8px;border:2px solid var(--borderB);}
+.ts-name{font-size:10px;letter-spacing:1px;}
+
+/* ═══════ FEATURE: FORWARD PICKER ═══════ */
+.fwd-picker{
+  position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+}
+.fwd-picker.open{display:flex;}
+.fwd-title{font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:3px;margin-bottom:16px;}
+.fwd-list{width:90%;max-width:360px;max-height:60vh;overflow-y:auto;}
+.fwd-item{
+  padding:10px 14px;border:1px solid var(--border);margin-bottom:4px;
+  cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.15s;
+}
+.fwd-item:hover{border-color:var(--borderB);background:var(--gg);}
+
+/* ═══════ FEATURE: CUSTOM BURN SELECTOR ═══════ */
+.burn-select{
+  background:var(--bg);border:1px solid var(--borderB);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 6px;
+  cursor:pointer;outline:none;letter-spacing:1px;
+}
+.burn-select option{background:var(--bg);color:var(--g);}
+.burn-custom-input{
+  display:none;width:60px;background:var(--bg);border:1px solid var(--borderB);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 6px;outline:none;
+}
+
+/* ═══════ FEATURE: AUTO-LOCK ═══════ */
+.autolock-overlay{
+  position:fixed;inset:0;background:var(--bg);z-index:9000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+.autolock-overlay.open{display:flex;}
+.al-title{font-family:'Orbitron',sans-serif;font-size:18px;letter-spacing:4px;text-shadow:0 0 20px var(--glow);}
+.al-sub{font-size:10px;color:var(--dim);letter-spacing:2px;}
+.al-pin-input{
+  background:var(--bg2);border:1px solid var(--borderB);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:24px;padding:12px 20px;
+  letter-spacing:8px;text-align:center;width:200px;outline:none;
+}
+.al-pin-input:focus{box-shadow:0 0 20px var(--glow);}
+.al-error{font-size:10px;color:var(--red);display:none;}
+.al-btn{
+  background:none;border:1px solid var(--borderB);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:10px 24px;
+  cursor:pointer;letter-spacing:2px;transition:all 0.2s;
+}
+.al-btn:hover{background:var(--gg);box-shadow:0 0 15px var(--glow);}
+
+/* ═══════ FEATURE: TOPBAR BUTTONS ═══════ */
+.topbar-btn{
+  background:none;border:1px solid var(--border);color:var(--dim);
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:3px 8px;
+  cursor:pointer;transition:all 0.2s;line-height:1;
+}
+.topbar-btn:hover{color:var(--g);background:var(--gg);box-shadow:0 0 8px var(--glow);}
+
+/* ═══════ BOOKMARK STAR ═══════ */
+.bm-star{font-size:12px;opacity:0.3;cursor:pointer;transition:all 0.15s;}
+.bm-star:hover{opacity:1;}
+.bm-star.bookmarked{opacity:1;color:var(--amber);text-shadow:0 0 5px var(--amber);}
+
+/* ═══════ MESSAGE STAR INDICATOR ═══════ */
+.msg-star-ind{display:none;font-size:9px;color:var(--amber);text-shadow:0 0 5px var(--amber);}
+.msg-star-ind.show{display:inline;}
 </style>
 </head>
 <body>
@@ -424,6 +678,9 @@ body::after{
         MEM: <span id="mem-count-badge">0</span>
         &nbsp;·&nbsp; ☠ WIPE
       </div>
+      <button class="topbar-btn" onclick="openSearch()" title="Search messages">⌕ SRCH</button>
+      <button class="topbar-btn" onclick="openBookmarks()" title="Bookmarked messages">★ BMS</button>
+      <button class="topbar-btn" onclick="openThemeSelector()" title="Chat theme">◑ THEME</button>
     </div>
   </div>
 
@@ -495,6 +752,69 @@ body::after{
       <button class="mbtn pri" onclick="addContact()">GENERATE + LINK</button>
     </div>
   </div>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-top">
+    <input class="search-input" id="search-input" type="text" placeholder="⌕ Search all messages..." autocomplete="off" spellcheck="false">
+    <button class="search-close" onclick="closeSearch()">✕</button>
+  </div>
+  <div class="search-results" id="search-results"></div>
+</div>
+
+<!-- BOOKMARKS PANEL -->
+<div class="bookmarks-panel" id="bookmarks-panel">
+  <div class="bm-head">
+    <span class="bm-title">★ BOOKMARKS</span>
+    <button class="search-close" onclick="closeBookmarks()">✕</button>
+  </div>
+  <div class="bm-list" id="bm-list"></div>
+</div>
+
+<!-- THEME SELECTOR -->
+<div class="theme-selector" id="theme-selector">
+  <div class="ts-title">◑ THEME</div>
+  <div class="ts-grid">
+    <div class="ts-item active" data-theme="green" onclick="setTheme('green')">
+      <div class="ts-preview" style="background:#00ff41"></div>
+      <div class="ts-name" style="color:#00ff41">MATRIX</div>
+    </div>
+    <div class="ts-item" data-theme="amber" onclick="setTheme('amber')">
+      <div class="ts-preview" style="background:#ffaa00"></div>
+      <div class="ts-name" style="color:#ffaa00">AMBER</div>
+    </div>
+    <div class="ts-item" data-theme="ice" onclick="setTheme('ice')">
+      <div class="ts-preview" style="background:#00ddff"></div>
+      <div class="ts-name" style="color:#00ddff">ICE BLUE</div>
+    </div>
+    <div class="ts-item" data-theme="blood" onclick="setTheme('blood')">
+      <div class="ts-preview" style="background:#ff2222"></div>
+      <div class="ts-name" style="color:#ff2222">BLOOD</div>
+    </div>
+    <div class="ts-item" data-theme="purple" onclick="setTheme('purple')">
+      <div class="ts-preview" style="background:#cc44ff"></div>
+      <div class="ts-name" style="color:#cc44ff">PURPLE</div>
+    </div>
+  </div>
+  <button class="search-close" onclick="closeThemeSelector()" style="margin-top:20px">CLOSE</button>
+</div>
+
+<!-- FORWARD PICKER -->
+<div class="fwd-picker" id="fwd-picker">
+  <div class="fwd-title">⟫ FORWARD TO</div>
+  <div class="fwd-list" id="fwd-list"></div>
+  <button class="search-close" onclick="closeFwdPicker()" style="margin-top:16px">CANCEL</button>
+</div>
+
+<!-- AUTO-LOCK OVERLAY -->
+<div class="autolock-overlay" id="autolock-overlay">
+  <div class="al-title">⏱ SESSION LOCKED</div>
+  <div class="al-sub">Auto-lock triggered · Enter PIN to unlock</div>
+  <input class="al-pin-input" id="al-pin-input" type="password" maxlength="4" placeholder="----" autocomplete="off">
+  <div class="al-error" id="al-error">✗ Invalid PIN</div>
+  <button class="al-btn" onclick="unlockApp()">⟳ UNLOCK</button>
+  <div style="font-size:8px;color:var(--dim);margin-top:10px">Default PIN: 1234</div>
 </div>
 
 <!-- WIPE CONFIRM MODAL -->
@@ -669,6 +989,12 @@ async function boot(){
     app.style.display='flex'; app.style.flexDirection='column';
     document.getElementById('my-id').textContent=ST.myId;
     startIdRotation();
+    // Init new features
+    ST.theme=localStorage.getItem('cm_theme')||'green';
+    ST.autoLockMin=parseInt(localStorage.getItem('cm_autolock'))||5;
+    ST.pin=localStorage.getItem('cm_pin')||'1234';
+    applyTheme(ST.theme);
+    startAutoLock();
     await addDemoContacts();
     await updateMemUI();
     registerSW();
@@ -751,18 +1077,28 @@ async function addDemoContacts(){
 function renderContacts(){
   const list=document.getElementById('clist');
   list.innerHTML='';
-  ST.contacts.forEach(c=>{
+  // Sort: pinned first
+  const sorted=[...ST.contacts].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  sorted.forEach(c=>{
     const div=document.createElement('div');
-    div.className='citem'+(ST.active===c.id?' active':'');
+    div.className='citem'+(ST.active===c.id?' active':'')+(c.pinned?' pinned-contact':'');
     div.onclick=()=>{selectContact(c.id); closeSidebar();};
     const burnLabel=c.burnSecs===0?'READ-ONCE':c.burnSecs===-1?'MANUAL':`${c.burnSecs}s`;
     const live=(ST.msgs[c.id]||[]).filter(m=>!m.burned).length;
     div.innerHTML=`
-      <div class="cname">${esc(c.name)}<span class="burn-badge">🔥${burnLabel}</span>${live>0?`<span style="font-size:7px;color:var(--amber);border:1px solid rgba(255,170,0,0.3);padding:1px 4px">M:${live}</span>`:''}</div>
+      <div class="cname"><span class="cpin ${c.pinned?'pinned':''}" onclick="event.stopPropagation();togglePin('${c.id}')">${c.pinned?'📌':'📌'}</span>${esc(c.name)}<span class="burn-badge">🔥${burnLabel}</span>${live>0?`<span style="font-size:7px;color:var(--amber);border:1px solid rgba(255,170,0,0.3);padding:1px 4px">M:${live}</span>`:''}</div>
       <div class="cmeta"><span>E2E·P2P·GHOST</span><span>${c.lastSeen}</span></div>
     `;
     list.appendChild(div);
   });
+}
+
+function togglePin(cid){
+  const c=ST.contacts.find(x=>x.id===cid);
+  if(!c) return;
+  c.pinned=!c.pinned;
+  renderContacts();
+  showToast(c.pinned?'📌 Contact pinned':'📍 Contact unpinned');
 }
 
 function selectContact(cid){
@@ -783,13 +1119,14 @@ function renderChat(){
   const msgs=ST.msgs[ST.active]||[];
   const burnLabel=c.burnSecs===0?'READ-ONCE':c.burnSecs===-1?'MANUAL DELETE':`${c.burnSecs}s AUTO-BURN`;
   const liveCount=msgs.filter(m=>!m.burned).length;
+  const burnOptions = c.burnSecs===-1?'0':c.burnSecs===0?'-1':String(c.burnSecs);
 
   area.innerHTML=`
     <div class="chat-header">
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="ch-back" onclick="backToList()">← BACK</button>
         <div>
-          <div class="ch-name">${esc(c.name)}</div>
+          <div class="ch-name">${esc(c.name)}<span class="typing-indicator" id="typing-${c.id}"> ...typing</span></div>
           <div style="font-size:8px;color:var(--dim);margin-top:1px;letter-spacing:1px">GHOST-ID: ${c.id.toUpperCase()} · P2P · NO RELAY</div>
         </div>
       </div>
@@ -799,6 +1136,7 @@ function renderChat(){
         <span class="pill">AES-GCM</span>
         <span class="pill burn">🔥 ${burnLabel}</span>
         <span class="pill mem">💾 MEM:${liveCount}</span>
+        <span class="pill" style="cursor:pointer" onclick="exportChat()" title="Export">⬇ EXPORT</span>
       </div>
     </div>
     <div class="messages" id="mlist">
@@ -817,12 +1155,24 @@ function renderChat(){
       <span style="font-size:8px;color:rgba(255,49,49,0.5);white-space:nowrap">NO MIDDLEMEN</span>
     </div>
     <div class="input-area">
+      <div class="reply-preview" id="reply-preview">
+        <div class="rp-text" id="rp-text"></div>
+        <button class="rp-close" onclick="cancelReply()">✕</button>
+      </div>
       <div class="input-meta">
         <span>🔒 AES-256-GCM</span>
         <div class="enc-bar"><div class="enc-fill"></div></div>
-        <div class="burn-toggle ${c.burnSecs!==-1?'on':''}" id="burn-toggle" onclick="toggleBurn()">
-          🔥 BURN: ${c.burnSecs===-1?'OFF':'ON'}
-        </div>
+        <select class="burn-select" id="burn-select" onchange="setBurnTimer(this.value)">
+          <option value="-1" ${burnOptions==='0'?'selected':''}>🔥OFF</option>
+          <option value="10" ${burnOptions==='10'?'selected':''}>10s</option>
+          <option value="30" ${burnOptions==='30'?'selected':''}>30s</option>
+          <option value="60" ${burnOptions==='60'?'selected':''}>60s</option>
+          <option value="300" ${burnOptions==='300'?'selected':''}>5min</option>
+          <option value="600" ${burnOptions==='600'?'selected':''}>10min</option>
+          <option value="0" ${burnOptions==='-1'?'selected':''}>READ-ONCE</option>
+          <option value="custom">CUSTOM</option>
+        </select>
+        <input class="burn-custom-input" id="burn-custom" type="number" placeholder="sec" min="1" max="3600" onchange="setBurnTimer(this.value)">
       </div>
       <div class="input-row">
         <textarea class="minput" id="minput" placeholder="Message auto-destroyed after reading..." rows="1"
@@ -840,18 +1190,42 @@ function renderMsg(m,c){
   if(m.burned) return `<div class="sysmsg wipe">🔥 Message burned · key ${m.id} wiped</div>`;
   const av=m.self?'ME':(c.name.substring(0,2));
   const peek=m.enc?m.enc.substring(0,44)+'...':'';
+  const reactions=m.reactions||[];
+  const isBookmarked=m.bookmarked?'bookmarked':'';
+  const readClass=m.readAt&&m.self?' read':'';
+  const replyQuote=m.replyTo?`<div class="reply-quote">⟫ ${esc(m.replyTo.text.substring(0,60))}</div>`:'';
+  const reactHtml=reactions.map(r=>`<span class="reaction-chip" onclick="toggleReaction('${m.id}','${c.id}','${r.e}')">${r.e}<span class="rc-count">${r.count}</span></span>`).join('');
   return `
     <div class="mrow${m.self?' self':''}" id="mr-${m.id}">
+      <div class="msg-actions">
+        <button class="msg-action-btn" onclick="showReactionPicker('${m.id}','${c.id}',event)" title="React">😊</button>
+        <button class="msg-action-btn" onclick="replyToMsg('${m.id}','${c.id}')" title="Reply">⟫</button>
+        <button class="msg-action-btn" onclick="forwardMsg('${m.id}','${c.id}')" title="Forward">⟫f</button>
+        <button class="msg-action-btn bm-star ${isBookmarked}" onclick="toggleBookmark('${m.id}','${c.id}')" title="Bookmark">★</button>
+      </div>
+      <div class="reaction-picker" id="rp-${m.id}">
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','👍')">👍</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','❤️')">❤️</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','😂')">😂</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','😮')">😮</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','😢')">😢</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','😡')">😡</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','🔥')">🔥</button>
+        <button class="rpicker-emoji" onclick="addReaction('${m.id}','${c.id}','👀')">👀</button>
+      </div>
       <div class="mavatar">${av}</div>
       <div class="mbubble" id="mb-${m.id}">
         <div class="burn-timer-bar" id="bb-${m.id}" style="width:100%"></div>
         <div class="mem-indicator" id="mi-${m.id}">💾 ${m.id}</div>
         <div class="enc-peek">[CIPHER] ${esc(peek)}</div>
+        ${replyQuote}
         <div class="mtext">${esc(m.text)}</div>
+        <div class="reactions-row" id="react-${m.id}">${reactHtml}</div>
         <div class="mmeta">
           <span>${m.time}</span>
           <span style="color:var(--gd)">E2E·DR·P2P</span>
-          ${m.self?'<span class="mcheck">✓✓</span>':''}
+          ${m.self?`<span class="mcheck${readClass}" id="ck-${m.id}">✓✓</span>`:''}
+          <span class="msg-star-ind ${m.bookmarked?'show':''}" id="msi-${m.id}">★</span>
           <span class="burn-count" id="bt-${m.id}"></span>
         </div>
       </div>
@@ -938,6 +1312,13 @@ async function sendMsg(){
     time:'just now', burned:false,
     burnSecs:c.burnSecs, readAt:null
   };
+
+  // Add reply reference if replying
+  if(ST.replyingTo){
+    msg.replyTo={text:ST.replyingTo.text,mid:ST.replyingTo.mid};
+    cancelReply();
+  }
+
   ST.msgs[ST.active].push(msg);
   await storeSave(msg.id, {cid:ST.active,enc,burnSecs:c.burnSecs,self:true,time:msg.time});
 
@@ -952,12 +1333,17 @@ async function sendMsg(){
   renderContacts();
   if(k) k.rc++;
 
+  // Simulate read receipts
+  simulateReceipts(msg.id);
+
   // Simulate reply after 2s
   setTimeout(()=>simulateReply(c), 2000+Math.random()*2000);
 }
 
 async function simulateReply(c){
   if(ST.active!==c.id) return;
+  // Show typing indicator
+  showTyping(c.id);
   const replies=[
     'Signal locked. Ratchet advanced.',
     'Keys rotated. Secure.',
@@ -974,18 +1360,23 @@ async function simulateReply(c){
     time:'just now', burned:false,
     burnSecs:c.burnSecs, readAt:null
   };
-  ST.msgs[c.id].push(msg);
-  await storeSave(msg.id, {cid:c.id,enc,burnSecs:c.burnSecs,self:false,time:msg.time});
 
-  const mlist=document.getElementById('mlist');
-  if(mlist){
-    const div=document.createElement('div');
-    div.innerHTML=renderMsg(msg,c);
-    mlist.appendChild(div.firstElementChild);
-    mlist.scrollTop=mlist.scrollHeight;
-  }
-  renderContacts();
-  setTimeout(()=>startBurnTimers(c.id), 600);
+  // Hide typing indicator and show message after delay
+  setTimeout(function(){
+    hideTyping(c.id);
+    ST.msgs[c.id].push(msg);
+    storeSave(msg.id, {cid:c.id,enc:enc,burnSecs:c.burnSecs,self:false,time:msg.time});
+
+    const mlist=document.getElementById('mlist');
+    if(mlist){
+      const div=document.createElement('div');
+      div.innerHTML=renderMsg(msg,c);
+      mlist.appendChild(div.firstElementChild);
+      mlist.scrollTop=mlist.scrollHeight;
+    }
+    renderContacts();
+    startBurnTimers(c.id);
+  }, 1200+Math.random()*800);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1175,8 +1566,200 @@ window.addEventListener('appinstalled',()=>{
 });
 
 // ══════════════════════════════════════════════════════════
-// LAUNCH
+// FEATURE: SEARCH
 // ══════════════════════════════════════════════════════════
+function openSearch(){
+  var ov=document.getElementById('search-overlay');ov.classList.add('open');
+  var inp=document.getElementById('search-input');inp.value='';inp.focus();
+  document.getElementById('search-results').innerHTML='<div class="sr-empty">Type to search all messages...</div>';
+  inp.oninput=function(){performSearch(inp.value);};
+}
+function closeSearch(){document.getElementById('search-overlay').classList.remove('open');}
+function performSearch(q){
+  var results=document.getElementById('search-results');
+  if(!q||q.length<2){results.innerHTML='<div class="sr-empty">Type at least 2 characters...</div>';return;}
+  var qL=q.toLowerCase();var hits=[];
+  ST.contacts.forEach(function(c){(ST.msgs[c.id]||[]).forEach(function(m){if(!m.burned&&m.text.toLowerCase().includes(qL))hits.push({m:m,c:c});});});
+  if(!hits.length){results.innerHTML='<div class="sr-empty">No messages found</div>';return;}
+  results.innerHTML=hits.map(function(h){
+    var txt=h.m.text;var idx=txt.toLowerCase().indexOf(qL);
+    var snip=txt.substring(Math.max(0,idx-20),idx+q.length+20);
+    var mk=esc(snip).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');
+    return '<div class="sr-item" onclick="goToMessage('+h.c.id+','+h.m.id+')"><div class="sr-contact">'+esc(h.c.name)+' \u00b7 '+h.m.time+'</div><div class="sr-text">'+(h.m.self?'\u2605 ':'')+mk+'</div></div>';
+  }).join('');
+}
+function goToMessage(cid,mid){
+  closeSearch();selectContact(cid);
+  setTimeout(function(){var el=document.getElementById('mr-'+mid);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.background='var(--gg)';setTimeout(function(){el.style.background='';},1500);}
+  },500);
+}
+
+// ══════════════════════════════════════════════════════════
+// FEATURE: BOOKMARKS
+// ══════════════════════════════════════════════════════════
+function openBookmarks(){
+  var panel=document.getElementById('bookmarks-panel');panel.classList.add('open');
+  var list=document.getElementById('bm-list');var all=[];
+  ST.contacts.forEach(function(c){(ST.msgs[c.id]||[]).forEach(function(m){if(!m.burned&&m.bookmarked)all.push({m:m,c:c});});});
+  if(!all.length){list.innerHTML='<div class="sr-empty">No bookmarked messages</div>';return;}
+  list.innerHTML=all.map(function(h){return '<div class="bm-item" onclick="goToMessage(\''+h.c.id+'\',\''+h.m.id+'\');closeBookmarks();"><div class="bm-from">'+(h.m.self?'ME\x2192'+esc(h.c.name):esc(h.c.name))+'</div><div class="bm-text">'+esc(h.m.text)+'</div><div class="bm-time">'+h.m.time+'</div></div>';}).join('');
+}
+function closeBookmarks(){document.getElementById('bookmarks-panel').classList.remove('open');}
+function toggleBookmark(mid,cid){
+  var m=(ST.msgs[cid]||[]).find(function(x){return x.id===mid;});if(!m)return;
+  m.bookmarked=!m.bookmarked;
+  var row=document.getElementById('mr-'+mid);
+  if(row){
+    var star=row.querySelector('.bm-star');var ind=row.querySelector('.msg-star-ind');
+    if(star)star.className='msg-action-btn bm-star'+(m.bookmarked?' bookmarked':'');
+    if(ind)ind.className='msg-star-ind'+(m.bookmarked?' show':'');
+  }
+  showToast(m.bookmarked?'★ Bookmarked':'☆ Unbookmarked');
+}
+
+// ══════════════════════════════════════════════════════════
+// FEATURE: EMOJI REACTIONS
+// ══════════════════════════════════════════════════════════
+function showReactionPicker(mid,cid){
+  document.querySelectorAll('.reaction-picker.open').forEach(function(el){if(el.id!=='rp-'+mid)el.classList.remove('open');});
+  var picker=document.getElementById('rp-'+mid);picker.classList.toggle('open');
+}
+function addReaction(mid,cid,emoji){
+  var m=(ST.msgs[cid]||[]).find(function(x){return x.id===mid;});if(!m)return;
+  if(!m.reactions)m.reactions=[];
+  var ex=m.reactions.find(function(r){return r.e===emoji;});
+  if(ex)ex.count++;else m.reactions.push({e:emoji,count:1});
+  var p=document.getElementById('rp-'+mid);if(p)p.classList.remove('open');
+  renderReactions(m,cid);
+}
+function toggleReaction(mid,cid,emoji){
+  var m=(ST.msgs[cid]||[]).find(function(x){return x.id===mid;});if(!m||!m.reactions)return;
+  var ex=m.reactions.find(function(r){return r.e===emoji;});
+  if(ex){ex.count--;if(ex.count<=0)m.reactions=m.reactions.filter(function(r){return r.e!==emoji;});}
+  renderReactions(m,cid);
+}
+function renderReactions(m,cid){
+  var row=document.getElementById('react-'+m.id);if(!row)return;
+  row.innerHTML=(m.reactions||[]).map(function(r){return '<span class="reaction-chip" onclick="toggleReaction(\''+m.id+'\',\''+cid+'\',\''+r.e+'\')">'+r.e+'<span class="rc-count">'+r.count+'</span></span>';}).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// FEATURE: REPLY
+// ══════════════════════════════════════════════════════════
+function replyToMsg(mid,cid){
+  var m=(ST.msgs[cid]||[]).find(function(x){return x.id===mid;});if(!m)return;
+  ST.replyingTo={text:m.text,mid:mid,id:cid};
+  var pp=document.getElementById('reply-preview');var txt=document.getElementById('rp-text');
+  if(pp&&txt){txt.innerHTML='\u27eb Replying to: <strong>'+esc(m.text.substring(0,50))+'</strong>';pp.classList.add('show');}
+}
+function cancelReply(){ST.replyingTo=null;var pp=document.getElementById('reply-preview');if(pp)pp.classList.remove('show');}
+
+// FEATURE: FORWARD
+function forwardMsg(mid,cid){
+  var m=(ST.msgs[cid]||[]).find(function(x){return x.id===mid;});if(!m)return;
+  ST.forwarding=m;ST.forwardingFrom=cid;
+  var picker=document.getElementById('fwd-picker');var list=document.getElementById('fwd-list');
+  var others=ST.contacts.filter(function(c){return c.id!==cid;});
+  if(!others.length){showToast('No other contacts');return;}
+  list.innerHTML=others.map(function(c){return '<div class="fwd-item" onclick="doForward(\''+c.id+'\')"><span>\u27eb</span><span>'+esc(c.name)+'</span></div>';}).join('');
+  picker.classList.add('open');
+}
+function doForward(tCid){
+  var m=ST.forwarding;if(!m)return;
+  var c=ST.contacts.find(function(x){return x.id===tCid;});if(!c)return;
+  var k=ST.keys[tCid];
+  aesEncrypt(m.text,k.sess).then(function(enc){
+    var fm={id:rndHex(4),self:true,text:m.text,enc:enc,time:'just now',burned:false,burnSecs:c.burnSecs,readAt:null,forwarded:true,forwardFrom:ST.forwardingFrom};
+    ST.msgs[tCid].push(fm);storeSave(fm.id,{cid:tCid,enc:enc,burnSecs:c.burnSecs,self:true,time:fm.time});
+    closeFwdPicker();showToast('\u27eb Forwarded to '+c.name);
+    if(ST.active===tCid)renderChat(c);renderContacts();
+  });
+}
+function closeFwdPicker(){document.getElementById('fwd-picker').classList.remove('open');ST.forwarding=null;}
+
+// FEATURE: THEME
+function openThemeSelector(){
+  document.getElementById('theme-selector').classList.add('open');
+  document.querySelectorAll('.ts-item').forEach(function(el){el.classList.toggle('active',el.dataset.theme===ST.theme);});
+}
+function closeThemeSelector(){document.getElementById('theme-selector').classList.remove('open');}
+function setTheme(name){
+  ST.theme=name;localStorage.setItem('cm_theme',name);applyTheme(name);
+  document.querySelectorAll('.ts-item').forEach(function(el){el.classList.toggle('active',el.dataset.theme===name);});
+  setTimeout(closeThemeSelector,300);
+}
+function applyTheme(name){document.body.setAttribute('data-theme',name);}
+
+// FEATURE: CUSTOM BURN TIMER
+function setBurnTimer(val){
+  var c=ST.contacts.find(function(x){return x.id===ST.active;});if(!c)return;
+  var ci=document.getElementById('burn-custom');
+  if(val==='custom'){if(ci)ci.style.display='inline';return;}
+  if(ci)ci.style.display='none';
+  c.burnSecs=parseInt(val);
+  var area=document.getElementById('chat-area');if(area)renderChat(c);
+  showToast('Burn: '+(c.burnSecs===-1?'OFF':c.burnSecs===0?'READ-ONCE':c.burnSecs+'s'));
+}
+
+// FEATURE: READ RECEIPTS
+function simulateReceipts(mid){
+  setTimeout(function(){var ck=document.getElementById('ck-'+mid);if(ck)ck.textContent='✓';},800);
+  setTimeout(function(){var ck=document.getElementById('ck-'+mid);if(ck)ck.textContent='✓✓';},2000);
+  setTimeout(function(){var ck=document.getElementById('ck-'+mid);if(ck){ck.textContent='✓✓';ck.classList.add('read');}},4000);
+}
+
+// FEATURE: TYPING INDICATOR
+function showTyping(cid){var el=document.getElementById('typing-'+cid);if(el)el.classList.add('show');}
+function hideTyping(cid){var el=document.getElementById('typing-'+cid);if(el)el.classList.remove('show');}
+
+// FEATURE: AUTO-LOCK
+var autoLockTimer=null;
+function startAutoLock(){
+  if(autoLockTimer)clearTimeout(autoLockTimer);
+  var ms=ST.autoLockMin*60*1000;
+  autoLockTimer=setTimeout(function(){if(ST.autoLockMin>0)lockApp();},ms);
+  ['click','keydown','touchstart'].forEach(function(ev){
+    document.addEventListener(ev,function(){if(!document.getElementById('autolock-overlay').classList.contains('open'))startAutoLock();},{passive:true});
+  });
+}
+function lockApp(){
+  document.getElementById('autolock-overlay').classList.add('open');
+  document.getElementById('al-pin-input').value='';
+  document.getElementById('al-pin-input').focus();
+  document.getElementById('al-error').style.display='none';
+}
+function unlockApp(){
+  var inp=document.getElementById('al-pin-input');var err=document.getElementById('al-error');
+  if(inp.value===ST.pin){
+    document.getElementById('autolock-overlay').classList.remove('open');startAutoLock();showToast('\u27f3 Session unlocked');
+  }else{err.style.display='block';inp.value='';inp.focus();}
+}
+
+// FEATURE: EXPORT CHAT
+function exportChat(){
+  var c=ST.contacts.find(function(x){return x.id===ST.active;});if(!c)return;
+  var msgs=ST.msgs[c.id]||[];
+  var hdr='========================================\n  CODE MORS \u00b7 Encrypted Chat Export\n  Contact: '+c.name+'\n  Date: '+new Date().toISOString()+'\n  Messages: '+msgs.length+'\n========================================\n\n';
+  var body=msgs.map(function(m){
+    if(m.burned)return '['+m.time+'] BURNED';
+    var who=m.self?'ME':'THEM';
+    var line='['+m.time+'] '+who+': '+m.text;
+    if(m.replyTo)line='['+m.time+'] '+who+' (reply): '+m.text+'\n    \u27eb '+m.replyTo.text;
+    if(m.reactions&&m.reactions.length)line+='  ['+m.reactions.map(function(r){return r.e+r.count;}).join(' ')+']';
+    if(m.bookmarked)line+=' \u2605';
+    if(m.forwarded)line+=' \u27ebfwd';
+    return line;
+  }).join('\n');
+  var ftr='\n\n========================================\n  END \u00b7 CODE MORS v4 \u00b7 Ghost Protocol\n========================================';
+  var text=hdr+body+ftr;
+  var blob=new Blob([text],{type:'text/plain'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='CODEMORS_'+c.id+'_'+Date.now()+'.txt';a.click();
+  URL.revokeObjectURL(a.href);showToast('Chat exported');
+}
+
+// LAUNCH
 window.addEventListener('load', boot);
 </script>
 </body>
