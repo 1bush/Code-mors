@@ -1288,12 +1288,15 @@ function renderChat(){
         <div class="enc-bar"><div class="enc-fill"></div></div>
         <select class="burn-select" id="burn-select" onchange="setBurnTimer(this.value)">
           <option value="-1" ${burnOptions==='0'?'selected':''}>OFF</option>
-          <option value="15" ${burnOptions==='15'?'selected':''}>15s</option>
           <option value="30" ${burnOptions==='30'?'selected':''}>30s</option>
-          <option value="45" ${burnOptions==='45'?'selected':''}>45s</option>
           <option value="60" ${burnOptions==='60'?'selected':''}>60s</option>
           <option value="180" ${burnOptions==='180'?'selected':''}>180s</option>
-          <option value="0" ${burnOptions==='-1'?'selected':''}>READ-ONCE</option>
+          <option value="300" ${burnOptions==='300'?'selected':''}>5min</option>
+          <option value="0" ${burnOptions==='0'?'selected':''}>READ-ONCE</option>
+          <option value="30ro" ${burnOptions==='30ro'?'selected':''}>READ-ONCE 30s</option>
+          <option value="60ro" ${burnOptions==='60ro'?'selected':''}>READ-ONCE 60s</option>
+          <option value="180ro" ${burnOptions==='180ro'?'selected':''}>READ-ONCE 180s</option>
+          <option value="300ro" ${burnOptions==='300ro'?'selected':''}>READ-ONCE 5min</option>
         </select>
         <span class="burn-count" id="burn-count-display" style="display:none"></span>
       </div>
@@ -1814,9 +1817,18 @@ function applyTheme(name){document.body.setAttribute('data-theme',name);}
 // FEATURE: CUSTOM BURN TIMER
 function setBurnTimer(val){
   var c=ST.contacts.find(function(x){return x.id===ST.active;});if(!c)return;
-  c.burnSecs=parseInt(val);
+  // READ-ONCE variants: '30ro' = read-once with 30s countdown
+  if(val.indexOf('ro')>-1){
+    var secs=parseInt(val);
+    c.burnSecs=secs;
+    c.readOnceCountdown=secs;
+    showToast('READ-ONCE: burns '+secs+'s after reading');
+  } else {
+    c.burnSecs=parseInt(val);
+    c.readOnceCountdown=0;
+    showToast('Burn: '+(c.burnSecs===-1?'OFF':c.burnSecs===0?'READ-ONCE':c.burnSecs+'s'));
+  }
   var area=document.getElementById('chat-area');if(area)renderChat(c);
-  showToast('Burn: '+(c.burnSecs===-1?'OFF':c.burnSecs===0?'READ-ONCE':c.burnSecs+'s'));
 }
 
 // FEATURE: READ RECEIPTS
