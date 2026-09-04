@@ -662,6 +662,14 @@ body[data-theme="woodland"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);-
 </style>
 </head>
 <body data-theme="matrix">
+<!-- Error display for debugging -->
+<div id="error-box" style="display:none;position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:99999;font-size:11px;white-space:pre-wrap;"></div>
+<script>
+window.onerror=function(msg,url,line){
+  document.getElementById('error-box').style.display='block';
+  document.getElementById('error-box').textContent='ERROR: '+msg+' (line '+line+')';
+};
+</script>
 
 <!-- BOOT SCREEN -->
 <div id="boot">
@@ -1400,7 +1408,6 @@ async function burnMessage(m, cid, delay){
       }
     }
   }, delay);
-}
 }
 
 // ══════════════════════════════════════════════════════════
