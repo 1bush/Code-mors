@@ -662,8 +662,6 @@ body[data-theme="woodland"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);-
 </style>
 </head>
 <body data-theme="matrix">
-<!-- COVERT FLASH LAYER (hidden transmission) -->
-<div id="covert-flash"></div>
 
 <!-- BOOT SCREEN -->
 <div id="boot">
@@ -965,12 +963,21 @@ async function genKeyPair(){
 async function exportPub(k){return buf2hex(await C.subtle.exportKey('raw',k));}
 
 async function aesEncrypt(text, keyHex){
-  const enc = new TextEncoder();
-  const iv = C.getRandomValues(new Uint8Array(12));
-  const raw = enc.encode(keyHex.substring(0,32).padEnd(32,'k'));
-  const key = await C.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['encrypt']);
-  const ct = await C.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(text));
-  return buf2hex(iv)+':'+buf2hex(ct);
+  try{
+    const enc = new TextEncoder();
+    const iv = C.getRandomValues(new Uint8Array(12));
+    const raw = enc.encode(keyHex.substring(0,32).padEnd(32,'k'));
+    const key = await C.subtle.importKey('raw',raw,{name:'AES-GCM'},false,['encrypt']);
+    const ct = await C.subtle.encrypt({name:'AES-GCM',iv}, key, enc.encode(text));
+    return buf2hex(iv)+':'+buf2hex(ct);
+  }catch(e){
+    // Fallback: simple XOR obfuscation (not real crypto, just for demo)
+    var result='';
+    for(var i=0;i<text.length;i++){
+      result+=String.fromCharCode(text.charCodeAt(i)^keyHex.charCodeAt(i%keyHex.length));
+    }
+    return btoa(result);
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1063,11 +1070,18 @@ const BOOT_LINES = [
 ];
 
 async function boot(){
-  const idKP = await genKeyPair();
-  const sessKP = await genKeyPair();
-  ST.identityPub = await exportPub(idKP.publicKey);
-  ST.sessionPub = await exportPub(sessKP.publicKey);
-  ST.masterKey = rndHex(16);
+  try{
+    const idKP = await genKeyPair();
+    const sessKP = await genKeyPair();
+    ST.identityPub = await exportPub(idKP.publicKey);
+    ST.sessionPub = await exportPub(sessKP.publicKey);
+    ST.masterKey = rndHex(16);
+  }catch(e){
+    // Fallback: generate random keys without WebCrypto
+    ST.identityPub = rndHex(64);
+    ST.sessionPub = rndHex(64);
+    ST.masterKey = rndHex(16);
+  }
 
   const blog = document.getElementById('blog');
   const pfill = document.getElementById('pfill');
@@ -1869,8 +1883,10 @@ async function morseTransmit(){
   document.getElementById('morse-tx-output').textContent=morse.substring(0,80)+'...';
   document.getElementById('morse-tx-status').className='status active';
   document.getElementById('morse-tx-status').innerHTML='Transmitting...';
-  var flash=document.getElementById('covert-flash');
-  flash.style.cssText='position:fixed;bottom:2px;right:2px;width:2px;height:2px;z-index:99999;pointer-events:none;mix-blend-mode:difference;';
+  // Create flash element dynamically
+  var flash=document.createElement('div');
+  flash.style.cssText='position:fixed;bottom:2px;right:2px;width:2px;height:2px;z-index:99999;pointer-events:none;mix-blend-mode:difference;opacity:0;';
+  document.body.appendChild(flash);
   var i=0;
   morseTxInterval=setInterval(function(){
     if(i>=morse.length){morseStop();return;}
@@ -1885,8 +1901,9 @@ async function morseTransmit(){
 
 function morseStop(){
   if(morseTxInterval){clearInterval(morseTxInterval);morseTxInterval=null;}
-  var flash=document.getElementById('covert-flash');
-  if(flash)flash.style.opacity='0';
+  // Remove any dynamically created flash elements
+  var flashes=document.querySelectorAll('div[style*="mix-blend-mode:difference"]');
+  flashes.forEach(function(f){f.remove();});
   document.getElementById('morse-tx-status').className='status';
   document.getElementById('morse-tx-status').textContent='Ready';
 }
