@@ -193,7 +193,14 @@ body::after{
 .messages::-webkit-scrollbar{width:2px;}
 .messages::-webkit-scrollbar-thumb{background:var(--gd);}
 .sysmsg{text-align:center;font-size:8px;color:rgba(0,255,65,0.25);padding:4px;letter-spacing:1px;text-transform:uppercase;}
-.sysmsg.wipe{color:rgba(255,49,49,0.5);}
+/* Burned message - inline replacement */
+.msg-burned{
+  display:inline-block;padding:5px 10px;border:1px solid rgba(255,49,49,0.25);
+  background:rgba(255,49,49,0.05);font-size:9px;color:var(--red);letter-spacing:1px;
+  border-radius:1px;opacity:.7;font-style:italic;
+}
+.msg-burned.self{text-align:right;}
+.msg-burned.other{text-align:left;}
 .mrow{display:flex;gap:7px;align-items:flex-end;animation:si 0.25s ease;}
 .mrow.self{flex-direction:row-reverse;}
 .mavatar{
@@ -1348,18 +1355,15 @@ async function burnMessage(m, cid, delay){
     m.burned=true;
     ST.burnedTotal++;
     await storeDelete(m.id);
-    // Flash overlay
-    const overlay=document.getElementById('burn-overlay');
-    overlay.classList.add('open');
-    setTimeout(()=>overlay.classList.remove('open'),1400);
-    // Re-render or update DOM
-    const row=document.getElementById('mr-'+m.id);
-    if(row){
-      const replacement=document.createElement('div');
-      replacement.className='sysmsg wipe';
-      replacement.textContent=`🔥 Message burned · key ${m.id} wiped`;
-      row.replaceWith(replacement);
+    // Replace message bubble with inline burned indicator (keeps layout)
+    const el=document.getElementById('mb-'+m.id);
+    if(el){
+      el.innerHTML=`<span class="msg-burned ${m.self?'self':'other'}">🔥 burned · wiped</span>`;
     }
+    const bar=document.getElementById('bb-'+m.id);
+    if(bar)bar.style.width='0%';
+    const txt=document.getElementById('bt-'+m.id);
+    if(txt)txt.textContent='';
     renderContacts();
     // Update chat header pill
     const c=ST.contacts.find(x=>x.id===cid);
@@ -1371,6 +1375,7 @@ async function burnMessage(m, cid, delay){
       }
     }
   }, delay);
+}
 }
 
 // ══════════════════════════════════════════════════════════
