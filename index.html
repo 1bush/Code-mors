@@ -18,41 +18,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap');
 
 :root {
-  --g: #00ff41;
-  --gd: #00c032;
-  --gg: rgba(0,255,65,0.07);
-  --glow: rgba(0,255,65,0.35);
-  --red: #ff3131;
-  --amber: #ffaa00;
-  --blue: #00aaff;
-  --bg: #010801;
-  --bg2: #020d02;
-  --bg3: #031003;
-  --border: rgba(0,255,65,0.18);
-  --borderB: rgba(0,255,65,0.45);
-  --dim: rgba(0,255,65,0.42);
+  --g: #7C887E; --gd: #91967F; --gg: rgba(124,136,126,0.07); --glow: rgba(124,136,126,0.1);
+  --red: #c84432; --amber: #BAB79F; --blue: #726870;
+  --bg: #0a0c0a; --bg2: #0f110f; --bg3: #121412;
+  --border: rgba(124,136,126,0.15); --borderB: rgba(124,136,126,0.35); --dim: rgba(124,136,126,0.4);
 }
 
-/* ═══════ THEMES ═══════ */
-body[data-theme="amber"] {
-  --g: #ffaa00; --gd: #cc8800; --gg: rgba(255,170,0,0.07); --glow: rgba(255,170,0,0.35);
-  --bg: #0a0600; --bg2: #0f0a00; --bg3: #140c00;
-  --border: rgba(255,170,0,0.18); --borderB: rgba(255,170,0,0.45); --dim: rgba(255,170,0,0.42);
+/* ═══════ MILITARY CAMOUFLAGE THEMES ═══════ */
+/* OCP - Operational Camouflage Pattern (default) */
+body[data-theme="ocp"] {
+  --g: #7C887E; --gd: #91967F; --gg: rgba(124,136,126,0.07); --glow: rgba(124,136,126,0.1);
+  --red: #c84432; --amber: #BAB79F; --blue: #726870;
+  --bg: #0a0c0a; --bg2: #0f110f; --bg3: #121412;
+  --border: rgba(124,136,126,0.15); --borderB: rgba(124,136,126,0.35); --dim: rgba(124,136,126,0.4);
 }
-body[data-theme="ice"] {
-  --g: #00ddff; --gd: #0099bb; --gg: rgba(0,221,255,0.07); --glow: rgba(0,221,255,0.35);
-  --bg: #00080a; --bg2: #001014; --bg3: #001418;
-  --border: rgba(0,221,255,0.18); --borderB: rgba(0,221,255,0.45); --dim: rgba(0,221,255,0.42);
+/* Snow - Arctic/Winter military */
+body[data-theme="snow"] {
+  --g: #D3D2CD; --gd: #B0ADA8; --gg: rgba(211,210,205,0.07); --glow: rgba(211,210,205,0.1);
+  --red: #b85c5c; --amber: #a09a8a; --blue: #8a8a90;
+  --bg: #0c0d0e; --bg2: #111314; --bg3: #141618;
+  --border: rgba(211,210,205,0.15); --borderB: rgba(211,210,205,0.35); --dim: rgba(211,210,205,0.4);
 }
-body[data-theme="blood"] {
-  --g: #ff2222; --gd: #cc0000; --gg: rgba(255,34,34,0.07); --glow: rgba(255,34,34,0.35);
-  --bg: #0a0000; --bg2: #0f0000; --bg3: #140000;
-  --border: rgba(255,34,34,0.18); --borderB: rgba(255,34,34,0.45); --dim: rgba(255,34,34,0.42);
+/* Sand - Desert military */
+body[data-theme="sand"] {
+  --g: #A08D83; --gd: #8a7870; --gg: rgba(160,141,131,0.07); --glow: rgba(160,141,131,0.1);
+  --red: #b86050; --amber: #c8a878; --blue: #7a7060;
+  --bg: #0d0b0a; --bg2: #12100e; --bg3: #151210;
+  --border: rgba(160,141,131,0.15); --borderB: rgba(160,141,131,0.35); --dim: rgba(160,141,131,0.4);
 }
-body[data-theme="purple"] {
-  --g: #cc44ff; --gd: #9933cc; --gg: rgba(204,68,255,0.07); --glow: rgba(204,68,255,0.35);
-  --bg: #060008; --bg2: #0a0010; --bg3: #0c0014;
-  --border: rgba(204,68,255,0.18); --borderB: rgba(204,68,255,0.45); --dim: rgba(204,68,255,0.42);
+/* Green - Woodland military */
+body[data-theme="green"] {
+  --g: #5a6e3a; --gd: #4a5a2e; --gg: rgba(90,110,58,0.07); --glow: rgba(90,110,58,0.1);
+  --red: #a84838; --amber: #8a7a4a; --blue: #506040;
+  --bg: #080a06; --bg2: #0c0e08; --bg3: #0e100a;
+  --border: rgba(90,110,58,0.15); --borderB: rgba(90,110,58,0.35); --dim: rgba(90,110,58,0.4);
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -85,7 +84,7 @@ body::after{
 }
 .boot-logo{
   font-family:'Orbitron',sans-serif;font-size:clamp(28px,6vw,64px);font-weight:900;
-  letter-spacing:8px;color:var(--g);text-shadow:0 0 30px var(--glow),0 0 80px rgba(0,255,65,0.1);
+  letter-spacing:8px;color:var(--g);text-shadow:0 0 10px var(--glow);
   animation:flicker 5s infinite;
 }
 .boot-tag{font-size:10px;letter-spacing:4px;color:var(--dim);text-transform:uppercase;text-align:center;padding:0 16px;}
@@ -254,7 +253,7 @@ body::after{
   font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;
   padding:9px 14px;cursor:pointer;height:42px;transition:all 0.2s;white-space:nowrap;
 }
-.sbtn:hover,.sbtn:active{background:rgba(0,255,65,0.13);box-shadow:0 0 14px var(--glow);}
+.sbtn:hover,.sbtn:active{background:var(--gg);box-shadow:0 0 8px var(--glow);}
 .burn-toggle{
   display:flex;align-items:center;gap:5px;cursor:pointer;padding:2px 7px;
   border:1px solid rgba(255,49,49,0.3);background:rgba(255,49,49,0.05);
@@ -304,7 +303,7 @@ body::after{
   letter-spacing:2px;cursor:pointer;transition:all 0.2s;border-radius:0;
 }
 .mbtn.pri{background:var(--gg);border:1px solid var(--borderB);color:var(--g);}
-.mbtn.pri:hover,.mbtn.pri:active{background:rgba(0,255,65,0.14);box-shadow:0 0 14px var(--glow);}
+.mbtn.pri:hover,.mbtn.pri:active{background:var(--gg);box-shadow:0 0 8px var(--glow);}
 .mbtn.sec{background:none;border:1px solid var(--border);color:var(--dim);}
 .mbtn.danger{background:rgba(255,49,49,0.08);border:1px solid rgba(255,49,49,0.6);color:var(--red);}
 .mbtn.danger:hover,.mbtn.danger:active{background:rgba(255,49,49,0.2);box-shadow:0 0 14px rgba(255,49,49,0.3);}
@@ -331,7 +330,7 @@ body::after{
   padding:7px 14px;font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;
   cursor:pointer;border:1px solid var(--borderB);background:var(--gg);color:var(--g);transition:all 0.2s;
 }
-.inst-btn:hover,.inst-btn:active{background:rgba(0,255,65,0.14);box-shadow:0 0 12px var(--glow);}
+.inst-btn:hover,.inst-btn:active{background:var(--gg);box-shadow:0 0 8px var(--glow);}
 .inst-btn.dismiss{background:none;border-color:var(--border);color:var(--dim);}
 
 /* TOAST */
@@ -372,11 +371,11 @@ body::after{
 @keyframes shim{0%,100%{opacity:.55;}50%{opacity:1;}}
 @keyframes scroll{from{transform:translateX(100vw);}to{transform:translateX(-300%);}}
 @keyframes idFlash{0%,100%{color:var(--g);}50%{color:var(--amber);}}
-/* ═══════ THEME VARIANTS ═══════ */
-body[data-theme="amber"]{--g:#ffaa00;--gd:#cc8800;--gg:rgba(255,170,0,0.07);--glow:rgba(255,170,0,0.35);--bg:#0a0601;--bg2:#0f0902;--bg3:#140c02;--border:rgba(255,170,0,0.18);--borderB:rgba(255,170,0,0.45);--dim:rgba(255,170,0,0.42);}
-body[data-theme="ice"]{--g:#00ddff;--gd:#00b0cc;--gg:rgba(0,221,255,0.07);--glow:rgba(0,221,255,0.35);--bg:#01080a;--bg2:#020d0f;--bg3:#031014;--border:rgba(0,221,255,0.18);--borderB:rgba(0,221,255,0.45);--dim:rgba(0,221,255,0.42);}
-body[data-theme="blood"]{--g:#ff2222;--gd:#cc1a1a;--gg:rgba(255,34,34,0.07);--glow:rgba(255,34,34,0.35);--bg:#0a0101;--bg2:#0f0202;--bg3:#140303;--border:rgba(255,34,34,0.18);--borderB:rgba(255,34,34,0.45);--dim:rgba(255,34,34,0.42);}
-body[data-theme="purple"]{--g:#cc44ff;--gd:#aa33cc;--gg:rgba(204,68,255,0.07);--glow:rgba(204,68,255,0.35);--bg:#06010a;--bg2:#09020f;--bg3:#0c0314;--border:rgba(204,68,255,0.18);--borderB:rgba(204,68,255,0.45);--dim:rgba(204,68,255,0.42);}
+/* ═══════ MILITARY CAMOUFLAGE THEMES (VARIANTS) ═══════ */
+body[data-theme="ocp"]{--g:#7C887E;--gd:#91967F;--gg:rgba(124,136,126,0.07);--glow:rgba(124,136,126,0.1);--red:#c84432;--amber:#BAB79F;--blue:#726870;--bg:#0a0c0a;--bg2:#0f110f;--bg3:#121412;--border:rgba(124,136,126,0.15);--borderB:rgba(124,136,126,0.35);--dim:rgba(124,136,126,0.4);}
+body[data-theme="snow"]{--g:#D3D2CD;--gd:#B0ADA8;--gg:rgba(211,210,205,0.07);--glow:rgba(211,210,205,0.1);--red:#b85c5c;--amber:#a09a8a;--blue:#8a8a90;--bg:#0c0d0e;--bg2:#111314;--bg3:#141618;--border:rgba(211,210,205,0.15);--borderB:rgba(211,210,205,0.35);--dim:rgba(211,210,205,0.4);}
+body[data-theme="sand"]{--g:#A08D83;--gd:#8a7870;--gg:rgba(160,141,131,0.07);--glow:rgba(160,141,131,0.1);--red:#b86050;--amber:#c8a878;--blue:#7a7060;--bg:#0d0b0a;--bg2:#12100e;--bg3:#151210;--border:rgba(160,141,131,0.15);--borderB:rgba(160,141,131,0.35);--dim:rgba(160,141,131,0.4);}
+body[data-theme="green"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);--glow:rgba(90,110,58,0.1);--red:#a84838;--amber:#8a7a4a;--blue:#506040;--bg:#080a06;--bg2:#0c0e08;--bg3:#0e100a;--border:rgba(90,110,58,0.15);--borderB:rgba(90,110,58,0.35);--dim:rgba(90,110,58,0.4);}
 
 /* ═══════ SEARCH OVERLAY STYLES ═══════ */
 .search-top{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);}
@@ -547,6 +546,25 @@ body[data-theme="purple"]{--g:#cc44ff;--gd:#aa33cc;--gg:rgba(204,68,255,0.07);--
 .bm-text{font-size:12px;color:var(--g);}
 .bm-time{font-size:8px;color:var(--dim);margin-top:3px;}
 
+/* ═══════ MORSE CODE PANEL ═══════ */
+.morse-panel{
+  position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:2000;display:none;
+  flex-direction:column;overflow:hidden;
+}
+.morse-panel.open{display:flex;}
+.morse-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.morse-title{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;}
+.morse-body{flex:1;overflow-y:auto;padding:14px;gap:12px;display:flex;flex-direction:column;}
+.morse-section{background:var(--bg2);border:1px solid var(--border);padding:12px;}
+.morse-section-title{font-size:10px;letter-spacing:2px;color:var(--g);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.morse-display{background:var(--bg3);border:1px solid var(--border);padding:8px;font-size:14px;letter-spacing:3px;color:var(--amber);word-break:break-all;min-height:30px;}
+.cam-view{width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);position:relative;overflow:hidden;}
+.cam-view video{width:100%;height:100%;object-fit:cover;}
+.cam-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:10px;}
+
 /* ═══════ FEATURE: THEME SELECTOR ═══════ */
 .theme-selector{
   position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;display:none;
@@ -629,7 +647,9 @@ body[data-theme="purple"]{--g:#cc44ff;--gd:#aa33cc;--gg:rgba(204,68,255,0.07);--
 .msg-star-ind.show{display:inline;}
 </style>
 </head>
-<body>
+<body data-theme="ocp">
+<!-- COVERT FLASH LAYER (hidden transmission) -->
+<div id="covert-flash"></div>
 
 <!-- BOOT SCREEN -->
 <div id="boot">
@@ -680,6 +700,7 @@ body[data-theme="purple"]{--g:#cc44ff;--gd:#aa33cc;--gg:rgba(204,68,255,0.07);--
       </div>
       <button class="topbar-btn" onclick="openSearch()" title="Search messages">⌕ SRCH</button>
       <button class="topbar-btn" onclick="openBookmarks()" title="Bookmarked messages">★ BMS</button>
+      <button class="topbar-btn" onclick="openMorsePanel()" title="Morse code">⋮⋮ MORSE</button>
       <button class="topbar-btn" onclick="openThemeSelector()" title="Chat theme">◑ THEME</button>
     </div>
   </div>
@@ -774,30 +795,91 @@ body[data-theme="purple"]{--g:#cc44ff;--gd:#aa33cc;--gg:rgba(204,68,255,0.07);--
 
 <!-- THEME SELECTOR -->
 <div class="theme-selector" id="theme-selector">
-  <div class="ts-title">◑ THEME</div>
+  <div class="ts-title">◑ CAMO THEME</div>
   <div class="ts-grid">
-    <div class="ts-item active" data-theme="green" onclick="setTheme('green')">
-      <div class="ts-preview" style="background:#00ff41"></div>
-      <div class="ts-name" style="color:#00ff41">MATRIX</div>
+    <div class="ts-item active" data-theme="ocp" onclick="setTheme('ocp')">
+      <div class="ts-preview" style="background:#7C887E"></div>
+      <div class="ts-name" style="color:#7C887E">OCP</div>
     </div>
-    <div class="ts-item" data-theme="amber" onclick="setTheme('amber')">
-      <div class="ts-preview" style="background:#ffaa00"></div>
-      <div class="ts-name" style="color:#ffaa00">AMBER</div>
+    <div class="ts-item" data-theme="snow" onclick="setTheme('snow')">
+      <div class="ts-preview" style="background:#D3D2CD"></div>
+      <div class="ts-name" style="color:#D3D2CD">SNOW</div>
     </div>
-    <div class="ts-item" data-theme="ice" onclick="setTheme('ice')">
-      <div class="ts-preview" style="background:#00ddff"></div>
-      <div class="ts-name" style="color:#00ddff">ICE BLUE</div>
+    <div class="ts-item" data-theme="sand" onclick="setTheme('sand')">
+      <div class="ts-preview" style="background:#A08D83"></div>
+      <div class="ts-name" style="color:#A08D83">SAND</div>
     </div>
-    <div class="ts-item" data-theme="blood" onclick="setTheme('blood')">
-      <div class="ts-preview" style="background:#ff2222"></div>
-      <div class="ts-name" style="color:#ff2222">BLOOD</div>
-    </div>
-    <div class="ts-item" data-theme="purple" onclick="setTheme('purple')">
-      <div class="ts-preview" style="background:#cc44ff"></div>
-      <div class="ts-name" style="color:#cc44ff">PURPLE</div>
+    <div class="ts-item" data-theme="green" onclick="setTheme('green')">
+      <div class="ts-preview" style="background:#5a6e3a"></div>
+      <div class="ts-name" style="color:#5a6e3a">WOODLAND</div>
     </div>
   </div>
   <button class="search-close" onclick="closeThemeSelector()" style="margin-top:20px">CLOSE</button>
+</div>
+
+<!-- MORSE CODE PANEL -->
+<div class="morse-panel" id="morse-panel">
+  <div class="morse-header">
+    <div class="morse-title">⋮⋮ MORSE CODE — Covert Channel</div>
+    <button class="search-close" onclick="closeMorsePanel()">CLOSE</button>
+  </div>
+  <div class="morse-body">
+    <!-- TRANSMIT -->
+    <div class="morse-section">
+      <div class="morse-section-title">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:var(--g)"><path d="M2 21h19v-3H2v3z"/></svg>
+        TRANSMIT (Text → Morse → Screen Pulse)
+      </div>
+      <label>Message</label>
+      <textarea id="morse-tx-msg" rows="2" placeholder="Type message to encode..." style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--g);font-family:inherit;font-size:12px;padding:10px;outline:none;resize:none;"></textarea>
+      <div style="margin-top:6px">
+        <label>Encrypt before transmit</label>
+        <input type="text" id="morse-tx-key" placeholder="Optional AES key..." style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--g);font-family:inherit;font-size:12px;padding:8px;outline:none;">
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="sbtn" onclick="morseEncode()"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> ENCODE</button>
+        <button class="sbtn" onclick="morseTransmit()"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor"><path d="M2 21h19v-3H2v3z"/></svg> TRANSMIT</button>
+        <button class="sbtn" onclick="morseStop()" style="border-color:rgba(255,49,49,.55);color:var(--red)"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor"><path d="M6 6h12v12H6z"/></svg> STOP</button>
+      </div>
+      <div class="morse-display" id="morse-tx-output" style="margin-top:8px">...</div>
+      <div class="status" id="morse-tx-status">Ready</div>
+    </div>
+
+    <!-- RECEIVE -->
+    <div class="morse-section">
+      <div class="morse-section-title">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:var(--g)"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        RECEIVE (Screen Pulse → Morse → Text)
+      </div>
+      <div class="cam-view" id="morse-cam-view" style="width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);position:relative;overflow:hidden;">
+        <video id="morse-cam-video" autoplay playsinline style="display:none;width:100%;height:100%;object-fit:cover;"></video>
+        <div class="cam-placeholder" id="morse-cam-placeholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:10px">CAMERA OFF</div>
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="sbtn" onclick="morseStartCamera()"><svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg> START CAMERA</button>
+        <button class="sbtn" onclick="morseStopCamera()" style="border-color:rgba(255,49,49,.55);color:var(--red)">STOP</button>
+      </div>
+      <div style="margin-top:6px">
+        <label>Decrypt received</label>
+        <input type="text" id="morse-rx-key" placeholder="AES key (if encrypted)..." style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--g);font-family:inherit;font-size:12px;padding:8px;outline:none;">
+      </div>
+      <div class="morse-display" id="morse-rx-output" style="margin-top:8px">...</div>
+      <div class="status" id="morse-rx-status">Camera inactive</div>
+    </div>
+
+    <!-- REFERENCE -->
+    <div class="morse-section">
+      <div class="morse-section-title">Quick Reference</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(55px,1fr));gap:3px;font-size:9px;color:var(--dim)">
+        <div>A .-</div><div>B -...</div><div>C -.-.</div><div>D -..</div><div>E .</div><div>F ..-.</div>
+        <div>G --.</div><div>H ....</div><div>I ..</div><div>J .---</div><div>K -.-</div><div>L .-..</div>
+        <div>M --</div><div>N -.</div><div>O ---</div><div>P .--.</div><div>Q --.-</div><div>R .-.</div>
+        <div>S ...</div><div>T -</div><div>U ..-</div><div>V ...-</div><div>W .--</div><div>X -..-</div>
+        <div>Y -.--</div><div>Z --..</div><div>0 -----</div><div>1 .----</div><div>2 ..---</div><div>3 ...--</div>
+        <div>4 ....-</div><div>5 .....</div><div>6 -....</div><div>7 --...</div><div>8 ---..</div><div>9 ----.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FORWARD PICKER -->
@@ -990,7 +1072,7 @@ async function boot(){
     document.getElementById('my-id').textContent=ST.myId;
     startIdRotation();
     // Init new features
-    ST.theme=localStorage.getItem('cm_theme')||'green';
+    ST.theme=localStorage.getItem('cm_theme')||'ocp';
     ST.autoLockMin=parseInt(localStorage.getItem('cm_autolock'))||5;
     ST.pin=localStorage.getItem('cm_pin')||'1234';
     applyTheme(ST.theme);
@@ -1730,6 +1812,107 @@ function unlockApp(){
   if(inp.value===ST.pin){
     document.getElementById('autolock-overlay').classList.remove('open');startAutoLock();showToast('\u27f3 Session unlocked');
   }else{err.style.display='block';inp.value='';inp.focus();}
+}
+
+// ══════════════════════════════════════════════════════════
+// FEATURE: MORSE CODE COVERT CHANNEL
+// ══════════════════════════════════════════════════════════
+var MORSE_TBL={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.',' ':'/'};
+var MORSE_REV={};for(var k in MORSE_TBL)MORSE_REV[MORSE_TBL[k]]=k;
+
+var morseTxInterval=null, morseRxInterval=null, morseCamStream=null;
+
+function openMorsePanel(){document.getElementById('morse-panel').classList.add('open');}
+function closeMorsePanel(){document.getElementById('morse-panel').classList.remove('open');morseStop();morseStopCamera();}
+
+function morseEncode(){
+  var msg=document.getElementById('morse-tx-msg').value.toUpperCase();
+  var key=document.getElementById('morse-tx-key').value.trim();
+  var out='';
+  for(var i=0;i<msg.length;i++)out+=(MORSE_TBL[msg[i]]||'?')+' ';
+  document.getElementById('morse-tx-output').textContent=out.trim()||'...';
+  return out.trim();
+}
+
+async function morseTransmit(){
+  var msg=document.getElementById('morse-tx-msg').value.trim();
+  var key=document.getElementById('morse-tx-key').value.trim();
+  if(!msg){alert('Enter message');return;}
+  var data=msg;
+  if(key){
+    var enc=await aesEncrypt(msg,key);
+    data=enc;
+    document.getElementById('morse-tx-output').textContent='Encrypted: '+enc.substring(0,40)+'...';
+  }
+  var morse='';
+  for(var i=0;i<data.length;i++){
+    var c=data[i];
+    if(c===':'){morse+='  ';continue;}
+    morse+=(MORSE_TBL[c.toUpperCase()]||'.-.-.')+' ';
+  }
+  document.getElementById('morse-tx-output').textContent=morse.substring(0,80)+'...';
+  document.getElementById('morse-tx-status').className='status active';
+  document.getElementById('morse-tx-status').innerHTML='Transmitting...';
+  var flash=document.getElementById('covert-flash');
+  flash.style.cssText='position:fixed;bottom:2px;right:2px;width:2px;height:2px;z-index:99999;pointer-events:none;mix-blend-mode:difference;';
+  var i=0;
+  morseTxInterval=setInterval(function(){
+    if(i>=morse.length){morseStop();return;}
+    var ch=morse[i];
+    flash.style.opacity='1';
+    if(ch==='.'){setTimeout(function(){flash.style.opacity='0';},80);}
+    else if(ch==='-'){setTimeout(function(){flash.style.opacity='0';},240);}
+    else{flash.style.opacity='0';}
+    i++;
+  },120);
+}
+
+function morseStop(){
+  if(morseTxInterval){clearInterval(morseTxInterval);morseTxInterval=null;}
+  var flash=document.getElementById('covert-flash');
+  if(flash)flash.style.opacity='0';
+  document.getElementById('morse-tx-status').className='status';
+  document.getElementById('morse-tx-status').textContent='Ready';
+}
+
+async function morseStartCamera(){
+  try{
+    morseCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    var v=document.getElementById('morse-cam-video');
+    v.srcObject=morseCamStream;v.style.display='block';v.play();
+    document.getElementById('morse-cam-placeholder').style.display='none';
+    document.getElementById('morse-rx-status').className='status active';
+    document.getElementById('morse-rx-status').innerHTML='Scanning...';
+    morseDetectFlashes(v);
+  }catch(e){alert('Camera denied');}
+}
+
+function morseStopCamera(){
+  if(morseCamStream){morseCamStream.getTracks().forEach(function(t){t.stop();});morseCamStream=null;}
+  document.getElementById('morse-cam-video').style.display='none';
+  document.getElementById('morse-cam-placeholder').style.display='flex';
+  document.getElementById('morse-rx-status').className='status';
+  document.getElementById('morse-rx-status').textContent='Camera inactive';
+}
+
+function morseDetectFlashes(video){
+  var canvas=document.createElement('canvas');
+  canvas.width=30;canvas.height=30;
+  var ctx=canvas.getContext('2d',{willReadFrequently:true});
+  var lastBright=0;
+  var pulseCount=0;
+  morseRxInterval=setInterval(function(){
+    ctx.drawImage(video,0,0,30,30);
+    var data=ctx.getImageData(0,0,30,30).data;
+    var bright=0;
+    for(var i=0;i<data.length;i+=4)bright+=(data[i]+data[i+1]+data[i+2])/3;
+    bright=bright/(data.length/4);
+    if(Math.abs(bright-lastBright)>4){
+      pulseCount++;
+      document.getElementById('morse-rx-output').textContent='Pulses: '+pulseCount+' (brightness: '+Math.round(bright)+')';
+    }
+    lastBright=bright;
+  },80);
 }
 
 // FEATURE: EXPORT CHAT
