@@ -18,40 +18,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap');
 
 :root {
-  --g: #7C887E; --gd: #91967F; --gg: rgba(124,136,126,0.07); --glow: rgba(124,136,126,0.1);
-  --red: #c84432; --amber: #BAB79F; --blue: #726870;
-  --bg: #0a0c0a; --bg2: #0f110f; --bg3: #121412;
-  --border: rgba(124,136,126,0.15); --borderB: rgba(124,136,126,0.35); --dim: rgba(124,136,126,0.4);
+  --g: #00ff41; --gd: #00c032; --gg: rgba(0,255,65,0.07); --glow: rgba(0,255,65,0.35);
+  --red: #ff3131; --amber: #ffaa00; --blue: #00aaff;
+  --bg: #010801; --bg2: #020d02; --bg3: #031003;
+  --border: rgba(0,255,65,0.18); --borderB: rgba(0,255,65,0.45); --dim: rgba(0,255,65,0.42);
 }
 
-/* ═══════ MILITARY CAMOUFLAGE THEMES ═══════ */
-/* OCP - Operational Camouflage Pattern (default) */
+/* ═══════ THEMES (V1 style base + Military camo options) ═══════ */
+body[data-theme="matrix"] {
+  --g: #00ff41; --gd: #00c032; --gg: rgba(0,255,65,0.07); --glow: rgba(0,255,65,0.35);
+  --red: #ff3131; --amber: #ffaa00; --blue: #00aaff;
+  --bg: #010801; --bg2: #020d02; --bg3: #031003;
+  --border: rgba(0,255,65,0.18); --borderB: rgba(0,255,65,0.45); --dim: rgba(0,255,65,0.42);
+}
+/* OCP - Operational Camouflage Pattern */
 body[data-theme="ocp"] {
-  --g: #7C887E; --gd: #91967F; --gg: rgba(124,136,126,0.07); --glow: rgba(124,136,126,0.1);
+  --g: #7C887E; --gd: #91967F; --gg: rgba(124,136,126,0.07); --glow: rgba(124,136,126,0.25);
   --red: #c84432; --amber: #BAB79F; --blue: #726870;
   --bg: #0a0c0a; --bg2: #0f110f; --bg3: #121412;
-  --border: rgba(124,136,126,0.15); --borderB: rgba(124,136,126,0.35); --dim: rgba(124,136,126,0.4);
+  --border: rgba(124,136,126,0.2); --borderB: rgba(124,136,126,0.45); --dim: rgba(124,136,126,0.45);
 }
 /* Snow - Arctic/Winter military */
 body[data-theme="snow"] {
-  --g: #D3D2CD; --gd: #B0ADA8; --gg: rgba(211,210,205,0.07); --glow: rgba(211,210,205,0.1);
+  --g: #D3D2CD; --gd: #B0ADA8; --gg: rgba(211,210,205,0.07); --glow: rgba(211,210,205,0.25);
   --red: #b85c5c; --amber: #a09a8a; --blue: #8a8a90;
   --bg: #0c0d0e; --bg2: #111314; --bg3: #141618;
-  --border: rgba(211,210,205,0.15); --borderB: rgba(211,210,205,0.35); --dim: rgba(211,210,205,0.4);
+  --border: rgba(211,210,205,0.2); --borderB: rgba(211,210,205,0.45); --dim: rgba(211,210,205,0.45);
 }
 /* Sand - Desert military */
 body[data-theme="sand"] {
-  --g: #A08D83; --gd: #8a7870; --gg: rgba(160,141,131,0.07); --glow: rgba(160,141,131,0.1);
+  --g: #A08D83; --gd: #8a7870; --gg: rgba(160,141,131,0.07); --glow: rgba(160,141,131,0.25);
   --red: #b86050; --amber: #c8a878; --blue: #7a7060;
   --bg: #0d0b0a; --bg2: #12100e; --bg3: #151210;
-  --border: rgba(160,141,131,0.15); --borderB: rgba(160,141,131,0.35); --dim: rgba(160,141,131,0.4);
+  --border: rgba(160,141,131,0.2); --borderB: rgba(160,141,131,0.45); --dim: rgba(160,141,131,0.45);
 }
-/* Green - Woodland military */
-body[data-theme="green"] {
-  --g: #5a6e3a; --gd: #4a5a2e; --gg: rgba(90,110,58,0.07); --glow: rgba(90,110,58,0.1);
+/* Woodland - Forest military */
+body[data-theme="woodland"] {
+  --g: #5a6e3a; --gd: #4a5a2e; --gg: rgba(90,110,58,0.07); --glow: rgba(90,110,58,0.25);
   --red: #a84838; --amber: #8a7a4a; --blue: #506040;
   --bg: #080a06; --bg2: #0c0e08; --bg3: #0e100a;
-  --border: rgba(90,110,58,0.15); --borderB: rgba(90,110,58,0.35); --dim: rgba(90,110,58,0.4);
+  --border: rgba(90,110,58,0.2); --borderB: rgba(90,110,58,0.45); --dim: rgba(90,110,58,0.45);
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -110,12 +116,12 @@ body::after{
   display:flex;align-items:center;gap:4px;padding:2px 7px;
   border:1px solid var(--border);background:var(--gg);font-size:9px;color:var(--dim);
 }
-.dot{width:5px;height:5px;border-radius:50%;background:var(--g);box-shadow:0 0 5px var(--g);animation:pulse 2s infinite;}
-.dot.amber{background:var(--amber);box-shadow:0 0 5px var(--amber);}
-.dot.red{background:var(--red);box-shadow:0 0 5px var(--red);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:pulse 2s infinite;}
+.dot.amber{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.dot.red{background:var(--red);box-shadow:0 0 6px var(--red);}
 .id-badge{
-  font-size:9px;padding:2px 9px;border:1px solid rgba(0,255,65,0.5);
-  background:rgba(0,255,65,0.05);color:var(--g);letter-spacing:1px;
+  font-size:10px;padding:3px 10px;border:1px solid var(--borderB);
+  background:var(--gg);color:var(--g);letter-spacing:1px;font-weight:700;
   position:relative;overflow:hidden;cursor:default;
 }
 .id-timer{
@@ -123,9 +129,9 @@ body::after{
   box-shadow:0 0 6px var(--glow);transition:width 1s linear;
 }
 .mem-badge{
-  display:flex;align-items:center;gap:5px;padding:2px 9px;
-  border:1px solid rgba(255,49,49,0.4);background:rgba(255,49,49,0.06);
-  font-size:9px;color:var(--red);letter-spacing:1px;cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;gap:5px;padding:3px 10px;
+  border:1px solid rgba(255,49,49,0.5);background:rgba(255,49,49,0.08);
+  font-size:10px;color:var(--red);letter-spacing:1px;cursor:pointer;transition:all 0.2s;font-weight:700;
 }
 .mem-badge:hover,.mem-badge:active{background:rgba(255,49,49,0.14);box-shadow:0 0 12px rgba(255,49,49,0.3);}
 .mem-pulse{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.2s infinite;}
@@ -179,9 +185,9 @@ body::after{
 }
 .ch-name{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;}
 .ch-pills{display:flex;gap:4px;flex-wrap:wrap;}
-.pill{padding:2px 6px;border:1px solid var(--border);background:var(--gg);border-radius:1px;font-size:7px;color:var(--gd);letter-spacing:1px;}
-.pill.burn{border-color:rgba(255,49,49,0.4);color:var(--red);}
-.pill.mem{border-color:rgba(255,170,0,0.4);color:var(--amber);}
+.pill{padding:3px 7px;border:1px solid var(--border);background:var(--gg);border-radius:1px;font-size:8px;color:var(--gd);letter-spacing:1px;font-weight:700;}
+.pill.burn{border-color:rgba(255,49,49,0.5);color:var(--red);}
+.pill.mem{border-color:rgba(255,170,0,0.5);color:var(--amber);}
 
 /* Mobile back button */
 .ch-back{
@@ -218,9 +224,9 @@ body::after{
   box-shadow:0 0 5px rgba(255,49,49,0.6);transition:width 0.2s linear;
 }
 .mem-indicator{position:absolute;top:4px;right:4px;font-size:7px;color:rgba(255,170,0,0.5);letter-spacing:1px;}
-.enc-peek{font-family:'VT323',monospace;font-size:9px;color:rgba(0,255,65,0.22);word-break:break-all;line-height:1.3;margin-bottom:3px;}
+.enc-peek{font-family:'VT323',monospace;font-size:10px;color:var(--gd);word-break:break-all;line-height:1.3;margin-bottom:3px;opacity:.8;}
 .mtext{font-size:13px;line-height:1.6;color:var(--g);}
-.mmeta{margin-top:4px;font-size:8px;color:var(--dim);display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.mmeta{margin-top:4px;font-size:9px;color:var(--dim);display:flex;gap:7px;align-items:center;flex-wrap:wrap;font-weight:600;}
 .mcheck{color:var(--g);}
 .burn-count{color:var(--red);font-size:8px;animation:pulse 1s infinite;}
 
@@ -379,10 +385,11 @@ body::after{
 @keyframes scroll{from{transform:translateX(100vw);}to{transform:translateX(-300%);}}
 @keyframes idFlash{0%,100%{color:var(--g);}50%{color:var(--amber);}}
 /* ═══════ MILITARY CAMOUFLAGE THEMES (VARIANTS) ═══════ */
-body[data-theme="ocp"]{--g:#7C887E;--gd:#91967F;--gg:rgba(124,136,126,0.07);--glow:rgba(124,136,126,0.1);--red:#c84432;--amber:#BAB79F;--blue:#726870;--bg:#0a0c0a;--bg2:#0f110f;--bg3:#121412;--border:rgba(124,136,126,0.15);--borderB:rgba(124,136,126,0.35);--dim:rgba(124,136,126,0.4);}
-body[data-theme="snow"]{--g:#D3D2CD;--gd:#B0ADA8;--gg:rgba(211,210,205,0.07);--glow:rgba(211,210,205,0.1);--red:#b85c5c;--amber:#a09a8a;--blue:#8a8a90;--bg:#0c0d0e;--bg2:#111314;--bg3:#141618;--border:rgba(211,210,205,0.15);--borderB:rgba(211,210,205,0.35);--dim:rgba(211,210,205,0.4);}
-body[data-theme="sand"]{--g:#A08D83;--gd:#8a7870;--gg:rgba(160,141,131,0.07);--glow:rgba(160,141,131,0.1);--red:#b86050;--amber:#c8a878;--blue:#7a7060;--bg:#0d0b0a;--bg2:#12100e;--bg3:#151210;--border:rgba(160,141,131,0.15);--borderB:rgba(160,141,131,0.35);--dim:rgba(160,141,131,0.4);}
-body[data-theme="green"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);--glow:rgba(90,110,58,0.1);--red:#a84838;--amber:#8a7a4a;--blue:#506040;--bg:#080a06;--bg2:#0c0e08;--bg3:#0e100a;--border:rgba(90,110,58,0.15);--borderB:rgba(90,110,58,0.35);--dim:rgba(90,110,58,0.4);}
+body[data-theme="matrix"]{--g:#00ff41;--gd:#00c032;--gg:rgba(0,255,65,0.07);--glow:rgba(0,255,65,0.35);--red:#ff3131;--amber:#ffaa00;--blue:#00aaff;--bg:#010801;--bg2:#020d02;--bg3:#031003;--border:rgba(0,255,65,0.18);--borderB:rgba(0,255,65,0.45);--dim:rgba(0,255,65,0.42);}
+body[data-theme="ocp"]{--g:#7C887E;--gd:#91967F;--gg:rgba(124,136,126,0.07);--glow:rgba(124,136,126,0.25);--red:#c84432;--amber:#BAB79F;--blue:#726870;--bg:#0a0c0a;--bg2:#0f110f;--bg3:#121412;--border:rgba(124,136,126,0.2);--borderB:rgba(124,136,126,0.45);--dim:rgba(124,136,126,0.45);}
+body[data-theme="snow"]{--g:#D3D2CD;--gd:#B0ADA8;--gg:rgba(211,210,205,0.07);--glow:rgba(211,210,205,0.25);--red:#b85c5c;--amber:#a09a8a;--blue:#8a8a90;--bg:#0c0d0e;--bg2:#111314;--bg3:#141618;--border:rgba(211,210,205,0.2);--borderB:rgba(211,210,205,0.45);--dim:rgba(211,210,205,0.45);}
+body[data-theme="sand"]{--g:#A08D83;--gd:#8a7870;--gg:rgba(160,141,131,0.07);--glow:rgba(160,141,131,0.25);--red:#b86050;--amber:#c8a878;--blue:#7a7060;--bg:#0d0b0a;--bg2:#12100e;--bg3:#151210;--border:rgba(160,141,131,0.2);--borderB:rgba(160,141,131,0.45);--dim:rgba(160,141,131,0.45);}
+body[data-theme="woodland"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);--glow:rgba(90,110,58,0.25);--red:#a84838;--amber:#8a7a4a;--blue:#506040;--bg:#080a06;--bg2:#0c0e08;--bg3:#0e100a;--border:rgba(90,110,58,0.2);--borderB:rgba(90,110,58,0.45);--dim:rgba(90,110,58,0.45);}
 
 /* ═══════ SEARCH OVERLAY STYLES ═══════ */
 .search-top{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);}
@@ -654,7 +661,7 @@ body[data-theme="green"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);--gl
 .msg-star-ind.show{display:inline;}
 </style>
 </head>
-<body data-theme="ocp">
+<body data-theme="matrix">
 <!-- COVERT FLASH LAYER (hidden transmission) -->
 <div id="covert-flash"></div>
 
@@ -802,9 +809,13 @@ body[data-theme="green"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);--gl
 
 <!-- THEME SELECTOR -->
 <div class="theme-selector" id="theme-selector">
-  <div class="ts-title">◑ CAMO THEME</div>
+  <div class="ts-title">◑ THEME</div>
   <div class="ts-grid">
-    <div class="ts-item active" data-theme="ocp" onclick="setTheme('ocp')">
+    <div class="ts-item active" data-theme="matrix" onclick="setTheme('matrix')">
+      <div class="ts-preview" style="background:#00ff41"></div>
+      <div class="ts-name" style="color:#00ff41">MATRIX</div>
+    </div>
+    <div class="ts-item" data-theme="ocp" onclick="setTheme('ocp')">
       <div class="ts-preview" style="background:#7C887E"></div>
       <div class="ts-name" style="color:#7C887E">OCP</div>
     </div>
@@ -816,7 +827,7 @@ body[data-theme="green"]{--g:#5a6e3a;--gd:#4a5a2e;--gg:rgba(90,110,58,0.07);--gl
       <div class="ts-preview" style="background:#A08D83"></div>
       <div class="ts-name" style="color:#A08D83">SAND</div>
     </div>
-    <div class="ts-item" data-theme="green" onclick="setTheme('green')">
+    <div class="ts-item" data-theme="woodland" onclick="setTheme('woodland')">
       <div class="ts-preview" style="background:#5a6e3a"></div>
       <div class="ts-name" style="color:#5a6e3a">WOODLAND</div>
     </div>
@@ -1079,7 +1090,7 @@ async function boot(){
     document.getElementById('my-id').textContent=ST.myId;
     startIdRotation();
     // Init new features
-    ST.theme=localStorage.getItem('cm_theme')||'ocp';
+    ST.theme=localStorage.getItem('cm_theme')||'matrix';
     ST.autoLockMin=parseInt(localStorage.getItem('cm_autolock'))||5;
     ST.pin=localStorage.getItem('cm_pin')||'1234';
     applyTheme(ST.theme);
