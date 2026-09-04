@@ -915,8 +915,8 @@ window.onerror=function(msg,url,line){
 
 <!-- AUTO-LOCK OVERLAY -->
 <div class="autolock-overlay" id="autolock-overlay">
-  <div class="al-title">⏱ SESSION LOCKED</div>
-  <div class="al-sub">Auto-lock triggered · Enter PIN to unlock</div>
+  <div class="al-title" id="al-title">⏱ SESSION LOCKED</div>
+  <div class="al-sub" id="al-sub">Auto-lock triggered · Enter PIN to unlock</div>
   <input class="al-pin-input" id="al-pin-input" type="password" maxlength="4" placeholder="----" autocomplete="off">
   <div class="al-error" id="al-error">✗ Invalid PIN</div>
   <button class="al-btn" onclick="unlockApp()">⟳ UNLOCK</button>
@@ -1116,10 +1116,12 @@ async function boot(){
     ST.autoLockMin=parseInt(localStorage.getItem('cm_autolock'))||5;
     ST.pin=localStorage.getItem('cm_pin')||'1234';
     applyTheme(ST.theme);
-    startAutoLock();
     await addDemoContacts();
     await updateMemUI();
     registerSW();
+    startAutoLock();
+    // REQUIRE PIN ON START — lock immediately on entry
+    lockApp('WELCOME · ENTER PIN TO ACCESS');
   }, 3600);
 }
 
@@ -1838,7 +1840,14 @@ function startAutoLock(){
     document.addEventListener(ev,function(){if(!document.getElementById('autolock-overlay').classList.contains('open'))startAutoLock();},{passive:true});
   });
 }
-function lockApp(){
+function lockApp(title){
+  if(title){
+    document.getElementById('al-title').textContent = title;
+    document.getElementById('al-sub').textContent = 'Enter PIN to unlock';
+  } else {
+    document.getElementById('al-title').textContent = '⏱ SESSION LOCKED';
+    document.getElementById('al-sub').textContent = 'Auto-lock triggered · Enter PIN to unlock';
+  }
   document.getElementById('autolock-overlay').classList.add('open');
   document.getElementById('al-pin-input').value='';
   document.getElementById('al-pin-input').focus();
@@ -1847,7 +1856,8 @@ function lockApp(){
 function unlockApp(){
   var inp=document.getElementById('al-pin-input');var err=document.getElementById('al-error');
   if(inp.value===ST.pin){
-    document.getElementById('autolock-overlay').classList.remove('open');startAutoLock();showToast('\u27f3 Session unlocked');
+    document.getElementById('autolock-overlay').classList.remove('open');
+    startAutoLock();showToast('🔓 Session unlocked');
   }else{err.style.display='block';inp.value='';inp.focus();}
 }
 
