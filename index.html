@@ -1163,16 +1163,15 @@ function renderChat(){
         <span>🔒 AES-256-GCM</span>
         <div class="enc-bar"><div class="enc-fill"></div></div>
         <select class="burn-select" id="burn-select" onchange="setBurnTimer(this.value)">
-          <option value="-1" ${burnOptions==='0'?'selected':''}>🔥OFF</option>
-          <option value="10" ${burnOptions==='10'?'selected':''}>10s</option>
+          <option value="-1" ${burnOptions==='0'?'selected':''}>OFF</option>
+          <option value="15" ${burnOptions==='15'?'selected':''}>15s</option>
           <option value="30" ${burnOptions==='30'?'selected':''}>30s</option>
+          <option value="45" ${burnOptions==='45'?'selected':''}>45s</option>
           <option value="60" ${burnOptions==='60'?'selected':''}>60s</option>
-          <option value="300" ${burnOptions==='300'?'selected':''}>5min</option>
-          <option value="600" ${burnOptions==='600'?'selected':''}>10min</option>
+          <option value="180" ${burnOptions==='180'?'selected':''}>180s</option>
           <option value="0" ${burnOptions==='-1'?'selected':''}>READ-ONCE</option>
-          <option value="custom">CUSTOM</option>
         </select>
-        <input class="burn-custom-input" id="burn-custom" type="number" placeholder="sec" min="1" max="3600" onchange="setBurnTimer(this.value)">
+        <span class="burn-count" id="burn-count-display" style="display:none"></span>
       </div>
       <div class="input-row">
         <textarea class="minput" id="minput" placeholder="Message auto-destroyed after reading..." rows="1"
@@ -1694,9 +1693,6 @@ function applyTheme(name){document.body.setAttribute('data-theme',name);}
 // FEATURE: CUSTOM BURN TIMER
 function setBurnTimer(val){
   var c=ST.contacts.find(function(x){return x.id===ST.active;});if(!c)return;
-  var ci=document.getElementById('burn-custom');
-  if(val==='custom'){if(ci)ci.style.display='inline';return;}
-  if(ci)ci.style.display='none';
   c.burnSecs=parseInt(val);
   var area=document.getElementById('chat-area');if(area)renderChat(c);
   showToast('Burn: '+(c.burnSecs===-1?'OFF':c.burnSecs===0?'READ-ONCE':c.burnSecs+'s'));
