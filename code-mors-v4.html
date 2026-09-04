@@ -1155,6 +1155,399 @@ boot = async function(){
     });
   }
   if(noiseState()) startGhostNoise();
+}
+
+// ============================================================
+// 📞 CODE MORS E2E ENCRYPTED CALLING v1.0
+// ============================================================
+const CALL = {
+  peerConnection: null, localStream: null, remoteStream: null,
+  callStartTime: null, callTimer: null, isActive: false, isCaller: false,
+  remoteContact: null, audioEnabled: true, videoEnabled: true, candidates: []
+};
+
+async function deriveCallKey(contact, direction) {
+  const ikm = hex2buf(contact.sess);
+  const salt = new TextEncoder().encode('CM_CALL_V1:' + contact.id + ':' + direction + ':' + Date.now());
+  const k = await C.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']);
+  const bits = await C.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('call-key') }, k, 256);
+  return buf2hex(bits);
+}
+
+function callSafetyNumber(contact) {
+  if (!contact.pk) return 'NO-PK';
+  const data = ST.ghostPK + contact.pk;
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) { hash = ((hash << 5) - hash) + data.charCodeAt(i); hash |= 0; }
+  const num = Math.abs(hash).toString().padStart(12, '0');
+  return num.match(/.{1,4}/g).join('-');
+}
+
+function getRTCConfig() {
+  return {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:global.stun.twilio.com:3478' }
+    ],
+    iceCandidatePoolSize: 10
+  };
+}
+
+async function createCallOffer(contact) {
+  try {
+    CALL.remoteContact = contact; CALL.isCaller = true; CALL.isActive = true;
+    CALL.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    CALL.peerConnection = new RTCPeerConnection(getRTCConfig());
+    CALL.localStream.getTracks().forEach(track => CALL.peerConnection.addTrack(track, CALL.localStream));
+    CALL.remoteStream = new MediaStream();
+    CALL.peerConnection.ontrack = (event) => {
+      event.streams[0].getTracks().forEach(track => CALL.remoteStream.addTrack(track));
+      const rv = document.getElementById('call-remote-video');
+      if (rv) { rv.srcObject = CALL.remoteStream; rv.style.display = 'block'; }
+    };
+    CALL.peerConnection.onicecandidate = (event) => { if (event.candidate) CALL.candidates.push(event.candidate.toJSON()); };
+    CALL.peerConnection.onconnectionstatechange = () => {
+      const s = CALL.peerConnection.connectionState; updateCallStatus(s);
+      if (s === 'connected') startCallTimer();
+      else if (s === 'disconnected' || s === 'failed' || s === 'closed') endCall();
+    };
+    const offer = await CALL.peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+    await CALL.peerConnection.setLocalDescription(offer);
+    await waitForIceGathering();
+    return { v: 'cm-call-1', type: 'offer', sdp: CALL.peerConnection.localDescription, candidates: CALL.candidates, callKey: await deriveCallKey(contact, 'caller'), safety: callSafetyNumber(contact), from: ST.ghost, fromSubmask: contact.submask || '', ts: Date.now() };
+
+async function createCallAnswer(offerPayload) {
+  try {
+    const contact = ST.contacts.find(c => c.submask === offerPayload.fromSubmask || c.name === offerPayload.from);
+    if (!contact) throw new Error('Unknown caller');
+    CALL.remoteContact = contact; CALL.isCaller = false; CALL.isActive = true;
+    CALL.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    CALL.peerConnection = new RTCPeerConnection(getRTCConfig());
+    CALL.localStream.getTracks().forEach(track => CALL.peerConnection.addTrack(track, CALL.localStream));
+    CALL.remoteStream = new MediaStream();
+    CALL.peerConnection.ontrack = (event) => {
+      event.streams[0].getTracks().forEach(track => CALL.remoteStream.addTrack(track));
+      const rv = document.getElementById('call-remote-video');
+      if (rv) { rv.srcObject = CALL.remoteStream; rv.style.display = 'block'; }
+    };
+    CALL.peerConnection.onicecandidate = (event) => { if (event.candidate) CALL.candidates.push(event.candidate.toJSON()); };
+    CALL.peerConnection.onconnectionstatechange = () => {
+      const s = CALL.peerConnection.connectionState; updateCallStatus(s);
+      if (s === 'connected') startCallTimer();
+      else if (s === 'disconnected' || s === 'failed' || s === 'closed') endCall();
+    };
+    await CALL.peerConnection.setRemoteDescription(new RTCSessionDescription(offerPayload.sdp));
+    if (offerPayload.candidates) { for (const c of offerPayload.candidates) await CALL.peerConnection.addIceCandidate(new RTCIceCandidate(c)); }
+    const answer = await CALL.peerConnection.createAnswer();
+    await CALL.peerConnection.setLocalDescription(answer);
+    await waitForIceGathering();
+    return { v: 'cm-call-1', type: 'answer', sdp: CALL.peerConnection.localDescription, candidates: CALL.candidates, callKey: await deriveCallKey(contact, 'callee'), safety: offerPayload.safety, from: ST.ghost, fromSubmask: contact.submask || '', ts: Date.now(), offerTs: offerPayload.ts };
+  } catch (e) { endCall(); throw new Error('Answer setup failed: ' + e.message); }
+}
+
+async function setupIncomingCall(answerPayload) {
+  try {
+    await CALL.peerConnection.setRemoteDescription(new RTCSessionDescription(answerPayload.sdp));
+    if (answerPayload.candidates) { for (const c of answerPayload.candidates) await CALL.peerConnection.addIceCandidate(new RTCIceCandidate(c)); }
+  } catch (e) { endCall(); throw new Error('Failed to setup incoming call: ' + e.message); }
+}
+
+function waitForIceGathering() {
+  return new Promise((resolve) => {
+    if (CALL.peerConnection.iceGatheringState === 'complete') { resolve(); return; }
+    const timeout = setTimeout(() => { CALL.peerConnection.removeEventListener('icegatheringstatechange', onStateChange); resolve(); }, 5000);
+    function onStateChange() { if (CALL.peerConnection.iceGatheringState === 'complete') { clearTimeout(timeout); CALL.peerConnection.removeEventListener('icegatheringstatechange', onStateChange); resolve(); } }
+    CALL.peerConnection.addEventListener('icegatheringstatechange', onStateChange);
+  });
+}
+
+function endCall() {
+  CALL.isActive = false;
+  if (CALL.callTimer) { clearInterval(CALL.callTimer); CALL.callTimer = null; }
+  if (CALL.localStream) { CALL.localStream.getTracks().forEach(t => t.stop()); CALL.localStream = null; }
+  if (CALL.remoteStream) { CALL.remoteStream.getTracks().forEach(t => t.stop()); CALL.remoteStream = null; }
+  if (CALL.peerConnection) { CALL.peerConnection.close(); CALL.peerConnection = null; }
+  CALL.candidates = []; CALL.audioEnabled = true; CALL.videoEnabled = true;
+  const modal = document.getElementById('call-modal'); if (modal) modal.style.display = 'none';
+  const lv = document.getElementById('call-local-video'); if (lv) { lv.srcObject = null; lv.style.display = 'none'; }
+  const rv = document.getElementById('call-remote-video'); if (rv) { rv.srcObject = null; rv.style.display = 'none'; }
+  toast('📞 Call ended');
+}
+
+function toggleCallAudio() {
+  if (!CALL.localStream) return;
+  CALL.audioEnabled = !CALL.audioEnabled;
+  CALL.localStream.getAudioTracks().forEach(t => { t.enabled = CALL.audioEnabled; });
+  const btn = document.getElementById('call-mute-btn');
+  if (btn) { btn.textContent = CALL.audioEnabled ? '🎤' : '🔇'; btn.style.borderColor = CALL.audioEnabled ? 'rgba(0,255,65,0.45)' : 'rgba(255,49,49,0.55)'; btn.style.color = CALL.audioEnabled ? 'var(--g)' : 'var(--red)'; }
+
+// ---- CALL UI FUNCTIONS ----
+function openCallModal(contact) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('⚠️ Camera/mic not available'); return; }
+  if (typeof RTCPeerConnection === 'undefined') { toast('⚠️ WebRTC not supported'); return; }
+  if (!document.getElementById('call-modal')) createCallModal();
+  document.getElementById('call-title').textContent = '📞 ' + (contact.submask || contact.name);
+  document.getElementById('call-status-text').textContent = '⏳ Preparing call...';
+  document.getElementById('call-status-text').style.color = 'var(--amber)';
+  document.getElementById('call-timer').style.display = 'none';
+  document.getElementById('call-signaling-panel').style.display = 'block';
+  document.getElementById('call-active-controls').style.display = 'none';
+  document.getElementById('call-remote-video').style.display = 'none';
+  document.getElementById('call-local-video').style.display = 'none';
+  document.getElementById('call-modal').style.display = 'flex';
+  startOutgoingCall(contact);
+}
+
+async function startOutgoingCall(contact) {
+  try {
+    document.getElementById('call-status-text').textContent = '🔄 Creating encrypted call...';
+    const offerPayload = await createCallOffer(contact);
+    const lv = document.getElementById('call-local-video');
+    if (lv && CALL.localStream) { lv.srcObject = CALL.localStream; lv.style.display = 'block'; lv.muted = true; }
+    const offerCode = b64enc(JSON.stringify(offerPayload));
+    document.getElementById('call-qr-title').textContent = '📡 SHARE THIS QR — Callee scans to connect';
+    const qr = document.getElementById('call-qr-container'); qr.innerHTML = '';
+    new QRCode(qr, { text: offerCode, width: 256, height: 256, colorDark: '#00ff41', colorLight: '#010801', correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('call-manual-label').textContent = 'Or share this code manually:';
+    document.getElementById('call-manual-code').textContent = offerCode;
+    document.getElementById('call-manual-code').onclick = () => { navigator.clipboard.writeText(offerCode); toast('📋 Code copied'); };
+    document.getElementById('call-status-text').textContent = '⏳ Waiting for answer...';
+    document.getElementById('call-instruction').textContent = '👆 Share the QR or code with ' + (contact.submask || contact.name);
+    setupAnswerScanner(contact, offerPayload);
+  } catch (e) { toast('❌ Call failed: ' + e.message); endCall(); }
+}
+
+function setupAnswerScanner(contact, originalOffer) {
+  const btn = document.getElementById('call-accept-btn');
+  btn.style.display = 'inline-block'; btn.textContent = '📷 SCAN ANSWER QR';
+
+function startIncomingCall(offerPayload) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('⚠️ Camera/mic not available'); return; }
+  if (typeof RTCPeerConnection === 'undefined') { toast('⚠️ WebRTC not supported'); return; }
+  const contact = ST.contacts.find(c => c.submask === offerPayload.fromSubmask || c.name === offerPayload.from);
+  if (!contact) { toast('⚠️ Call from unknown contact'); return; }
+  if (!document.getElementById('call-modal')) createCallModal();
+  document.getElementById('call-title').textContent = '📞 Incoming call from ' + (contact.submask || offerPayload.from);
+  document.getElementById('call-status-text').textContent = '⏳ Incoming encrypted call...';
+  document.getElementById('call-status-text').style.color = 'var(--amber)';
+  document.getElementById('call-timer').style.display = 'none';
+  document.getElementById('call-signaling-panel').style.display = 'block';
+  document.getElementById('call-active-controls').style.display = 'none';
+  document.getElementById('call-qr-title').textContent = '📡 SHOW THIS QR — Caller scans to complete';
+  document.getElementById('call-instruction').textContent = '⏳ Generating encrypted answer...';
+  document.getElementById('call-accept-btn').style.display = 'none';
+  document.getElementById('call-manual-label').textContent = '';
+  document.getElementById('call-manual-code').textContent = '';
+  document.getElementById('call-modal').style.display = 'flex';
+  generateCallAnswer(contact, offerPayload);
+}
+
+async function generateCallAnswer(contact, offerPayload) {
+  try {
+    const answerPayload = await createCallAnswer(offerPayload);
+    const lv = document.getElementById('call-local-video');
+    if (lv && CALL.localStream) { lv.srcObject = CALL.localStream; lv.style.display = 'block'; lv.muted = true; }
+    const answerCode = b64enc(JSON.stringify(answerPayload));
+    const qr = document.getElementById('call-qr-container'); qr.innerHTML = '';
+    new QRCode(qr, { text: answerCode, width: 256, height: 256, colorDark: '#00ff41', colorLight: '#010801', correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('call-manual-label').textContent = 'Or share this code manually:';
+    document.getElementById('call-manual-code').textContent = answerCode;
+    document.getElementById('call-manual-code').onclick = () => { navigator.clipboard.writeText(answerCode); toast('📋 Code copied'); };
+    document.getElementById('call-instruction').textContent = '👆 Show QR or share code with ' + (contact.submask || contact.name);
+    document.getElementById('call-signaling-panel').style.display = 'none';
+    document.getElementById('call-active-controls').style.display = 'flex';
+    updateCallStatus('connecting');
+  } catch (e) { toast('❌ Answer failed: ' + e.message); endCall(); }
+}
+
+
+// ---- CALL MODAL CREATION ----
+function createCallModal() {
+  const modal = document.createElement('div');
+  modal.id = 'call-modal';
+  modal.innerHTML = `
+    <div class="call-container">
+      <div class="call-header">
+        <div id="call-title" class="call-title">📞 CODE MORS CALL</div>
+        <div class="call-status">
+          <span id="call-status-text" class="call-status-text">⏳ Initializing...</span>
+          <span id="call-timer" class="call-timer" style="display:none">00:00</span>
+        </div>
+      </div>
+      <div class="call-videos">
+        <div class="call-remote-video-wrap">
+          <video id="call-remote-video" class="call-remote-video" autoplay playsinline></video>
+          <div class="call-remote-placeholder"><div class="call-remote-avatar">👻</div><div>Waiting for peer...</div></div>
+        </div>
+        <video id="call-local-video" class="call-local-video" autoplay playsinline muted></video>
+      </div>
+      <div id="call-signaling-panel" class="call-signaling-panel">
+        <div id="call-instruction" class="call-instruction"></div>
+        <div id="call-qr-title" class="call-qr-title"></div>
+        <div id="call-qr-container" class="call-qr-container"></div>
+        <div id="call-manual-label" class="call-manual-label"></div>
+        <div id="call-manual-code" class="call-manual-code"></div>
+        <button id="call-accept-btn" class="btn" style="display:none;margin-top:12px"></button>
+      </div>
+      <div id="call-active-controls" class="call-controls" style="display:none">
+        <button id="call-mute-btn" class="btn call-control-btn" onclick="toggleCallAudio()">🎤</button>
+        <button id="call-video-btn" class="btn call-control-btn" onclick="toggleCallVideo()">📹</button>
+        <button class="btn call-control-btn call-end-btn" onclick="endCall()">📴 END</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function initiateCall() {
+
+// ---- CALL UI STYLES ----
+(function addCallStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .call-modal{position:fixed;inset:0;z-index:2000;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center}
+    .call-container{width:100%;height:100%;max-width:900px;display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--border)}
+    .call-header{padding:10px 16px;border-bottom:1px solid var(--border);text-align:center;background:var(--bg)}
+    .call-title{font-size:13px;letter-spacing:3px;font-weight:900;margin-bottom:4px}
+    .call-status{font-size:11px;display:flex;gap:12px;justify-content:center;align-items:center}
+    .call-status-text{color:var(--amber)}
+    .call-timer{color:var(--g);font-weight:900}
+    .call-videos{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#000;min-height:200px}
+    .call-remote-video{width:100%;height:100%;object-fit:cover;display:none}
+    .call-remote-video-wrap{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}
+    .call-remote-placeholder{position:absolute;text-align:center;color:var(--dim);font-size:12px;letter-spacing:2px;z-index:5}
+    .call-remote-avatar{font-size:48px;margin-bottom:12px;animation:pulse 2s infinite}
+    .call-local-video{position:absolute;bottom:12px;right:12px;width:100px;height:135px;object-fit:cover;border:1px solid var(--borderB);border-radius:4px;z-index:10;display:none}
+    .call-signaling-panel{padding:14px;text-align:center;overflow-y:auto;max-height:35vh}
+    .call-instruction{font-size:10px;color:var(--dim);margin-bottom:10px;letter-spacing:1px}
+    .call-qr-title{font-size:11px;letter-spacing:2px;margin-bottom:8px;color:var(--g)}
+    .call-qr-container{display:flex;justify-content:center;margin-bottom:10px;padding:8px;background:#fff;border-radius:4px;width:fit-content;margin-left:auto;margin-right:auto}
+    .call-manual-label{font-size:9px;color:var(--dim);margin-bottom:4px}
+    .call-manual-code{font-size:8px;color:var(--gd);word-break:break-all;padding:6px;background:var(--gg);border:1px solid var(--border);cursor:pointer;max-height:50px;overflow-y:auto}
+    .call-manual-code:hover{background:rgba(0,255,65,0.15)}
+    .call-controls{padding:10px;border-top:1px solid var(--border);display:flex;justify-content:center;gap:10px;background:var(--bg)}
+    .call-control-btn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;padding:0;border:1px solid var(--borderB);background:transparent;color:var(--g);cursor:pointer;font-family:inherit}
+    .call-control-btn:hover{background:var(--gg)}
+    .call-end-btn{border-color:rgba(255,49,49,0.6);color:var(--red)}
+    .call-end-btn:hover{background:rgba(255,49,49,0.2)}
+  `;
+  document.head.appendChild(style);
+})();
+
+  if (!ST.active) { toast('⚠️ Open a chat first'); return; }
+  const contact = ST.contacts.find(c => c.id === ST.active);
+  if (!contact) { toast('⚠️ No active contact'); return; }
+  if (!contact.pk) { toast('⚠️ No encryption key for this contact'); return; }
+  openCallModal(contact);
+}
+
+// ---- INTEGRATE CALL BUTTON INTO CHAT ----
+const _cmhOpenChat2 = openChat;
+openChat = function(cid) {
+  _cmhOpenChat2(cid);
+  setTimeout(() => {
+    const chatHeader = document.getElementById('ch-name');
+    if (chatHeader && !document.getElementById('call-btn')) {
+      const callBtn = document.createElement('button');
+      callBtn.id = 'call-btn';
+      callBtn.className = 'btn';
+      callBtn.textContent = '📞 CALL';
+      callBtn.style.marginLeft = '8px';
+      callBtn.style.padding = '4px 10px';
+      callBtn.style.fontSize = '10px';
+      callBtn.onclick = initiateCall;
+      chatHeader.parentNode.insertBefore(callBtn, chatHeader.nextSibling);
+    }
+  }, 100);
+};
+
+// ---- INTEGRATE WITH QR SCAN ----
+const _cmhHandleLink2 = handleLinkData;
+handleLinkData = async function(data) {
+  if (processCallSignal(data)) return;
+  return _cmhHandleLink2(data);
+};
+
+// ---- INTEGRATE WITH HARDENING TOOLBAR ----
+const _cmhAddHardening2 = addHardeningButtons;
+addHardeningButtons = function() {
+  _cmhAddHardening2();
+  const toolbar = document.querySelector('.toolbar') || document.querySelector('.topbar');
+  if (toolbar && !document.getElementById('toolbar-call-btn')) {
+    const callBtn = document.createElement('button');
+    callBtn.id = 'toolbar-call-btn';
+    callBtn.className = 'btn';
+    callBtn.textContent = '📞';
+    callBtn.title = 'E2E Encrypted Call';
+    callBtn.onclick = initiateCall;
+    toolbar.appendChild(callBtn);
+  }
+};
+
+toast('📞 E2E Calling loaded — military-grade encrypted calls ready');
+
+
+function processCallSignal(data) {
+  try {
+    let payload = typeof data === 'string' ? JSON.parse(b64dec(data)) : data;
+    if (payload.v !== 'cm-call-1') return false;
+    if (payload.type === 'offer') { startIncomingCall(payload); return true; }
+  } catch (e) { return false; }
+}
+
+  btn.onclick = () => {
+    if (typeof startScanQr === 'function') {
+      window.onQrScanned = (data) => {
+        try {
+          const answer = JSON.parse(b64dec(data));
+          if (answer.type === 'answer' && answer.offerTs === originalOffer.ts) {
+            document.getElementById('call-status-text').textContent = '🔄 Connecting...';
+            setupIncomingCall(answer);
+            document.getElementById('call-signaling-panel').style.display = 'none';
+            document.getElementById('call-active-controls').style.display = 'flex';
+            btn.style.display = 'none';
+          } else { toast('❌ Invalid answer code'); }
+        } catch (e) { toast('❌ Invalid QR code'); }
+      };
+      startScanQr();
+    } else { toast('⚠️ QR scanner not available'); }
+  };
+}
+
+}
+
+function toggleCallVideo() {
+  if (!CALL.localStream) return;
+  CALL.videoEnabled = !CALL.videoEnabled;
+  CALL.localStream.getVideoTracks().forEach(t => { t.enabled = CALL.videoEnabled; });
+  const btn = document.getElementById('call-video-btn');
+  if (btn) { btn.textContent = CALL.videoEnabled ? '📹' : '📷'; btn.style.borderColor = CALL.videoEnabled ? 'rgba(0,255,65,0.45)' : 'rgba(255,49,49,0.55)'; btn.style.color = CALL.videoEnabled ? 'var(--g)' : 'var(--red)'; }
+  const lv = document.getElementById('call-local-video'); if (lv) lv.style.display = CALL.videoEnabled ? 'block' : 'none';
+}
+
+function startCallTimer() {
+  CALL.callStartTime = Date.now();
+  const timerEl = document.getElementById('call-timer'); if (timerEl) timerEl.style.display = 'inline';
+  CALL.callTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - CALL.callStartTime) / 1000);
+    const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const secs = (elapsed % 60).toString().padStart(2, '0');
+    if (timerEl) timerEl.textContent = `${mins}:${secs}`;
+  }, 1000);
+}
+
+function updateCallStatus(status) {
+  const el = document.getElementById('call-status-text'); if (!el) return;
+  const map = { 'new': '⏳ Initializing...', 'connecting': '🔄 Connecting P2P...', 'connected': '🔒 E2E ENCRYPTED', 'disconnected': '⚠️ Disconnected', 'failed': '❌ Failed', 'closed': '📞 Ended' };
+  el.textContent = map[status] || status;
+  el.style.color = status === 'connected' ? 'var(--g)' : 'var(--amber)';
+}
+
+  } catch (e) { endCall(); throw new Error('Call setup failed: ' + e.message); }
+}
+
 };
 boot();
 </script>
