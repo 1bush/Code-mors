@@ -10,6 +10,7 @@
     "test": "node test-hybrid.js",
     "test:sentinel": "node test-sentinel.js",
     "test:pairing": "node test-pairing.js",
+    "test:app": "node test-app-flow.js",
     "sentinel:demo": "start sentinel-demo.html"
   }
 }

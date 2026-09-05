@@ -75,6 +75,29 @@ npm run sentinel:demo   # hap UI-në vizuale me butonin ⚠️ BREACH
 
 ---
 
+## 👻💬 GHOST CHAT — aplikacion mesazhesh (si Signal/SimpleX)
+
+`chat-app.html` — **aplikacioni kryesor**: mesazher i thjeshtë me ftesa njëpërdorëshe.
+Gjithçka teknike (Double Ratchet, RBQR, polling, radhët) punon në background.
+
+```
+Emri → [Bisedë e re | Ngjit ftesën] → chat me bubbles ✓
+```
+
+- Ana A: "Bisedë e re" → kopjon kodin e ftués → e dërgon palit
+- Ana B: "Ngjit ftesën" → ngjit kodin → **lidhja bëhet automatikisht** (përgjigja
+  e B-së shkon përmes kanalit, si *connection request* i SimpleX — A s'ka punë)
+- Chat: bubbles me orë, status "E2E · Double Ratchet ✓", banner 🚨 në ndërhyrje
+
+```bash
+npm run relay      # nis serverin
+npm run test:app   # rrjedha një-hapi: 8/8 PASS
+```
+
+Hapi i vjetër me 3 kodi mbetet si `ghost-relay-chat.html` (referencë).
+
+---
+
 ## 👻📡 GHOST RELAY CHAT — klient browser live
 
 `ghost-relay-chat.html` — chat E2E i plotë në browser kundër serverit relay:
