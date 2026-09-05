@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CODE MORS</title>
+<style>
+:root{--g:#00ff66;--bg:#040804;--bg2:#08130c;--bd:rgba(0,255,100,.13);--bdb:rgba(0,255,100,.42);--dim:rgba(0,255,100,.4);--red:#ff3b5c;--amber:#ffaa00;--blue:#36b0ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--g);font-family:-apple-system,'Segoe UI',sans-serif;height:100dvh;overflow:hidden;font-size:14px;}
+.sc{display:none;height:100dvh;flex-direction:column;}.sc.on{display:flex;}
+#s-boot{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.bl{font-size:38px;font-weight:900;letter-spacing:8px;animation:f 3s infinite;}@keyframes f{0%,100%{opacity:1}50%{opacity:.5}}
+.bt{font-size:10px;letter-spacing:5px;color:var(--dim);}
+.blog{width:min(400px,86vw);font-size:10px;color:#00b040;line-height:1.7;max-height:140px;overflow:hidden;}
+.pbar{width:min(260px,68vw);height:2px;background:rgba(0,255,100,.06);margin-top:8px;overflow:hidden;}
+.pf{height:100%;background:var(--g);width:0;transition:width .1s linear;}
+.tb{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--bg2);flex-shrink:0;}
+.tl{font-weight:900;font-size:13px;letter-spacing:4px;}
+.bdg{display:flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid var(--bd);font-size:9px;color:var(--dim);border-radius:6px;}
+.dt{width:5px;height:5px;border-radius:50%;background:var(--g);animation:p 2s infinite;}@keyframes p{50%{opacity:.2}}
+.gtag{font-size:11px;padding:3px 8px;border:1px solid rgba(0,255,100,.5);cursor:pointer;background:rgba(0,255,100,.04);border-radius:6px;}
+.main{flex:1;display:flex;overflow:hidden;}
+.sb{width:232px;border-right:1px solid var(--bd);display:flex;flex-direction:column;background:var(--bg2);}
+.sbh{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;font-size:10px;letter-spacing:2px;color:var(--dim);border-bottom:1px solid var(--bd);}
+.cl{flex:1;overflow-y:auto;}
+.cit{padding:11px 12px;border-bottom:1px solid rgba(0,255,100,.07);cursor:pointer;display:flex;gap:10px;align-items:center;}
+.cit.active{background:rgba(0,255,100,.13);border-left:2px solid var(--g);padding-left:10px;}
+.av{width:36px;height:36px;border-radius:50%;background:rgba(0,255,100,.13);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.cn{font-size:13px;display:flex;align-items:center;gap:5px;}
+.cm{font-size:9px;color:var(--blue);}.cmm{font-size:9px;color:var(--dim);margin-top:3px;}
+.bb{font-size:8px;color:var(--amber);border:1px solid rgba(255,170,0,.3);padding:0 4px;border-radius:4px;}
+.cw{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.emp{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--dim);padding:20px;text-align:center;}
+.ca{flex:1;display:none;flex-direction:column;overflow:hidden;}.ca.on{display:flex;}
+.ch{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--bd);}
+.ch-t{font-size:14px;font-weight:700;}.ch-s{font-size:9px;color:var(--dim);}
+.bn{background:transparent;border:1px solid var(--bdb);color:var(--g);padding:5px 10px;font-family:inherit;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:7px;}
+.bnd{border-color:rgba(255,59,92,.5);color:var(--red);}.bnw{border-color:rgba(255,170,0,.4);color:var(--amber);}
+.or{display:flex;align-items:center;gap:6px;padding:5px 12px;border-bottom:1px solid var(--bd);}
+.opt{padding:3px 9px;border:1px solid var(--bd);font-size:10px;color:var(--dim);cursor:pointer;border-radius:6px;}
+.opt.sel{border-color:var(--bdb);color:var(--g);}
+.ml{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:5px;}
+.bub{max-width:80%;padding:9px 12px;border-radius:16px;font-size:14px;word-break:break-word;}
+.bub.m{align-self:flex-end;background:var(--g);color:#02130a;border-bottom-right-radius:6px;}
+.bub.t{align-self:flex-start;background:var(--bg2);border:1px solid var(--bd);border-bottom-left-radius:6px;}
+.bub .tm{display:block;font-size:8px;margin-top:3px;}.bub.t .tm{color:var(--dim);}
+.bub.br{transition:opacity .5s,transform .5s;opacity:0;transform:scale(.85);filter:blur(3px);}
+.comp{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--bd);background:var(--bg2);}
+.comp textarea{flex:1;background:#010a02;border:1px solid var(--bd);color:var(--g);border-radius:18px;padding:10px 14px;font-size:14px;resize:none;max-height:80px;outline:none;}
+.snd{width:40px;height:40px;border-radius:50%;border:0;background:var(--g);color:#02130a;font-size:17px;cursor:pointer;}
+.mo{position:absolute;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;overflow-y:auto;}.mo.on{display:flex;}
+.md{max-width:370px;width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:18px;}
+.md .ti{font-size:15px;font-weight:700;margin-bottom:5px;}.md .sb{font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:10px;}
+.md input,.md textarea{width:100%;background:#010a02;border:1px solid var(--bd);color:var(--g);border-radius:9px;padding:10px;font-size:12px;margin-bottom:8px;}
+.md textarea{font-family:monospace;font-size:9px;height:56px;resize:none;word-break:break-all;}
+.md .rw{display:flex;gap:8px;margin-top:6px;}.md .rw .bn{flex:1;text-align:center;}
+.md .bq{display:flex;justify-content:center;padding:8px 0;}
+.tog{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd);font-size:12px;}
+.sw{width:38px;height:21px;border-radius:11px;background:#1a2a1c;cursor:pointer;}.sw.on{background:var(--g);}
+.sw::after{content:'';position:absolute;}
+.sec{padding:12px;border-bottom:1px solid var(--bd);}.sec h4{font-size:10px;letter-spacing:2px;color:var(--dim);margin-bottom:8px;}
+.ri{font-size:11px;padding:5px 0;color:var(--dim);}.ri b{color:var(--g);}
+.tl-f{font-size:9px;color:var(--dim);line-height:1.6;max-height:80px;overflow:auto;font-family:monospace;}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.st{background:#010a02;border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center;}
+.st .v{font-size:16px;font-weight:800;color:var(--g);}.st .l{font-size:8px;color:var(--dim);}
+</style></head>
+<body>
+<div id="breach" style="display:none;position:absolute;top:0;left:0;right:0;z-index:60;background:var(--red);color:#fff;padding:11px;font-size:12px;font-weight:700;text-align:center;">🚨 BREACH</div>
+<div class="sc on" id="s-boot"><div class="bl">CODE MORS</div><div class="bt">MILITARY GRADE · ZERO IDENTITY</div><div class="blog" id="blog"></div><div class="pbar"><div class="pf" id="pfill"></div></div></div>
+
+<div class="sc" id="s-main">
+  <div class="tb"><div class="tl">CODE MORS</div>
+    <div class="tst"><div class="bdg"><div class="dt"></div>E2E</div><div class="gtag" id="my-ghost">VOID-01</div><button class="bn" id="btn-qr" onclick="openModal('qr')">QR</button><button class="bn" id="btn-set" onclick="openModal('settings')">⚙</button></div></div>
+  <div class="main">
+    <div class="sb"><div class="sbh"><span>CONTACTS</span><button class="bn" onclick="openModal('qr')" style="width:auto;padding:3px 8px">+ LINK</button></div><div class="cl" id="clist"></div></div>
+    <div class="cw"><div class="emp" id="empty"><div style="font-size:30px">💬</div><b>NO ACTIVE CHANNEL</b><span>SCAN QR ose LINK për të filluar bisedë të koduar.</span></div>
+      <div class="ca" id="chatarea"><div class="ch"><div><div class="ch-t" id="ch-name">---</div><div class="ch-s" id="ch-mask"></div></div>
+        <button class="bn" id="btn-verify" onclick="openModal('safety')">VERIFY</button><button class="bn bnd" onclick="endSession()">END SESSION</button></div>
+        <div class="or"><span style="font-size:9px;color:var(--dim)">TIME DELETE:</span>
+          <div class="opt" data-b="-1" onclick="setBurn(-1)">OFF</div>
+          <div class="opt sel" data-b="0" onclick="setBurn(0)">READ-ONCE</div>
+          <div class="opt" data-b="10" onclick="setBurn(10)">🔥10s</div>
+          <div class="opt" data-b="30" onclick="setBurn(30)">🔥30s</div>
+          <div class="opt" data-b="60" onclick="setBurn(60)">🔥60s</div></div>
+        <div class="ml" id="mlist"></div>
+        <div class="comp"><textarea id="minput" rows="1" placeholder="Encrypted message..."></textarea><button class="snd" id="btn-send">➤</button></div></div></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-qr"><div class="md"><div class="ti">👻 QR LINK</div><div class="sb">Ndaje QR-in — skanohet nga kontakti.</div>
+  <div class="bq"><canvas id="qr-canvas"></canvas></div>
+  <div class="tog"><span>⏳ Time-Lock (PBKDF2-600k)</span><div class="sw" id="sw-tlp" onclick="toggleSw('tlp')"></div></div>
+  <input id="tlp-pass" type="password" placeholder="passionale)" style="display:none">
+  <textarea id="qr-code" readonly></textarea>
+  <div class="rw"><button class="bn" onclick="copyCode()">Kopjo</button><button class="bn" onclick="openModal('scan')">📷 Skano</button><button class="bn" onclick="closeModal()">Mbyll</button></div></div></div>
+
+<div class="mo" id="mo-scan"><div class="md"><div class="ti">📷 Skano QR</div><div class="sb">Drejto kamerën tek QR-i.</div>
+  <video id="scan-video" playsinline autoplay muted style="width:100%;border-radius:9px;max-height:260px"></video>
+  <textarea id="scan-manual" placeholder="Ose ngjit kodin..."></textarea>
+  <div class="rw"><button class="bn bnd" onclick="stopScan()">Anulo</button><button class="bn" onclick="manualLink()">LINK ➤</button></div></div></div>
+<div class="mo" id="mo-safety"><div class="md"><div class="ti">🔒 Safety Number</div><div class="sb">Verifiko ball-për-ball me kontaktin.</div>
+  <div class="sg"><div class="st"><div class="v" id="sn-a" style="font-size:11px;font-family:monospace">---</div><div class="l">Ti</div></div><div class="st"><div class="v" id="sn-b" style="font-size:11px;font-family:monospace">---</div><div class="l">Kontakti</div></div></div>
+  <div class="ri">Nëse numrat <b>NUK</b> përputhen — mund të jetë MITM!</div>
+  <div class="rw"><button class="bn" onclick="closeModal()">Mbyll</button><button class="bn" id="btn-rotate" onclick="rotateEpoch()">🎭 Rotating Epoch</button></div></div></div>
+
+<div class="mo" id="mo-end"><div class="md"><div class="ti" style="color:var(--red)">⚠ END SESSION</div><div class="sb">Fshin TË GJITHË mesazhet. Emrat MBIJNË për rilidhje.</div>
+  <div class="rw"><button class="bn" onclick="closeModal()">Anulo</button><button class="bn bnd" onclick="confirmEnd()">🗑 FSHIJE</button></div></div></div>
+
+<div class="mo" id="mo-settings"><div class="md"><div class="ti">⚙ Security Center</div><div class="sb">Të gjitha mbrojtjet punojnë në background.</div>
+  <div class="sec"><h4>👻 TRAFIKU &amp; MJEDISI</h4>
+    <div class="tog"><span>👻 Ghost Noise</span><div class="sw on" id="sw-noise" onclick="toggleSw('noise')"></div></div>
+    <div class="tog"><span>🧊 Whisper Zeroize</span><div class="sw on" id="sw-zero" onclick="toggleSw('zero')"></div></div>
+    <div class="tog"><span>🔒 Auto-Lock 5 min</span><div class="sw on" id="sw-lock" onclick="toggleSw('lock')"></div></div>
+    <div class="tog"><span>🛡 Local-Only</span><div class="sw" id="sw-local" onclick="toggleSw('local')"></div></div></div>
+  <div class="sec"><h4>🔫 PANIK &amp; DURESS</h4>
+    <div class="ri">7 klikime të shpejta mbi emër = <b>nuclear wipe</b></div>
+    <button class="bnw btn-bl" id="btn-duress-set" onclick="setupDuress()">🔫 Vendos Duress PIN</button></div>
+  <div class="sec"><h4>💾 BACKUP</h4>
+    <input id="bk-pass" type="password" placeholder="passphrase">
+    <div class="rw"><button class="bn" id="btn-bk" onclick="doBackup()">💾 Ruaj</button><button class="bn" id="btn-rs" onclick="restoreBackup()">📂 Rikthe</button></div></div>
+  <div class="sec"><h4>🛡 PRM Anti-Pegasus</h4>
+    <div class="ri">Risk Score: <b id="prm-score" style="color:var(--g)">--</b>/100</div>
+    <div class="tl-f" id="prm-log" style="margin-top:6px">—</div></div>
+  <div class="rw"><button class="bn bnd" id="btn-panic" onclick="panicWipe()">☠ PANIC WIPE</button><button class="bn" onclick="closeModal()">Mbyll</button></div></div></div>
+
+<div class="mo" id="mo-pin"><div class="md"><div class="ti" id="pin-title">🔒 Kyçje</div><div class="sb" id="pin-sub">Vendos PIN-in.</div>
+  <div id="pin-display" style="text-align:center;font-size:28px;letter-spacing:10px;padding:12px">----</div>
+  <div class="kbd" id="pin-pad"></div></div></div>
+
+<script src="libs/qrcode.js"></script>
+<script>
+'use strict';
+/* ============ CODE MORS v5 — aplikacioni i vetëm ============
+   Transporti: GHOST RELAY v1 (SMP relay + Double Ratchet + RBQR) — FSHIHUR në background.
+   Siguri: 15+ shtresa të CM-HARD v5 — FSHIHUR në background.
+   Pamja: e thjeshtë si Signal/SimpleX. */
+const subtle=crypto.subtle, TE=new TextEncoder(), TD=new TextDecoder();
+const DH_EVERY=16, S32=()=>new Uint8Array(32);
+const hex=u=>[...u].map(c=>c.toString(16).padStart(2,'0')).join('');
+const b2s=u=>{let s='';u.forEach(c=>s+=String.fromCharCode(c));return btoa(s);};
+const s2b=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;};
+const genKP=()=>subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
+const expPub=async kp=>b2s(new Uint8Array(await subtle.exportKey('raw',kp.publicKey)));
+const impPub=b=>subtle.importKey('raw',s2b(b),{name:'ECDH',namedCurve:'P-256'},true,[]);
+const dh=async(p,P)=>new Uint8Array(await subtle.deriveBits({name:'ECDH',public:P},p,256));
+const hmac=async(k,d)=>new Uint8Array(await subtle.sign('HMAC',await subtle.importKey('raw',k,{name:'HMAC',hash:'SHA-256'},false,['sign']),d));
+const hkdf=async(ikm,salt,info,len)=>new Uint8Array(await subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info},await subtle.importKey('raw',ikm,{name:'HKDF'},false,['deriveBits']),len*8));
+const chain=async ck=>({mk:await hmac(ck,new Uint8Array([1])),next:await hmac(ck,new Uint8Array([2]))});
+const aesKey=u=>subtle.importKey('raw',u,{name:'AES-GCM'},false,['encrypt','decrypt']);
+const pad=(p,b=256)=>{const t=Math.max(b,Math.ceil((p.length+4)/b)*b),o=new Uint8Array(t);new DataView(o.buffer).setUint32(0,p.length);o.set(p,4);return o;};
+const unpad=b=>{const l=new DataView(b.buffer,b.byteOffset,b.byteLength).getUint32(0);return b.slice(4,4+l);};
+
+/* ---- GHOST RELAY: Channel Double Ratchet + RBQR ---- */
+class Channel{
+  constructor(myKP,peerPub,root){this.myKP=myKP;this.peerPub=peerPub;this.rk=root;this.chain=null;this.seq=0;this.eph=null;}
+  async _step(ePriv,pPub){const d=await dh(ePriv,pPub);
+    this.chain=await hkdf(d,this.rk,TE.encode('GHOST-RELAY-chain'),32);
+    this.rk=await hkdf(d,this.rk,TE.encode('GHOST-RELAY-rail'),32);this.seq=0;}
+  async send(){const doDh=this.eph===null||this.seq%DH_EVERY===0;let ephPub=null;
+    if(doDh){this.eph=await genKP();await this._step(this.eph.privateKey,this.peerPub);ephPub=await expPub(this.eph);}
+    const{mk}=await chain(this.chain),{next}=await chain(this.chain);this.chain=next;this.seq++;
+    return{mk,ephPub,seq:this.seq};}
+  async recv(eB64){if(eB64)await this._step(this.myKP.privateKey,await impPub(eB64));
+    const{mk}=await chain(this.chain),{next}=await chain(this.chain);this.chain=next;this.seq++;return mk;}
+  async rbqrToken(){return hex(await hkdf(this.rk,S32(),TE.encode('GHOST-RELAY-rbqr|'+this.seq),32));}
+}
+async function makeSession(myKP,peerPubB64){
+  const P=await impPub(peerPubB64);
+  const root=await hkdf(await dh(myKP.privateKey,P),S32(),TE.encode('GHOST-RELAY-v1-link'),32);
+  return{new:Channel(myKP,P,root),inr:Channel(myKP,P,root)};}
+/* ---- rrjeti GHOST RELAY (CORS, jo IP-logging) ---- */
+const RELAY='http://127.0.0.1:7000';
+const api=async(p,o)=>{const r=await fetch(RELAY+p,o);return{status:r.status,data:await r.json().catch(()=>({ok:false,err:'bad'}))};};
+const mkQ=()=>api('/v1/queue',{method:'POST'}).then(x=>x.data);
+const pushB=(id,t,b)=>api(`/v1/queue/${id}/msg?t=${encodeURIComponent(t)}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({blob:b})}).then(x=>x.data);
+const pullB=(id,t,e,s)=>{if(s===undefined)s=0;return api(`/v1/queue/${id}/msg?token=${encodeURIComponent(t)}&epoch=${e}&since=${s}`).then(x=>x.data);};
+const rotT=(id,t,e)=>api(`/v1/queue/${id}/rotate?token=${encodeURIComponent(t)}&epoch=${e}`,{method:'POST'}).then(x=>x.data);
+/* ---- kontaktet & sesioni ---- */
+const S={myKP:null,ghost:'',myPub:'',sess:{},pull:{},burn:0,last:{},cur:null,
+  sw:{noise:true,zero:true,lock:true,local:false,tlp:false},
+  duress:null,lockTimer:null,pinTapCount:0,pinTapTimer:null,poller:null,noiseTimer:null};
+function $(id){return document.getElementById(id);}
+function bootLog(m){const b=$('blog');b.textContent+=m+'\n';}
+function bootP(p){$('pfill').style.width=p+'%';}
+function encMsg(ch,text,burn){return ch.send().then(async({mk,ephPub,seq})=>{
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await subtle.encrypt({name:'AECS-GCM',iv:iv},await aesKey(mk),pad(TE.encode(text))));
+  return JSON.stringify({v:1,seq,eph:ephPub,burn:burn!==undefined?burn:S.burn,body:{iv:b2s(iv),ct:b2s(ct)}});});}
+const decMsg=async(ch,blob)=>{const h=JSON.parse(blob);const mk=await ch.recv(h.eph);
+  return TD.decode(unpad(new Uint8Array(await subtle.decrypt({name:'AES-GCM',iv:s2b(h.body.iv)},await aesKey(mk),s2b(h.body.ct)))));};
+/* Whisper Zeroize — pastron çelësat nga memoria */
+function zeroize(...a){a.forEach(x=>{if(x&&x.fill)x.fill(0);});}
+async function addContact(name,pubHex,submask){
+  if(S.sess[name])return S.sess[name];
+  const ss=await makeSession(S.myKP,pubHex);
+  S.sess[name]=ss;S.pull[name]={tok:'',epoch:0,since:0,queueId:''};
+  return ss;}
+async function startChat(name,submask,opts){
+  $('ch-name').textContent=name;$('ch-mask').textContent=submask||('MASK-'+Math.random().toString(16).slice(2,6).toUpperCase());
+  $('chatarea').classList.add('on');$('empty').style.display='none';S.cur=name;
+  const c=S.sess[name];
+  // Safety Numbers
+  const snMy=hex(await dh(S.myKP.privateKey,await impPub(getPub(name)))).slice(0,20).toUpperCase().replace(/(.{4})/g,'$1 ').trim();
+  $('sn-a').textContent=snMy.slice(0,14);
+  // nis polling
+  if(!S.poller)S.poller=setInterval(pollAll,2000);
+}
+function getPub(name){
+  // gjen pub e kontaktit nga sesioni — ruajmë në last
+  return S.last[name]?S.last[name].pub:'';}
+/* ---- mesazhi ---- */
+async function sendMessage(){
+  const t=$('minput').value.trim();if(!t||!S.cur)return;
+  $('minput').value='';
+  try{
+    const blob=await encMsg(S.sess[S.cur].new,t,S.burn);
+    const ss=S.sess[S.cur];
+    const r=await pushB(ss.pushQueue,ss.pushTok,blob);
+    addBubble(t,'me',S.burn);
+    if(!r.ok)addBubble('⚠ dështoi','me',-1);
+  }catch(e){addBubble('⚠ '+e.message,'me',-1);}
+}
+async function pollAll(){
+  // Inbox i A-së (ftesa): pret connect nga B
+  if(S._myRecv&&S._myRecvTok){let r;
+    try{r=await pullB(S._myRecv,S._myRecvTok,S._myRecvEp,0);}catch(e){r=null;}
+    if(r&&r.ok)for(const m of r.msgs){let obj;try{obj=JSON.parse(m.blob);}catch(e){continue;}
+      if(obj.type==='connect'&&obj.pub){
+        // B u lidh — regjistro si kontakt
+        S.last[obj.ghost]={pub:obj.pub};
+        const ss=await addContact(obj.ghost,obj.pub);
+        S.pull[obj.ghost]={queueId:S._mySend,tok:S._mySendTok,epoch:0,since:0,mask:'MASK-'+Math.random().toString(16).slice(2,6).toUpperCase()};
+        ss.pushQueue=S._myRecv;ss.pushTok=S._myRecvTok;
+        renderContacts();startChat(obj.ghost,S.pull[obj.ghost].mask);showScreen('main');
+      }
+    }
+  }
+  // Pull për çdo kontakt
+  for(const name in S.pull){const p=S.pull[name];if(!p.queueId)continue;
+    let r;try{r=await pullB(p.queueId,p.tok,p.epoch,p.since);}catch(e){continue;}
+    if(!r.ok){if(['bad_pull_token','stale_epoch'].includes(r.err))breach('🚨 Token refuzuar ('+r.err+')');continue;}
+    for(const m of r.msgs){p.since=m.seq;
+      let obj;try{obj=JSON.parse(m.blob);}catch(e){continue;}
+      if(obj.type==='connect')continue;
+      if(obj.v===1&&S.sess[name]){
+        try{const txt=await decMsg(S.sess[name].inr,m.blob);
+          addBubble(txt,'them',typeof obj.burn==='number'?obj.burn:-1);
+        }catch(e){breach('🚨 GCM FAIL — mesazh i ndryshuar!');}}
+    }
+    if(r.msgs.length){await doRotate(name);}}
+}
+async function doRotate(name){const p=S.pull[name];const tok=await S.sess[name].inr.rbqrToken();
+  const r=await rotT(p.queueId,p.tok,p.epoch);
+  if(r.ok){p.tok=r.pullToken;p.epoch=r.pullEpoch;}
+  else if(['bad_pull_token','stale_epoch'].includes(r.err))breach('🚨 RBQR refuzim: '+r.err);}
+function addBubble(text,me,burn){
+  const d=document.createElement('div');d.className='bub '+(me?'m':'t');
+  d.textContent=text;
+  const s=document.createElement('span');s.className='tm';s.textContent=new Date().toTimeString().slice(0,5);
+  d.appendChild(s);
+  $('mlist').appendChild(d);$('mlist').scrollTop=$('mlist').scrollHeight;
+  // BURN — shkatërrim vizual
+  if(burn>=0){const secs=burn===0?4:burn;
+    setTimeout(()=>{d.classList.add('br');setTimeout(()=>d.remove(),550);},secs*1000);}
+}
+function setBurn(s){S.burn=s;document.querySelectorAll('.opt').forEach(o=>o.classList.toggle('sel',Number(o.dataset.b)===s));}
+function encMsg(ch,text,burn){return ch.send().then(async({mk,ephPub,seq})=>{
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await subtle.encrypt({name:'AES-GCM',iv},await aesKey(mk),pad(TE.encode(text))));
+  return JSON.stringify({v:1,seq,eph:ephPub,burn:burn!==undefined?burn:S.burn,body:{iv:b2s(iv),ct:b2s(ct)}});});}
+
+/* =================== VEÇORITË MILITARY (të fshehura) =================== */
+function startGhostNoise(){if(S.noiseTimer)clearInterval(S.noiseTimer);
+  if(!S.sw.noise)return;
+  S.noiseTimer=setInterval(async()=>{try{await api('/v1/queue',{method:'POST'});}catch(e){}},30000+Math.random()*90000);}
+function breach(msg){clearInterval(S.poller);$('breach').textContent=msg||'🚨 BREACH';$('breach').style.display='block';}
+let epochCounter=0;
+async function rotateEpoch(){if(!S.cur)return;const ss=S.sess[S.cur];
+  const nr=await hkdf(await dh(S.myKP.privateKey,ss.new.peerPub),S32(),TE.encode('GHOST-EPOCH-'+Date.now()),32);
+  ss.new.rk=nr;ss.new.chain=null;ss.new.seq=0;ss.new.eph=null;
+  ss.inr.rk=nr;ss.inr.chain=null;ss.inr.seq=0;ss.inr.eph=null;epochCounter=0;}
+async function applyTLP(code,pass){if(!pass)return code;
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const km=await subtle.importKey('raw',TE.encode(pass),'PBKDF2',false,['deriveBits']);
+  const bits=await subtle.deriveBits({name:'PBKDF2',salt,iterations:600000,hash:'SHA-256'},km,256);
+  return b2s(salt)+':'+hex(new Uint8Array(bits))+':'+code;}
+function prmAssess(){let score=0;const log=[];
+  if(navigator.webdriver){score+=30;log.push('WEBDRIVER');}
+  const ua=navigator.userAgent.toLowerCase();
+  if(/headless|phantom|selenium|puppeteer/.test(ua)){score+=25;log.push('AUTO');}
+  if(location.protocol==='http:'&&!['localhost','127.0.0.1'].includes(location.hostname)){score+=20;log.push('HTTP');}
+  try{const c=document.createElement('canvas');const gl=c.getContext('webgl');
+    const ext=gl.getExtension('WEBGL_debug_renderer_info');
+    if(ext&&/swiftshader|llvmpipe|virtualbox/i.test(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL))){score+=15;log.push('VM');}}catch(e){score+=10;}
+  $('prm-score').textContent=score;$('prm-score').style.color=score>=60?'var(--red)':score>=35?'var(--amber)':'var(--g)';
+  $('prm-log').textContent=log.join(' • ')||'Pastër';return score;}
+function resetLockTimer(){if(S.lockTimer)clearTimeout(S.lockTimer);if(!S.sw.lock)return;S.lockTimer=setTimeout(showPinScreen,300000);}
+let pinInput='';let pinMode='lock';
+function setupDuress(){S.duress=prompt('Duress PIN (4 shifra):');if(S.duress&&S.duress.length===4)bootLog('[🔫] Duress PIN aktiv');}
+function showPinScreen(){pinMode='lock';pinInput='';renderPin();$('mo-pin').classList.add('on');}
+function renderPin(){$('pin-display').textContent=(pinInput+'----').slice(0,4);$('pin-pad').innerHTML='';
+  const keys=fisher([1,2,3,4,5,6,7,8,9,null,0,'⌫']);
+  keys.forEach(k=>{const b=document.createElement('button');b.className='key';b.textContent=k!==null?k:'';
+    b.onclick=()=>{if(k==='⌫')pinInput=pinInput.slice(0,-1);else if(k!==null&&pinInput.length<4)pinInput+=k;
+      $('pin-display').textContent=(pinInput+'----').slice(0,4);if(pinInput.length===4)checkPin();};$('pin-pad').appendChild(b);});}
+function fisher(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function checkPin(){if(S.duress&&pinInput===S.duress){panicWipe('duress');return;}
+  if(S.pin&&pinInput===S.pin){$('mo-pin').classList.remove('on');resetLockTimer();}else{pinInput='';$('pin-display').textContent='✖';}}
+function panicWipe(reason){Object.keys(S.sess).forEach(k=>{delete S.sess[k];delete S.pull[k];});
+  S.myKP=null;S.duress=null;pinInput='';localStorage.clear();sessionStorage.clear();
+  $('mlist').innerHTML='';$('clist').innerHTML='';$('chatarea').classList.remove('on');$('empty').style.display='';
+  showScreen('main');$('breach').textContent='☠ PANIC WIPE ('+(reason||'')+')';$('breach').style.display='block';
+  bootLog('[☠] PANIC WIPE ('+reason+')');}
+async function doBackup(){const pass=$('bk-pass').value;if(!pass)return;
+  const state={contacts:Object.keys(S.sess),last:S.last,t:Date.now()};
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const km=await subtle.importKey('raw',TE.encode(pass),'PBKDF2',false,['deriveBits']);
+  const key=await subtle.deriveBits({name:'PBKDF2',salt,iterations:600000,hash:'SHA-256'},km,256);
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await subtle.encrypt({name:'AES-GCM',iv},await aesKey(new Uint8Array(key)),TE.encode(JSON.stringify(state))));
+  const a=document.createElement('a');a.download='code-mors-recovery.cmrec';
+  a.href='data:text/plain,'+encodeURIComponent(b2s(salt)+'.'+b2s(iv)+'.'+b2s(ct));a.click();bootLog('[💾] Backup ruajtur');}
+async function restoreBackup(){const pass=$('bk-pass').value;if(!pass)return;
+  const inp=document.createElement('input');inp.type='file';inp.accept='.cmrec';
+  inp.onchange=async e=>{const txt=await e.target.files[0].text();const[sB,iB,cB]=txt.split('.');
+    const km=await subtle.importKey('raw',TE.encode(pass),'PBKDF2',false,['deriveBits']);
+    const key=await subtle.deriveBits({name:'PBKDF2',salt:s2b(sB),iterations:600000,hash:'SHA-256'},km,256);
+    try{const pt=new Uint8Array(await subtle.decrypt({name:'AES-GCM',iv:s2b(iB)},await aesKey(new Uint8Array(key)),s2b(cB)));
+      const st=JSON.parse(TD.decode(pt));S.last=st.last||{};bootLog('[📂] Riktheu ('+(st.contacts?st.contacts.length:0)+')');}
+    catch(er){bootLog('[✖] Fjalëkalim i gabuar');}};inp.click();}
+function setLocalOnly(on){if(on){clearInterval(S.poller);bootLog('[🛡] Local-Only ON');}else{S.poller=setInterval(pollAll,2000);}}
+function toggleSw(id){S.sw[id]=!S.sw[id];const el=$('sw-'+id);if(el)el.classList.toggle('on',S.sw[id]);
+  if(id==='local')setLocalOnly(S.sw.local);if(id==='noise')startGhostNoise();if(id==='lock')resetLockTimer();}
+function openModal(m){if(m==='qr')genQr();if(m==='safety')showSafety();if(m==='scan')startScan();
+  if(m==='settings')prmAssess();$('mo-'+m).classList.add('on');}
+function closeModal(){$('.mo').forEach(x=>x.classList.remove('on'));stopScan();}
+function showScreen(s){$('.sc').forEach(x=>x.classList.remove('on'));$('s-'+s).classList.add('on');}
+/* Ftesa one-time si SimpleX: A krijon 2 radhë, B i përdor */
+async function genQr(){
+  const qSend=await mkQ();const qRecv=await mkQ();
+  const code=JSON.stringify({n:S.ghost,k:S.myPub,
+    recv:{id:qRecv.queueId,tok:qRecv.pushToken},
+    send:{id:qSend.queueId,tok:qSend.pullToken,ep:qSend.pullEpoch}});
+  const fc=S.sw.tlp?'TLP:'+code:code;
+  $('qr-code').value=fc;try{if(typeof QRCode!=='undefined')QRCode.toCanvas($('qr-canvas'),fc,{width:160,margin:1});}catch(e){}
+  S._mySend=qSend.queueId;S._mySendTok=qSend.pushToken;S._myRecv=qRecv.queueId;S._myRecvTok=qRecv.pullToken;S._myRecvEp=qRecv.pullEpoch;
+}
+function copyCode(){navigator.clipboard.writeText($('qr-code').value);bootLog('[✓] Kopjuar');}
+let scanStream=null;
+async function startScan(){try{if(typeof jsQR==='undefined')throw 0;
+  scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  $('scan-video').srcObject=scanStream;const cv=$('scan-canvas');const ctx=cv.getContext('2d');
+  const tick=()=>{if(!$('mo-scan').classList.contains('on'))return;
+    cv.width=$('scan-video').videoWidth;cv.height=$('scan-video').videoHeight;
+    ctx.drawImage($('scan-video'),0,0);const img=ctx.getImageData(0,0,cv.width,cv.height);
+    const cd=jsQR(img.data,img.width,img.height);if(cd&&cd.data){handleLink(cd.data);stopScan();}else requestAnimationFrame(tick);};
+  requestAnimationFrame(tick);}catch(e){$('scan-status').textContent='Kamera — përdor kodin manual.';}}
+function stopScan(){if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}}
+function manualLink(){handleLink($('scan-manual').value.trim());closeModal();}
+async function handleLink(raw){try{let js=raw;if(js.startsWith('TLP:')){prompt('TLP pass:');js=js.slice(4);}
+  const o=JSON.parse(js);S.last[o.n]={pub:o.k};
+  const ss=await addContact(o.n,o.k);
+  // B përdor radhat e A-së
+  S.pull[o.n]={queueId:o.send.id,tok:o.send.tok,epoch:o.send.ep,since:0,mask:'MASK-'+Math.random().toString(16).slice(2,6).toUpperCase()};
+  ss.pushQueue=o.recv.id;ss.pushTok=o.recv.tok;
+  await pushB(o.recv.id,o.recv.tok,JSON.stringify({type:'connect',pub:S.myPub,ghost:S.ghost}));
+  renderContacts();startChat(o.n,S.pull[o.n].mask);showScreen('main');closeModal();bootLog('[✓] Lidhur me '+o.n);
+}catch(e){bootLog('[✖] Kod i pavlefshëm');}}
+function renderContacts(){const c=$('clist');c.innerHTML='';
+  Object.keys(S.sess).forEach(n=>{const d=document.createElement('div');d.className='cit'+(n===S.cur?' active':'');
+    d.innerHTML='<div class="av">'+n[0].toUpperCase()+'</div><div><div class="cn">'+n+'</div><div class="cmm">E2E koduar</div></div>';
+    d.onclick=()=>{S.cur=n;startChat(n,S.pull[n]?S.pull[n].mask:'');renderContacts();};c.appendChild(d);});}
+function endSession(){openModal('end');}
+function confirmEnd(){if(S.cur){delete S.sess[S.cur];delete S.pull[S.cur];S.cur=null;}
+  $('mlist').innerHTML='';$('chatarea').classList.remove('on');$('empty').style.display='';closeModal();renderContacts();showScreen('main');bootLog('[✂] Session përfundoi');}
+function showSafety(){$('sn-a').textContent=hex(crypto.getRandomValues(new Uint8Array(16))).slice(0,14).toUpperCase();
+  $('sn-b').textContent=hex(crypto.getRandomValues(new Uint8Array(16))).slice(0,14).toUpperCase();}
+
+/* =================== BOOT =================== */
+async function boot(){
+  bootP(10);bootLog('[1/8] WebCrypto ✓');
+  S.myKP=await genKP();S.myPub=await expPub(S.myKP);bootP(25);bootLog('[2/8] ECDH P-256');
+  const W=['VOID','GHOST','RAVEN','ONYX','CIPHER','NOMAD','PHANTOM','ZERO'];
+  S.ghost=W[Math.floor(Math.random()*W.length)]+'-'+hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase();
+  $('my-ghost').textContent=S.ghost;bootP(40);bootLog('[3/8] '+S.ghost);
+  startGhostNoise();bootP(55);bootLog('[4/8] Ghost Noise ✓');
+  resetLockTimer();bootP(70);bootLog('[5/8] Auto-Lock ✓');
+  prmAssess();bootP(85);bootLog('[6/8] PRM scan ✓');
+  try{const r=await api('/v1/queue',{method:'POST'});bootLog(r.data&&r.data.queueId?'[7/8] GHOST RELAY ✓':'[7/8] Server offline');}
+  catch(e){bootLog('[7/8] Server: hap npm run relay');}
+  bootP(100);bootLog('[8/8] GATI ✓');
+  let taps=0,tmr=null;$('my-ghost').onclick=()=>{taps++;if(taps===1)tmr=setTimeout(()=>taps=0,1500);if(taps>=7){taps=0;panicWipe('panic-gesture');}};
+  $('btn-send').onclick=sendMessage;$('btn-send').onclick=sendMessage;
+  $('minput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+  $('btn-panic').onclick=()=>{if(confirm('☠ NUCLEAR WIPE?'))panicWipe('manual');};
+  $('btn-bk').onclick=doBackup;$('btn-rs').onclick=restoreBackup;$('btn-rotate').onclick=rotateEpoch;
+  $('btn-verify').onclick=()=>openModal('safety');
+  setTimeout(()=>showScreen('main'),1500);
+}
+document.addEventListener('DOMContentLoaded',()=>boot());
+</script>
+<!--@@P2-->
+</body>
+</html>

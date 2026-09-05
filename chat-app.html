@@ -59,6 +59,23 @@
   .bub.me   { align-self:flex-end; background:var(--me); border-bottom-right-radius:5px; }
   .bub.them { align-self:flex-start; background:var(--them); border-bottom-left-radius:5px; }
   .bub .t { display:block; font-size:9px; color:rgba(255,255,255,.45); text-align:right; margin-top:3px; }
+  .bub .fuse { position:absolute; left:10px; right:10px; bottom:2px; height:2px; border-radius:2px;
+               background:var(--accent); opacity:.6; }
+  .bub.them .fuse { background:#c9a227; }
+  .bub.burning { transition:opacity .5s ease, transform .5s ease, filter .5s ease;
+                 opacity:0; transform:scale(.85); filter:blur(3px); }
+  .timer-wrap { position:relative; flex-shrink:0; }
+  .timer-btn { width:44px; height:44px; border-radius:50%; border:1px solid var(--line);
+               background:#0b0b0f; color:var(--fg); font-size:11px; cursor:pointer; line-height:1; }
+  .timer-btn.on { border-color:var(--accent); color:var(--accent); }
+  #timerPop { position:absolute; bottom:54px; left:0; background:var(--bg2); border:1px solid var(--line);
+              border-radius:12px; padding:6px; display:none; flex-direction:column; gap:2px; min-width:130px;
+              box-shadow:0 8px 24px rgba(0,0,0,.5); z-index:5; }
+  #timerPop.on { display:flex; }
+  #timerPop button { background:none; border:0; color:var(--fg); text-align:left; padding:9px 12px;
+                     border-radius:8px; font-size:13px; cursor:pointer; }
+  #timerPop button:hover { background:var(--line); }
+  #timerPop button.sel { color:var(--accent); font-weight:700; }
   .inputbar { display:flex; gap:8px; padding:10px 12px; background:var(--bg2);
               border-top:1px solid var(--line); flex-shrink:0; }
   .inputbar input { flex:1; background:#0b0b0f; border:1px solid var(--line); color:var(--fg);
@@ -122,7 +139,17 @@
     </header>
     <div id="msgs"></div>
     <div class="inputbar">
-      <input id="msgInput" placeholder="Mesazh" maxlength="2000" autocomplete="off">
+      <div class="timer-wrap">
+        <button class="timer-btn on" id="btnTimer" title="Koha e vetë-shkatërrimit">⏱<br><span id="timerLbl">30s</span></button>
+        <div id="timerPop">
+          <button data-v="-1">⏱ OFF</button>
+          <button data-v="0">👁 READ-ONCE</button>
+          <button data-v="10" class="sel">🔥 10 sekonda</button>
+          <button data-v="30">🔥 30 sekonda</button>
+          <button data-v="60">🔥 60 sekonda</button>
+        </div>
+      </div>
+      <input id="msgInput" placeholder="Mesazh i shkatërrueshëm" maxlength="2000" autocomplete="off">
       <button class="send" id="btnSend">➤</button>
     </div>
   </div>
@@ -170,11 +197,11 @@ async function makeSession(myKP, peerPubB64) {
   const root = await hkdf(await dh(myKP.privateKey, P), S32(), TE.encode('GHOST-RELAY-v1-link'), 32);
   return { out: new Channel(myKP, P, root), inr: new Channel(myKP, P, root) };
 }
-async function encryptMsg(ch, text) {
+async function encryptMsg(ch, text, burn) {
   const { mk, ephPub, seq } = await ch.send();
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv }, await aesKey(mk), pad(TE.encode(text))));
-  return JSON.stringify({ v: 1, seq, eph: ephPub, body: { iv: b2s(iv), ct: b2s(ct) } });
+  return JSON.stringify({ v: 1, seq, eph: ephPub, burn, body: { iv: b2s(iv), ct: b2s(ct) } });
 }
 async function decryptMsg(ch, blob) {
   const h = JSON.parse(blob), mk = await ch.recv(h.eph);
@@ -192,7 +219,7 @@ const $ = id => document.getElementById(id);
 const show = s => { document.querySelectorAll('.screen').forEach(e => e.classList.remove('on')); $(s).classList.add('on'); };
 const st = { myKP: null, ghost: '', peerName: '', sess: null,
   pushQ: null, pushTok: null, pullQ: null, pullTok: null, pullEpoch: 0,
-  since: 0, poller: null };
+  since: 0, poller: null, burn: 10 };
 const W = ['VOID','GHOST','RAVEN','ONYX','CIPHER','NOMAD','PHANTOM','ZERO'];
 $('ghostName').value = W[Math.floor(Math.random()*W.length)] + '-' + hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase();
 $('ghostName').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnEnter').click(); });
@@ -259,7 +286,7 @@ async function poll() {
     let obj; try { obj = JSON.parse(m.blob); } catch (e) { continue; }
     if (obj.type === 'connect') { await onConnect(obj); continue; }
     if (obj.v === 1 && st.sess) {
-      try { bubble(await decryptMsg(st.sess.inr, m.blob), false); $('cStatus').textContent = 'E2E · Double Ratchet ✓'; }
+      try { bubble(await decryptMsg(st.sess.inr, m.blob), false, typeof obj.burn === 'number' ? obj.burn : -1); $('cStatus').textContent = 'E2E · Double Ratchet ✓'; }
       catch (e) { breach('🚨 GCM AUTH FAIL — mesazh i ndryshuar ose i injektuar!'); }
     }
   }
@@ -290,26 +317,54 @@ function openChat() {
   $('cStatus').textContent = 'E2E · Double Ratchet ✓';
   show('s-chat'); $('msgInput').focus();
 }
-function bubble(text, me) {
+function bubble(text, me, burn) {
   const d = document.createElement('div');
   d.className = 'bub ' + (me ? 'me' : 'them');
   d.textContent = text;
   const s = document.createElement('span'); s.className = 't';
   s.textContent = new Date().toTimeString().slice(0, 5);
   d.appendChild(s);
+  // BURN: vizë që shkurtet + shkatërrim (0 = read-once, N = sekonda, -1 = off)
+  if (burn !== undefined && burn >= 0) {
+    const fuse = document.createElement('span'); fuse.className = 'fuse';
+    d.appendChild(fuse);
+    const secs = burn === 0 ? 4 : burn; // read-once: 4s kohe leximi
+    requestAnimationFrame(() => {
+      fuse.style.transition = 'width ' + secs + 's linear';
+      fuse.style.width = '0';
+    });
+    setTimeout(() => {
+      d.classList.add('burning');
+      setTimeout(() => d.remove(), 550);
+    }, secs * 1000);
+  }
   $('msgs').appendChild(d); $('msgs').scrollTop = $('msgs').scrollHeight;
 }
 async function sendNow() {
   const t = $('msgInput').value.trim(); if (!t || !st.sess) return;
-  $('msgInput').value = ''; bubble(t, true);
+  $('msgInput').value = ''; bubble(t, true, st.burn);
   try {
-    const r = await pushB(st.pushQ, st.pushTok, await encryptMsg(st.sess.out, t));
+    const r = await pushB(st.pushQ, st.pushTok, await encryptMsg(st.sess.out, t, st.burn));
     if (!r.ok) bubble("⚠ nuk u dërgua (" + (r.err || '?') + ")", true);
   } catch (e) { bubble('⚠ ' + e.message, true); }
 }
 $('btnSend').onclick = sendNow;
 $('msgInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendNow(); });
 $('btnBack').onclick = () => show('s-main');
+
+/* ---------- timer i vetë-shkatërrimit ---------- */
+const BURN_LABEL = { '-1': 'OFF', '0': '👁', '10': '10s', '30': '30s', '60': '60s' };
+$('btnTimer').onclick = (e) => { e.stopPropagation(); $('timerPop').classList.toggle('on'); };
+document.addEventListener('click', (e) => {
+  if (!$('#timerPop').contains(e.target) && e.target !== $('btnTimer')) $('timerPop').classList.remove('on');
+});
+document.querySelectorAll('#timerPop button').forEach(b => b.onclick = () => {
+  st.burn = Number(b.dataset.v);
+  $('timerLbl').textContent = BURN_LABEL[String(st.burn)];
+  $('btnTimer').classList.toggle('on', st.burn !== -1);
+  document.querySelectorAll('#timerPop button').forEach(x => x.classList.toggle('sel', x === b));
+  $('timerPop').classList.remove('on');
+});
 function breach(msg) { $('breach').textContent = msg || '🚨 BREACH — ndërhyrje e detektuar!'; $('breach').style.display = 'block'; }
 </script>
 </script>
