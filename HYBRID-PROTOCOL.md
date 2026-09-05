@@ -1,4 +1,4 @@
-# CODE MORS — CM-RR v1 (Code-Mors Ratchet Relay) — Hybrid Protocol
+# CODE MORS — GHOST RELAY v1 (Code-Mors Ratchet Relay) — Hybrid Protocol
 
 > **Ndryshe nga çdo gjë tjetër e njohur:** kombinon modelin e serverit *SMP
 > relay* (radhë njëdrejtimëshe pa identifikues — nga SimpleX) me *Double
@@ -12,7 +12,7 @@
 
 ## Pse hibridi
 
-| Cilësi | SMP relay (SimpleX) | Double Ratchet (Signal) | **CM-RR v1 (hibrid)** |
+| Cilësi | SMP relay (SimpleX) | Double Ratchet (Signal) | **GHOST RELAY v1 (hibrid)** |
 |---|---|---|---|
 | Dorëzim në offline (store-and-forward) | ✅ | ❌ | ✅ |
 | Pa identifikues përdoruesi | ✅ | ❌ (ka identitete) | ✅ |
@@ -72,7 +72,7 @@ Pikat kyçe:
 |S Hamnik mssä ke | HMACSHA256 per-message → **AES-256-GCM** (IV 12B) |
 | Padding / traffic| padding bllok 256B-4KB, bllok i fiksuar |
 | Mitm | Safety Number = SHA-512(preitur çelës publik), krahasim ball për ball |
-| RBQR token derivim | `token_n = HMAC-SHA256(RK, "CM-RR-token" ‖ n)` |
+| RBQR token derivim | `token_n = HMAC-SHA256(RK, "GHOST-RELAY-token" ‖ n)` |
 | Header ratchet | version, chainIdx, (DH pub nëse ratchet) |
 
 > **Kujdes i sinqertë:** ky është protokoll i ri, i pareviewer nga ekspertë

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "commonjs",
-  "description": "CODE MORS - CM-RR v1 hybrid: SMP-style relay queue + Double Ratchet + Ratchet-Bound Queue Rotation (RBQR).",
+  "description": "CODE MORS - GHOST RELAY v1 hybrid: SMP-style relay queue + Double Ratchet + Ratchet-Bound Queue Rotation (RBQR).",
   "scripts": {
     "relay": "node relay/server.js --port 7000",
     "relay:nolog": "node relay/server.js --port 7000 --no-log",

@@ -1,5 +1,5 @@
 /**
- * CODE MORS — CM-RR v1 Hybrid Relay
+ * CODE MORS — GHOST RELAY v1 Hybrid Relay
  * ------------------------------------------------------------------
  * Server relay në stilin SMP (SimpleX Messaging Protocol), i përshtatur
  * me Double Ratchet dhe "Ratchet-Bound Queue Rotation" (RBQR).
@@ -160,8 +160,8 @@ if (require.main === module) {
   const port = portIdx >= 0 ? Number(args[portIdx + 1]) : 7000;
   const relay = new Relay({ logging: args.indexOf('--no-log') < 0 });
   relay.listen(port, '127.0.0.1').then((p) => {
-    console.log(`[cm-rr] relay listening on 127.0.0.1:${p}`);
-    console.log('[cm-rr] radhë njëdrejtimëshe | no-user-id | RBQR enabled');
+    console.log(`[GHOST-RELAY] relay listening on 127.0.0.1:${p}`);
+    console.log('[GHOST-RELAY] radhë njëdrejtimëshe | no-user-id | RBQR enabled');
   });
 }
 

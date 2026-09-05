@@ -1,5 +1,5 @@
 'use strict';
-/* CODE MORS — test-hybrid.js | verifikim e2e i hibridit CM-RR.
+/* CODE MORS — test-hybrid.js | verifikim e2e i hibridit GHOST-RELAY.
    E2E Double Ratchet përmes relay + RBQR (i vjetri refuzohet) + privacy. */
 const { Relay } = require('./relay/server.js');
 const { makeSession, generateKeyPair, exportPub, toAesKey,
@@ -90,7 +90,7 @@ async function main() {
   const failed = results.filter((r) => !r.ok).length;
   console.log('\n==================== PËRMBLEDHJE ====================');
   console.log(`  TOTAL: ${results.length}   PASS: ${results.length - failed}   FAIL: ${failed}`);
-  if (failed === 0) console.log('  🟢 HYBRID CM-RR v1: GJITHÇKA E VERIFIKUAR OK');
+  if (failed === 0) console.log('  🟢 HYBRID GHOST RELAY v1: GJITHÇKA E VERIFIKUAR OK');
   else console.log('  🔴 Ka dështime!');
   console.log('=====================================================');
   process.exit(failed === 0 ? 0 : 1);

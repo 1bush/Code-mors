@@ -1,5 +1,5 @@
 /**
- * CODE MORS — cm-protocol.js v1 (CM-RR hybrid client crypto)
+ * CODE MORS — cm-protocol.js v1 (GHOST-RELAY hybrid client crypto)
  * ------------------------------------------------------------------
  * Double Ratchet "dy-drejtimësh" + Ratchet-Bound Queue Rotation (RBQR)
  * mbi WebCrypto (ECDH P-256, HKDF-SHA256, HMAC-SHA256, AES-256-GCM).
@@ -86,7 +86,7 @@ function toAesKey(u) {
   return subtle.importKey('raw', u, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
 }
 
-/* ---------------- CM-RR: Double Ratchet dy-drejtimësh + RBQR ---------------- */
+/* ---------------- GHOST-RELAY: Double Ratchet dy-drejtimësh + RBQR ---------------- */
 
 const DH_EVERY = 16;          // sa mesazhe para çdo DH break-in ratchet
 const SALT32 = () => new Uint8Array(32);
@@ -94,7 +94,7 @@ const SALT32 = () => new Uint8Array(32);
 /** Rrënja e lidhjes: DH(çelës LT Priv, çelës LT i palit) -> HKDF -> RK (32B). */
 async function linkRootFromDH(myPriv, peerPub) {
   const dh = await ecdhDerive(myPriv, peerPub);
-  return hkdf(dh, SALT32(), TE.encode('CM-RR-v1-link'), 32);
+  return hkdf(dh, SALT32(), TE.encode('GHOST-RELAY-v1-link'), 32);
 }
 
 /**
@@ -120,8 +120,8 @@ class Channel {
    *  për të dy palët sepse përdor çelësin ephemeral të dërguesit. */
   async _dhStep(ephPriv, peerPub) {
     const dh = await ecdhDerive(ephPriv, peerPub);
-    const newChain = await hkdf(dh, this.rk, TE.encode('CM-RR-chain'), 32);
-    this.rk = await hkdf(dh, this.rk, TE.encode('CM-RR-rail'), 32);
+    const newChain = await hkdf(dh, this.rk, TE.encode('GHOST-RELAY-chain'), 32);
+    this.rk = await hkdf(dh, this.rk, TE.encode('GHOST-RELAY-rail'), 32);
     this.chain = newChain;
     this.seq = 0;
   }
@@ -159,7 +159,7 @@ class Channel {
 
   /** RBQR token: rrjedh nga RK e drejtimët. Ndryshon me çdo DH ratchet. */
   async rbqrToken(epoch = this.seq) {
-    const t = await hkdf(this.rk, SALT32(), TE.encode('CM-RR-rbqr|' + String(epoch)), 32);
+    const t = await hkdf(this.rk, SALT32(), TE.encode('GHOST-RELAY-rbqr|' + String(epoch)), 32);
     return b.toHex(t);
   }
 }

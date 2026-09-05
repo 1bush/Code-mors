@@ -6,7 +6,7 @@ E2E encrypted messaging with QR pairing, permanent ghost identities, self-destru
 
 ---
 
-## 🆕 CM-RR v1 — Hybrid Relay (SMP × Double Ratchet + RBQR)
+## 🆕 GHOST RELAY v1 — Hybrid Relay (SMP × Double Ratchet + RBQR)
 
 > **E re dhe unike:** kombinon *SMP relay* (radhë njëdrejtimëshe pa identifikues — nga SimpleX)
 > me *Double Ratchet* (forward secrecy — nga Signal), dhe shton **RBQR
@@ -14,7 +14,7 @@ E2E encrypted messaging with QR pairing, permanent ghost identities, self-destru
 > ratchet-ut, kështu që edhe **metadata e radhës ka forward secrecy** — gjë që
 > as SimpleX (radhë statike) e as Double Ratchet i thjeshtë nuk e kanë.
 
-| Cilësi | SMP relay | Double Ratchet | **CM-RR v1** |
+| Cilësi | SMP relay | Double Ratchet | **GHOST RELAY v1** |
 |---|---|---|---|
 | Dorëzim offline (store-and-forward) | ✅ | ❌ | ✅ |
 | Pa identifikues përdoruesi | ✅ | ❌ | ✅ |
@@ -41,7 +41,7 @@ npm run relay
 npm test
 ```
 
-> ⚠️ **Kufizim i sinqertë:** CM-RR është protokoll i ri, i paverifikuar nga
+> ⚠️ **Kufizim i sinqertë:** GHOST-RELAY është protokoll i ri, i paverifikuar nga
 > auditim të pavarur kriptografik (ndryshe nga SimpleX, i rishikuar nga Trail
 > of Bits). Për prodhim real duhet auditim. Kufizime të njohura: mesazhet e
 > humbura në rrjet s'sinkronizohen automatikisht (s'ka skipped-message keys
