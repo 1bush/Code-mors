@@ -1,17 +1,17 @@
 /**
- * CODE MORS — GHOST RELAY v1 Hybrid Relay
+ * CODE MORS â€” GHOST RELAY v1 Hybrid Relay
  * ------------------------------------------------------------------
- * Server relay në stilin SMP (SimpleX Messaging Protocol), i përshtatur
+ * Server relay nÃ« stilin SMP (SimpleX Messaging Protocol), i pÃ«rshtatur
  * me Double Ratchet dhe "Ratchet-Bound Queue Rotation" (RBQR).
  *
- * Vetitë:
- *  - Radhë njëdrejtimëshe (simplex) pa identifikues përdoruesi.
- *  - Serveri ruan vetëm HASH-E SHA-256 të token-ave (jo plaintext) —
- *    një rrjedhje DB nuk zbulon token-at.
+ * VetitÃ«:
+ *  - RadhÃ« njÃ«drejtimÃ«she (simplex) pa identifikues pÃ«rdoruesi.
+ *  - Serveri ruan vetÃ«m HASH-E SHA-256 tÃ« token-ave (jo plaintext) â€”
+ *    njÃ« rrjedhje DB nuk zbulon token-at.
  *  - RBQR: token-i i pull-it rrjedh nga ratchet-i i klientit; token-i i
- *    vjetër REFUZOET -> forward secrecy i metadata-s.
+ *    vjetÃ«r REFUZOET -> forward secrecy i metadata-s.
  *  - S'ka llogari, s'ka identifikues klienti, IP-logging OPTIONAL (i fikur).
- *  - Pa varësi të jashtme: Node.js i thjeshtë (http + crypto).
+ *  - Pa varÃ«si tÃ« jashtme: Node.js i thjeshtÃ« (http + crypto).
  */
 
 'use strict';
@@ -24,7 +24,7 @@ const randomId = (n) => crypto.randomBytes(n).toString('base64url');
 
 class Relay {
   constructor(opts = {}) {
-    this.ttlMs = opts.ttlMs || 7 * 24 * 3600 * 1000; // 7 ditë default
+    this.ttlMs = opts.ttlMs || 7 * 24 * 3600 * 1000; // 7 ditÃ« default
     this.maxMsgsPerQueue = opts.maxMsgsPerQueue || 1000;
     this.maxMsgBytes = opts.maxMsgBytes || 64 * 1024;
     this.logging = opts.logging !== false; // IP-logging OPTIONAL, i fikur me --no-log
@@ -59,7 +59,7 @@ class Relay {
       nextSeq: 1,
       lastAccess: Date.now(),
     });
-    // push/pull kthehen VETËM një herë; serveri ruan hash-e.
+    // push/pull kthehen VETÃ‹M njÃ« herÃ«; serveri ruan hash-e.
     return { queueId: id, pushToken: push, pullToken: pull, pullEpoch: 0 };
   }
 
@@ -77,7 +77,7 @@ class Relay {
     return { ok: true, seq, queueId };
   }
 
-  /** RBQR pull: klienti duhet të dërgojë pullEpoch + token aktual. */
+  /** RBQR pull: klienti duhet tÃ« dÃ«rgojÃ« pullEpoch + token aktual. */
   pullMessages(queueId, pullToken, pullEpoch, since = 0) {
     const q = this._q(queueId);
     if (!q) return { ok: false, err: 'no_queue' };
@@ -101,9 +101,19 @@ class Relay {
   }
 
 /* ---- HTTP ---- */
-  _json(res, code, obj) { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(obj)); }
+  _headers() {
+    return {
+      'content-type': 'application/json',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET, POST, OPTIONS',
+      'access-control-allow-headers': 'content-type, x-push-token',
+      'access-control-max-age': '86400',
+    };
+  }
+  _json(res, code, obj) { res.writeHead(code, this._headers()); res.end(JSON.stringify(obj)); }
 
   handle(req, res) {
+    if (req.method === 'OPTIONS') { res.writeHead(204, this._headers()); return res.end(); }
     const u = new URL(req.url, 'http://x');
     const p = u.pathname;
     const rip = req.socket.remoteAddress || '';
@@ -153,7 +163,7 @@ class Relay {
   }
 }
 
-// Nëse niset si skenar i vetëm (node relay/server.js --port 7000 --no-log)
+// NÃ«se niset si skenar i vetÃ«m (node relay/server.js --port 7000 --no-log)
 if (require.main === module) {
   const args = process.argv.slice(2);
   const portIdx = args.indexOf('--port');
@@ -161,7 +171,7 @@ if (require.main === module) {
   const relay = new Relay({ logging: args.indexOf('--no-log') < 0 });
   relay.listen(port, '127.0.0.1').then((p) => {
     console.log(`[GHOST-RELAY] relay listening on 127.0.0.1:${p}`);
-    console.log('[GHOST-RELAY] radhë njëdrejtimëshe | no-user-id | RBQR enabled');
+    console.log('[GHOST-RELAY] radhÃ« njÃ«drejtimÃ«she | no-user-id | RBQR enabled');
   });
 }
 

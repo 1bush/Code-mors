@@ -9,6 +9,7 @@
     "relay:nolog": "node relay/server.js --port 7000 --no-log",
     "test": "node test-hybrid.js",
     "test:sentinel": "node test-sentinel.js",
+    "test:pairing": "node test-pairing.js",
     "sentinel:demo": "start sentinel-demo.html"
   }
 }

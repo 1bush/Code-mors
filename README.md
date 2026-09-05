@@ -75,6 +75,31 @@ npm run sentinel:demo   # hap UI-në vizuale me butonin ⚠️ BREACH
 
 ---
 
+## 👻📡 GHOST RELAY CHAT — klient browser live
+
+`ghost-relay-chat.html` — chat E2E i plotë në browser kundër serverit relay:
+
+```bash
+npm run relay          # nis serverin (port 7000)
+```
+
+Hap `ghost-relay-chat.html` në **dy dritare** (dy përdorues):
+1. Ana A: **① KRIJO LINK** → kopjo kodin te ana B
+2. Ana B: ngjit kodin → **② BASHKOHU** → kopjo Kodin Përgjigje te ana A
+3. Ana A: ngjit përgjigjen → **③ PËRFUNDO** → chat E2E aktiv 🟢
+
+Çdo mesazh: Double Ratchet (çelës i freskët per-message) + padding 256B;
+pull me token RBQR të rrotulluar pas çdo batch-i; banner 🚨 BREACH për
+tamper/token-rejection; pairing me kod copy-paste (QR = hapi tjetër).
+
+Test i rrjedhës së pairing-ut (kodi A → B → përgjigje → chat + RBQR):
+
+```bash
+npm run test:pairing   # 7/7 PASS
+```
+
+---
+
 ## 🛡️ Security Stack
 
 | Layer | Protocol | What it defeats |

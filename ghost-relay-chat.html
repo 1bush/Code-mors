@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>👻📡 GHOST RELAY — CHAT</title>
+<style>
+  :root { --bg:#050805; --fg:#00ff66; --dim:#0a3318; --warn:#ffaa00; --breach:#ff3131; }
+  * { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:'Courier New',monospace;
+         margin:0; padding:20px; max-width:680px; margin:auto; font-size:14px; }
+  h1 { font-size:17px; letter-spacing:3px; margin:0 0 2px; }
+  .sub { color:#078; font-size:11px; margin-bottom:16px; }
+  .panel { border:1px solid var(--dim); padding:12px; margin-bottom:14px; }
+  .panel h2 { font-size:12px; letter-spacing:2px; color:#0a9; margin:0 0 10px; }
+  label { font-size:11px; color:#088; display:block; margin:8px 0 3px; }
+  input, textarea { width:100%; background:#020402; color:var(--fg); border:1px solid var(--dim);
+    padding:8px; font-family:inherit; font-size:12px; }
+  textarea { height:64px; resize:vertical; word-break:break-all; }
+  button { font-family:inherit; background:transparent; color:var(--fg); border:1px solid var(--dim);
+    padding:9px 14px; margin:8px 6px 0 0; cursor:pointer; font-size:12px; letter-spacing:1px; }
+  button:hover { background:var(--dim); }
+  button:disabled { opacity:.35; cursor:not-allowed; }
+  .ghost { font-size:13px; color:#0c6; margin-top:6px; }
+  .pub { font-size:10px; color:#066; word-break:break-all; }
+  #chat { display:none; }
+  #msgs { height:300px; overflow-y:auto; border:1px solid var(--dim); padding:8px; margin-bottom:8px; }
+  .m { margin-bottom:8px; padding:6px 8px; border-left:3px solid var(--dim); font-size:13px; }
+  .m.me   { border-left-color:#0a9; text-align:right; }
+  .m.them { border-left-color:var(--warn); }
+  .m .who { font-size:9px; color:#066; display:block; }
+  .row { display:flex; gap:8px; }
+  .row input { flex:1; }
+  #breach { display:none; border:2px solid var(--breach); color:var(--breach); padding:10px;
+    margin-bottom:12px; font-weight:bold; animation:blink .7s infinite alternate; }
+  @keyframes blink { from { background:#1a0000; } to { background:#000; } }
+  .status { font-size:11px; color:#078; margin-top:8px; }
+  code { color:#0a9; font-size:11px; }
+</style>
+</head>
+<body>
+  <h1>👻📡 GHOST RELAY — CHAT</h1>
+  <div class="sub">GHOST RELAY v1 · E2E Double Ratchet + RBQR · serveri sheh vetëm ciphertext</div>
+
+  <div id="breach">🚨 BREACH — ndërhyrje e detektuar! Çelësat u fshinë. Mbylle pajisjen/ri-nisu.</div>
+
+  <div class="panel">
+    <h2>1 · IDENTITETI</h2>
+    <label>Ghost Name</label>
+    <input id="ghost" maxlength="16">
+    <div class="ghost" id="pubkey"></div>
+  </div>
+
+  <div class="panel">
+    <h2>2 · SERVERI RELAY</h2>
+    <label>Adresa e GHOST RELAY</label>
+    <input id="relay" value="http://127.0.0.1:7000">
+  </div>
+
+  <div class="panel">
+    <h2>3 · PAIRING (shkëmbim kodi — si QR, me copy-paste)</h2>
+    <button id="btnCreate">① KRIJO LINK (ana A)</button>
+    <label>Kodi i Link-ut A (dërgoje palit — kanaali A→B + çelësi publik)</label>
+    <textarea id="linkA" readonly placeholder="— kliko ① për ta gjeneruar —"></textarea>
+
+    <label>Ngjit kodin e Link-ut A këtu (ana B)</label>
+    <textarea id="pasteA" placeholder="— ana B: ngjit kodin e Link-ut A —"></textarea>
+    <button id="btnJoin">② BASHKOHU (ana B) → gjeneron Kod Përgjigje</button>
+    <label>Kodi Përgjigje B (ktheja anës A — kanaali B→A)</label>
+    <textarea id="linkB" readonly></textarea>
+
+    <label>Ngjit Kodin Përgjigje B këtu (ana A e përfundon)</label>
+    <textarea id="pasteB" placeholder="— ana A: ngjit Kodin Përgjigje B —"></textarea>
+    <button id="btnComplete">③ PËRFUNDO LIDHJEN (ana A)</button>
+    <div class="status" id="pairStatus">Prit — nuk ka lidhje.</div>
+  </div>
+
+  <div class="panel" id="chat">
+    <h2>4 · CHAT E2E</h2>
+    <div id="msgs"></div>
+    <div class="row">
+      <input id="msg" placeholder="mesazh i koduar me Double Ratchet..." maxlength="2000">
+      <button id="btnSend">DËRGO ➤</button>
+    </div>
+    <div class="status" id="chatStatus"></div>
+  </div>
+<script>
+'use strict';
+/* ============ GHOST RELAY v1 — browser client (WebCrypto) ============ */
+const subtle = crypto.subtle;
+const te = new TextEncoder(), td = new TextDecoder();
+const DH_EVERY = 16;
+const S32 = () => new Uint8Array(32);
+const hex = (u) => [...u].map(c => c.toString(16).padStart(2, '0')).join('');
+const b2s = (u) => { let s = ''; u.forEach(c => s += String.fromCharCode(c)); return btoa(s); };
+const s2b = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+const j2c = (o) => b2s(te.encode(JSON.stringify(o)));
+const c2j = (s) => JSON.parse(td.decode(s2b(s.trim())));
+
+/* ---- kripto (e njëjta logjikë me cm-protocol.js) ---- */
+const genKP = () => subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+const expPub = async (kp) => b2s(new Uint8Array(await subtle.exportKey('raw', kp.publicKey)));
+const impPub = (b) => subtle.importKey('raw', s2b(b), { name: 'ECDH', namedCurve: 'P-256' }, true, []);
+const dh = async (priv, pub) => new Uint8Array(await subtle.deriveBits({ name: 'ECDH', public: pub }, priv, 256));
+const hmac = async (k, d) => new Uint8Array(await subtle.sign('HMAC', await subtle.importKey('raw', k, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']), d));
+const hkdf = async (ikm, salt, info, len) => new Uint8Array(await subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt, info }, await subtle.importKey('raw', ikm, { name: 'HKDF' }, false, ['deriveBits']), len * 8));
+const chain = async (ck) => ({ mk: await hmac(ck, new Uint8Array([1])), next: await hmac(ck, new Uint8Array([2])) });
+const aesKey = (u) => subtle.importKey('raw', u, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+function pad(p, block = 256) { const t = Math.max(block, Math.ceil((p.length + 4) / block) * block); const o = new Uint8Array(t); new DataView(o.buffer).setUint32(0, p.length); o.set(p, 4); return o; }
+function unpad(b) { const l = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(0); return b.slice(4, 4 + l); }
+
+/* ---- Channel: një drejtim, Double Ratchet + RBQR ---- */
+class Channel {
+  constructor(role, myKP, peerPub, root) { this.role = role; this.myKP = myKP; this.peerPub = peerPub; this.rk = root; this.chain = null; this.seq = 0; this.eph = null; }
+  async _dhStep(ephPriv, peerPub) {
+    const d = await dh(ephPriv, peerPub);
+    this.chain = await hkdf(d, this.rk, te.encode('GHOST-RELAY-chain'), 32);
+    this.rk = await hkdf(d, this.rk, te.encode('GHOST-RELAY-rail'), 32);
+    this.seq = 0;
+  }
+  async send() {
+    const doDh = this.eph === null || this.seq % DH_EVERY === 0;
+    let ephPub = null;
+    if (doDh) { this.eph = await genKP(); await this._dhStep(this.eph.privateKey, this.peerPub); ephPub = await expPub(this.eph); }
+    const { mk } = await chain(this.chain); const { next } = await chain(this.chain);
+    this.chain = next; this.seq++;
+    return { mk, ephPub, seq: this.seq };
+  }
+  async recv(ephB64) {
+    if (ephB64) await this._dhStep(this.myKP.privateKey, await impPub(ephB64));
+    const { mk } = await chain(this.chain); const { next } = await chain(this.chain);
+    this.chain = next; this.seq++;
+    return mk;
+  }
+  async rbqrToken() { return hex(await hkdf(this.rk, S32(), te.encode('GHOST-RELAY-rbqr|' + this.seq), 32)); }
+}
+async function makeSession(myKP, peerPubB64) {
+  const peerPub = await impPub(peerPubB64);
+  const root = await hkdf(await dh(myKP.privateKey, peerPub), S32(), te.encode('GHOST-RELAY-v1-link'), 32);
+  return { out: new Channel('out', myKP, peerPub, root), inr: new Channel('in', myKP, peerPub, root) };
+}
+const encryptMsg = async (ch, text) => {
+  const { mk, ephPub, seq } = await ch.send();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv }, await aesKey(mk), pad(te.encode(text))));
+  return JSON.stringify({ v: 1, seq, eph: ephPub, body: { iv: b2s(iv), ct: b2s(ct) } });
+};
+const decryptMsg = async (ch, blob) => {
+  const h = JSON.parse(blob);
+  const mk = await ch.recv(h.eph);
+  const pt = unpad(new Uint8Array(await subtle.decrypt({ name: 'AES-GCM', iv: s2b(h.body.iv) }, await aesKey(mk), s2b(h.body.ct))));
+  return td.decode(pt);
+};
+
+/* ---- rrjeti (relay) ---- */
+const R = () => document.getElementById('relay').value.trim().replace(/\/+$/, '');
+async function api(path, opts) {
+  const r = await fetch(R() + path, opts);
+  return { status: r.status, data: await r.json().catch(() => ({ ok: false, err: 'bad_response' })) };
+}
+const mkQueue = () => api('/v1/queue', { method: 'POST' }).then(x => x.data);
+const pushBlob = (id, tok, blob) => api(`/v1/queue/${id}/msg?t=${encodeURIComponent(tok)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ blob }) }).then(x => x.data);
+const pullRaw = (id, tok, epoch, since) => api(`/v1/queue/${id}/msg?token=${encodeURIComponent(tok)}&epoch=${epoch}&since=${since}`).then(x => x.data);
+const rotateTok = (id, tok, epoch) => api(`/v1/queue/${id}/rotate?token=${encodeURIComponent(tok)}&epoch=${epoch}`, { method: 'POST' }).then(x => x.data);
+/* ---- UI: identiteti ---- */
+const $ = (id) => document.getElementById(id);
+const state = { myKP: null, ghost: '', peer: null, qAB: null, qBA: null, out: null, inr: null,
+  pullTok: null, pullEpoch: 0, since: 0, seen: new Set(), poller: null };
+const W = ['VOID','GHOST','RAVEN','ONYX','CIPHER','NOMAD','PHANTOM','ZERO'];
+
+(async function boot() {
+  $('ghost').value = W[Math.floor(Math.random() * W.length)] + '-' + hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase();
+  state.myKP = await genKP();
+  $('pubkey').textContent = 'pub: ' + (await expPub(state.myKP)).slice(0, 40) + '…';
+})();
+
+const addMsg = (text, me) => {
+  const d = document.createElement('div');
+  d.className = 'm ' + (me ? 'me' : 'them');
+  d.innerHTML = '<span class="who">' + (me ? state.ghost : state.peerName) + '</span>' +
+    text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('msgs').appendChild(d); $('msgs').scrollTop = $('msgs').scrollHeight;
+};
+const breach = (msg) => { $('breach').style.display = 'block'; $('chatStatus').textContent = msg; };
+const pairStat = (t) => { $('pairStatus').textContent = t; };
+
+/* ---- RBQR: rotacion token-i nga gjendja e ratchet-it ---- */
+async function rbqrRotate(queueId) {
+  const tok = await state.inr.rbqrToken();
+  const r = await rotateTok(queueId, state.pullTok, state.pullEpoch);
+  if (r.ok) { state.pullTok = r.pullToken; state.pullEpoch = r.pullEpoch; }
+  else if (r.err === 'bad_pull_token' || r.err === 'stale_epoch') breach('RBQR refuzim: ' + r.err);
+}
+
+/* ---- polling: pull + deshifro + rotacion RBQR ---- */
+async function poll() {
+  if (!state.peer) return;
+  const r = await pullRaw(state.pullQ, state.pullTok, state.pullEpoch, state.since);
+  if (!r.ok) { if (['bad_pull_token','stale_epoch'].includes(r.err)) breach('🚨 TOKEN REFUZUAR (' + r.err + ') — server i dyshimtë / replay'); return; }
+  for (const m of r.msgs) {
+    if (state.seen.has(m.seq)) continue;
+    state.seen.add(m.seq);
+    try { addMsg(await decryptMsg(state.inr, m.blob), false); }
+    catch (e) { breach('🚨 GCM AUTH FAIL — mesazh i ndryshuar ose injektuar!'); }
+    state.since = m.seq;
+  }
+  if (r.msgs.length) await rbqrRotate(state.pullQ);
+  $('chatStatus').textContent = '✓ pull ok · seq ' + state.since + ' · epoch ' + state.pullEpoch;
+}
+
+/* ---- dërgimi ---- */
+async function sendNow() {
+  const t = $('msg').value.trim(); if (!t || !state.peer) return;
+  $('msg').value = '';
+  try {
+    const r = await pushBlob(state.pushQ, state.pushTok, await encryptMsg(state.out, t));
+    if (r.ok) addMsg(t, true); else $('chatStatus').textContent = '✖ push dështoi: ' + (r.err || 'err');
+  } catch (e) { $('chatStatus').textContent = '✖ dërgim: ' + e.message; }
+}
+
+/* ---- PAIRING hapi ①: ana A krijon radhën A→B ---- */
+$('btnCreate').onclick = async () => {
+  try {
+    state.qAB = await mkQueue(); state.pushTok = state.qAB.pushToken; state.pushQ = state.qAB.queueId;
+    const code = j2c({ t: 'GHOST-RELAY-LINK-A', v: 1, pub: await expPub(state.myKP), ghost: $('ghost').value,
+      queueId: state.qAB.queueId, pullToken: state.qAB.pullToken, epoch: state.qAB.pullEpoch });
+    $('linkA').value = code; $('linkA').select();
+    pairStat('① Link A u krijua — kopjoje dhe dërgoja palit B.');
+  } catch (e) { pairStat('✖ server i papërdorshëm: ' + e.message); }
+};
+
+/* ---- PAIRING hapi ②: ana B bashkohet ---- */
+$('btnJoin').onclick = async () => {
+  try {
+    const link = c2j($('pasteA').value);
+    state.peerName = link.ghost || 'PEER';
+    state.peer = await makeSession(state.myKP, link.pub);
+    state.inr = state.peer.inr; state.out = state.peer.out;
+    // B merr radhën A→B (pull) dhe rotullon token-in në RBQR-in e vet
+    state.qAB = { queueId: link.queueId }; state.pullQ = link.queueId;
+    state.pullTok = link.pullToken; state.pullEpoch = link.epoch;
+    await rbqrRotate(state.pullQ);
+    // B krijon radhën B→A dhe përgatit Kodin Përgjigje
+    state.qBA = await mkQueue(); state.pushTok = state.qBA.pushToken; state.pushQ = state.qBA.queueId;
+    $('linkB').value = j2c({ t: 'GHOST-RELAY-REPLY-B', v: 1, pub: await expPub(state.myKP), ghost: $('ghost').value,
+      queueId: state.qBA.queueId, pullToken: state.qBA.pullToken, epoch: state.qBA.pullEpoch });
+    $('linkB').select();
+    pairStat('② B u bashkua — kopjo Kodin Përgjigje B te ana A.');
+    startChat();
+  } catch (e) { pairStat('✖ kod i pavlefshëm: ' + e.message); }
+};
+
+/* ---- PAIRING hapi ③: ana A përfundon me Kodin Përgjigje B ---- */
+$('btnComplete').onclick = async () => {
+  try {
+    const rep = c2j($('pasteB').value);
+    state.peerName = rep.ghost || 'PEER';
+    state.peer = await makeSession(state.myKP, rep.pub);
+    state.out = state.peer.out; state.inr = state.peer.inr;
+    // A merr radhën B→A (pull) dhe rotullon në RBQR-in e vet
+    state.qBA = { queueId: rep.queueId }; state.pullQ = rep.queueId;
+    state.pullTok = rep.pullToken; state.pullEpoch = rep.epoch;
+    state.since = 0; state.seen = new Set();
+    await rbqrRotate(state.pullQ);
+    startChat(); pairStat('③ LIDHJA E PLOTË — kanali dy-drejtimësh E2E aktiv. 🟢');
+  } catch (e) { pairStat('✖ kod i pavlefshëm: ' + e.message); }
+};
+
+function startChat() {
+  $('chat').style.display = 'block';
+  clearInterval(state.poller);
+  state.poller = setInterval(poll, 2500);
+  setTimeout(poll, 500);
+}
+$('btnSend').onclick = sendNow;
+$('msg').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendNow(); });
+</script>
+</body>
+</html>
