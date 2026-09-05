@@ -6,6 +6,75 @@ E2E encrypted messaging with QR pairing, permanent ghost identities, self-destru
 
 ---
 
+## 🆕 CM-RR v1 — Hybrid Relay (SMP × Double Ratchet + RBQR)
+
+> **E re dhe unike:** kombinon *SMP relay* (radhë njëdrejtimëshe pa identifikues — nga SimpleX)
+> me *Double Ratchet* (forward secrecy — nga Signal), dhe shton **RBQR
+> (Ratchet-Bound Queue Rotation)**: token-i i radhës rrjedh nga gjendja e
+> ratchet-ut, kështu që edhe **metadata e radhës ka forward secrecy** — gjë që
+> as SimpleX (radhë statike) e as Double Ratchet i thjeshtë nuk e kanë.
+
+| Cilësi | SMP relay | Double Ratchet | **CM-RR v1** |
+|---|---|---|---|
+| Dorëzim offline (store-and-forward) | ✅ | ❌ | ✅ |
+| Pa identifikues përdoruesi | ✅ | ❌ | ✅ |
+| Forward secrecy e përmbajtjes | ❌ | ✅ | ✅ |
+| Break-in recovery | ❌ | ✅ | ✅ |
+| **Forward secrecy e metadata-s së radhës** | ❌ | ❌ | ✅ (RBQR) |
+
+### Komponentët
+
+| Skedar | Roli |
+|---|---|
+| `relay/server.js` | Relay pa identifikues: radhë njëdrejtimëshe, ruan vetëm **hash-e** të token-ave dhe blob-e ciphertext (s'ka plaintext në server) |
+| `cm-protocol.js` | Klient kripto (WebCrypto): ECDH P-256 + Double Ratchet dy-drejtimësh (DH break-in çdo 16 mesazhe) + RBQR token derivim |
+| `test-hybrid.js` | Verifikim end-to-end (13 teste) |
+| `HYBRID-PROTOCOL.md` | Specifikimi i plotë i protokollit |
+
+### Përdorimi
+
+```bash
+# nis relay (pa IP-logging: shto --no-log)
+npm run relay
+
+# verifikim end-to-end
+npm test
+```
+
+> ⚠️ **Kufizim i sinqertë:** CM-RR është protokoll i ri, i paverifikuar nga
+> auditim të pavarur kriptografik (ndryshe nga SimpleX, i rishikuar nga Trail
+> of Bits). Për prodhim real duhet auditim. Kufizime të njohura: mesazhet e
+> humbura në rrjet s'sinkronizohen automatikisht (s'ka skipped-message keys
+> ende); pull është jo-destruktiv (klienti gjurmon `since`).
+
+---
+
+## 🚨 BREACH SENTINEL — detektim ndërhyrjeje (anti-Pegasus layer)
+
+**Detektim + reagim në 3 shtresa**, me buton vizual ⚠️ dhe alarm trekëndësh:
+
+| Shtresa | Çfarë detekton | Reagimi |
+|---|---|---|
+| **S1-CRYPTO** | Tamper i ciphertext-it (AES-GCM auth fail), desinkronizim ratchet (injektim mesazhesh), ndryshim Safety-Number (MITM) | 🚨 BREACH |
+| **S2-RELAY** | Rollback i epoch-it (server i komprometuar), replay i seq-t, ndryshim fingerprint-i të relay-it | ⚠️/🚨 |
+| **S3-ENV** | Tamper i ruajtjes lokale (checksum), DeepGuard/PrmGuard FAIL (APK e ripaketuar — Pegasus/spyware) | 🚨 BREACH |
+
+Butoni **⚠️ BREACH** (klik i dyfishtë konfirmues) kryen **PANIC WIPE**: zeroize
+çelësat + fshirje e gjendjes + alarm vizual (banner blink + vibrim).
+
+```bash
+npm run test:sentinel   # verifikim: 3 sulme të simuluar + panic (12/12 PASS)
+npm run sentinel:demo   # hap UI-në vizuale me butonin ⚠️ BREACH
+```
+
+> ⚠️ **Kufizim i sinqertë:** Sentinel-i **nuk është imunitet** ndaj Pegasus.
+> Spyware zero-click në nivel kernel-i lexon ekranin/çelësat para çdo logjike
+> app — kundër tij mbrohen vetëm OS-i i përditësuar, Lockdown Mode (iOS) dhe
+> GrapheneOS (Android). Sentinel-i detekton **shenjat** e ndërhyrjes (tamper,
+> injektim, server i zëvendësuar) dhe të jep kohë për të reaguar me panic wipe.
+
+---
+
 ## 🛡️ Security Stack
 
 | Layer | Protocol | What it defeats |

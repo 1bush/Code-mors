@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CODE MORS — BREACH SENTINEL</title>
+<style>
+  :root { --bg:#050805; --fg:#00ff66; --dim:#0a3318; --warn:#ffaa00; --breach:#ff3131; }
+  * { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:'Courier New',monospace;
+         margin:0; padding:24px; max-width:640px; margin:auto; }
+  h1 { font-size:18px; letter-spacing:3px; margin:0 0 4px; }
+  .sub { color:#088; font-size:12px; margin-bottom:20px; }
+  .status { border:2px solid var(--dim); padding:14px; margin-bottom:16px; font-size:14px; }
+  .status.ok     { border-color:var(--dim); }
+  .status.warn   { border-color:var(--warn); color:var(--warn); }
+  .status.breach { border-color:var(--breach); color:var(--breach); animation:blink .7s infinite alternate; }
+  @keyframes blink { from { background:#1a0000; } to { background:#000; } }
+  .score { font-size:11px; opacity:.7; }
+  button { font-family:inherit; background:transparent; color:var(--fg);
+           border:1px solid var(--dim); padding:10px 12px; margin:4px 4px 4px 0;
+           cursor:pointer; font-size:12px; letter-spacing:1px; }
+  button:hover { background:var(--dim); }
+  .breach-btn { display:block; width:100%; margin-top:20px; padding:22px;
+                border:3px solid var(--breach); color:var(--breach); font-size:20px;
+                font-weight:bold; letter-spacing:4px; background:#150000; }
+  .breach-btn:active { background:var(--breach); color:#000; }
+  #log { list-style:none; padding:0; margin:16px 0 0; font-size:12px; max-height:280px; overflow:auto; }
+  #log li { border-left:3px solid var(--dim); padding:6px 10px; margin-bottom:6px; word-break:break-word; }
+  #log li.warn   { border-left-color:var(--warn); color:var(--warn); }
+  #log li.breach { border-left-color:var(--breach); color:var(--breach); }
+  .note { font-size:10px; color:#066; margin-top:24px; line-height:1.5; }
+</style>
+</head>
+<body>
+  <h1>👻 CODE MORS — SENTINEL</h1>
+  <div class="sub">cm-sentinel v1 · detektim ndërhyrjeje në 3 shtresa · CM-RR</div>
+
+  <div id="status" class="status ok">
+    ✅ SISTEMI I SIGURT<br>
+    <span class="score" id="score">score 0 · 0 events</span>
+  </div>
+
+  <div>
+    <strong style="font-size:12px;color:#066;">SULME SIMULUE (demo):</strong><br>
+    <button onclick="atkS1()">S1 · Tamper ciphertext (MITM)</button>
+    <button onclick="atkS2()">S2 · Rollback epoch / replay</button>
+    <button onclick="atkS3()">S3 · Tamper i ruajtjes lokale</button>
+    <button onclick="sent.reset(); sent.render('✅ Sistemi u rivendos (demo reset).', 0)">↺ Reset</button>
+  </div>
+
+  <button class="breach-btn" id="panicBtn" onclick="manualPanic()">
+    ⚠️ &nbsp;BREACH — PANIC WIPE&nbsp; ⚠️
+  </button>
+
+  <ul id="log"></ul>
+
+  <p class="note">
+    KUJDES I SINQERTË: Sentinel-i është <b>detektim + reagim</b>, jo imunitet.
+    Spyware në nivel kernel-i (p.sh. Pegasus, zero-click) lexon ekranin dhe çelësat
+    përpara çdo logjike aplikacioni — kundër tij mbrohen vetëm OS-i i përditësuar,
+    Lockdown Mode (iOS) ose GrapheneOS (Android), plus DeepGuard/PrmGuard native
+    që detektojnë tamper-in e APK-së pas faktit. Nëse Sentinel-i bie në alarm:
+    pajisja është ndoshta e komprometuar — fshi çelësat (panic), mos u beson
+    mesazheve të reja, dhe pastro/rinisto pajisjen.
+  </p>
+<script>
+/* Mini-Sentinel — e njëjta logjikë me cm-sentinel.js (i pavarur për demo). */
+const TAGS = ['✅','⚠️','🚨'];
+const sent = {
+  score: 0, level: 0, events: [],
+  _raise(level, layer, code, detail) {
+    this.events.push({ level, layer, code, detail });
+    if (level >= this.level) this.level = level;
+    this.render(TAGS[level] + ' [' + layer + '] ' + code + ': ' + detail, this.level);
+  },
+  evaluate() {
+    const c = this.score >= 100 ? 2 : (this.score > 0 ? 1 : 0);
+    return Math.max(this.level, c);
+  },
+  panic(reason) { this._raise(2, 'PANIC', 'PANIC_WIPE', 'arsyeja: ' + reason); },
+  reset() { this.score = 0; this.level = 0; this.events = []; },
+  /* S1 — crypto */
+  cryptoFail(d)   { this.score += 40; this._raise(2, 'S1-CRYPTO', 'GCM_AUTH_FAIL', d); },
+  safetyChanged() { this.score += 80; this._raise(2, 'S1-CRYPTO', 'SAFETY_NUMBER_CHANGED', 'çelësat e palit u ndryshuan — MITM i mundshëm'); },
+  /* S2 — relay */
+  epochRollback(k,o){ this.score += 50; this._raise(2, 'S2-RELAY', 'EPOCH_ROLLBACK', o + ' < ' + k); },
+  replay(s)       { this.score += 45; this._raise(1, 'S2-RELAY', 'REPLAY_SEQ', 'seq=' + s); },
+  fpChanged()     { this.score += 70; this._raise(2, 'S2-RELAY', 'RELAY_FINGERPRINT_CHANGED', 'server i dyshimtë / MITM rrjeti'); },
+  /* S3 — env */
+  storageTamper() { this.score += 55; this._raise(2, 'S3-ENV', 'STORAGE_TAMPERED', 'gjendja lokale u ndryshua jashtë app-it'); },
+  nativeFail(g)   { this.score += 90; this._raise(2, 'S3-ENV', g + '_FAIL', 'native guard raportoi komprometim'); },
+  render(msg, level) {
+    const st = document.getElementById('status');
+    st.className = 'status ' + (level === 2 ? 'breach' : level === 1 ? 'warn' : 'ok');
+    if (level === 0) st.innerHTML = '✅ SISTEMI I SIGURT<br><span class="score">score 0 · 0 events</span>';
+    else st.innerHTML = TAGS[level] + ' NIVELI: ' + (level === 2 ? 'BREACH — NDËRHYRJE!' : 'WARNING') +
+      '<br><span class="score">score ' + sent.score + ' · ' + sent.events.length + ' events</span>';
+    const li = document.createElement('li');
+    li.className = level === 2 ? 'breach' : level === 1 ? 'warn' : '';
+    li.textContent = msg;
+    document.getElementById('log').prepend(li);
+    if (level === 2 && navigator.vibrate) navigator.vibrate([80,40,80,40,200]);
+  }
+};
+
+/* Sulmet demo */
+function atkS1() { sent.cryptoFail('mesazh i ndryshuar në transit — bit-flip i detektuar nga AES-GCM'); }
+function atkS2() { sent.epochRollback(2, 0); setTimeout(() => sent.replay(1), 300); }
+function atkS3() { sent.storageTamper(); setTimeout(() => sent.nativeFail('DEEPGUARD'), 300); }
+
+/* Butoni BREACH: klik i parë armëzohet, i dyti (brenda 2s) konfirmon */
+let armed = false, armTimer = null;
+function manualPanic() {
+  const btn = document.getElementById('panicBtn');
+  if (!armed) {
+    armed = true;
+    btn.textContent = '🚨 KONFIRMO PANIC WIPE (klik përsëri)';
+    armTimer = setTimeout(() => { armed = false; btn.innerHTML = '⚠️ &nbsp;BREACH — PANIC WIPE&nbsp; ⚠️'; }, 2000);
+    return;
+  }
+  clearTimeout(armTimer); armed = false;
+  btn.innerHTML = '⚠️ &nbsp;BREACH — PANIC WIPE&nbsp; ⚠️';
+  sent.panic('butoni BREACH (manual)');
+  /* Në app-in real këtu: zeroize çelësat + fshij DB + mbyll seancat.
+     Native: Crypto.zeroize() + Store.wipe() + Duress.panicWipe() */
+}
+</script>
+</body>
+</html>
