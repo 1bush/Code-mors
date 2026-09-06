@@ -65,6 +65,10 @@ html,body{background:var(--bg);color:var(--g);font-family:-apple-system,'Segoe U
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
 .st{background:#010a02;border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center;}
 .st .v{font-size:16px;font-weight:800;color:var(--g);}.st .l{font-size:8px;color:var(--dim);}
+.kbd{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px 0;}
+.key{width:52px;height:52px;border-radius:9px;background:rgba(0,255,100,.07);border:1px solid var(--bd);color:var(--g);font-size:18px;font-weight:700;cursor:pointer;}
+.key.wide{width:110px;}
+#pin-display{text-align:center;font-size:32px;letter-spacing:14px;padding:14px;min-height:50px;}
 </style></head>
 <body>
 <div id="breach" style="display:none;position:absolute;top:0;left:0;right:0;z-index:60;background:var(--red);color:#fff;padding:11px;font-size:12px;font-weight:700;text-align:center;">🚨 BREACH</div>
@@ -125,9 +129,10 @@ html,body{background:var(--bg);color:var(--g);font-family:-apple-system,'Segoe U
     <div class="tl-f" id="prm-log" style="margin-top:6px">—</div></div>
   <div class="rw"><button class="bn bnd" id="btn-panic" onclick="panicWipe()">☠ PANIC WIPE</button><button class="bn" onclick="closeModal()">Mbyll</button></div></div></div>
 
-<div class="mo" id="mo-pin"><div class="md"><div class="ti" id="pin-title">🔒 Kyçje</div><div class="sb" id="pin-sub">Vendos PIN-in.</div>
+<div class="mo" id="mo-pin"><div class="md"><div class="ti" id="pin-title">🔒 Kyçje</div><div class="sb" id="pin-sub">Vendos PIN-in për hyrje.</div>
   <div id="pin-display" style="text-align:center;font-size:28px;letter-spacing:10px;padding:12px">----</div>
-  <div class="kbd" id="pin-pad"></div></div></div>
+  <div class="kbd" id="pin-pad"></div>
+  <div class="rw" style="margin-top:8px"><button class="bn bnd" id="btn-pin-wipe" onclick="if(confirm(&#39;☠ PANIC WIPE — fshirja të VË sete&#39;))panicWipe(&#39;panic&#39;)">☠ PANIC WIPE</button></div></div></div>
 
 <script src="libs/qrcode.js"></script>
 <script>
@@ -181,12 +186,12 @@ const rotT=(id,t,e)=>api(`/v1/queue/${id}/rotate?token=${encodeURIComponent(t)}&
 const S={myKP:null,ghost:'',myPub:'',sess:{},pull:{},burn:0,last:{},cur:null,
   sw:{noise:true,zero:true,lock:true,local:false,tlp:false},
   duress:null,lockTimer:null,pinTapCount:0,pinTapTimer:null,poller:null,noiseTimer:null};
-function $(id){return document.getElementById(id);}
+function $(q){if(q.charAt(0)==='.')return document.querySelectorAll(q);return document.getElementById(q);}
 function bootLog(m){const b=$('blog');b.textContent+=m+'\n';}
 function bootP(p){$('pfill').style.width=p+'%';}
 function encMsg(ch,text,burn){return ch.send().then(async({mk,ephPub,seq})=>{
   const iv=crypto.getRandomValues(new Uint8Array(12));
-  const ct=new Uint8Array(await subtle.encrypt({name:'AECS-GCM',iv:iv},await aesKey(mk),pad(TE.encode(text))));
+  const ct=new Uint8Array(await subtle.encrypt({name:'AES-GCM',iv:iv},await aesKey(mk),pad(TE.encode(text))));
   return JSON.stringify({v:1,seq,eph:ephPub,burn:burn!==undefined?burn:S.burn,body:{iv:b2s(iv),ct:b2s(ct)}});});}
 const decMsg=async(ch,blob)=>{const h=JSON.parse(blob);const mk=await ch.recv(h.eph);
   return TD.decode(unpad(new Uint8Array(await subtle.decrypt({name:'AES-GCM',iv:s2b(h.body.iv)},await aesKey(mk),s2b(h.body.ct)))));};
@@ -299,7 +304,8 @@ function prmAssess(){let score=0;const log=[];
 function resetLockTimer(){if(S.lockTimer)clearTimeout(S.lockTimer);if(!S.sw.lock)return;S.lockTimer=setTimeout(showPinScreen,300000);}
 let pinInput='';let pinMode='lock';
 function setupDuress(){S.duress=prompt('Duress PIN (4 shifra):');if(S.duress&&S.duress.length===4)bootLog('[🔫] Duress PIN aktiv');}
-function showPinScreen(){pinMode='lock';pinInput='';renderPin();$('mo-pin').classList.add('on');}
+function showPinScreen(){pinMode='lock';pinInput='';renderPin();$('pin-title').textContent='🔒 Kyçje';$('pin-sub').textContent='Vendos PIN-in për hyrje.';$('mo-pin').classList.add('on');}
+function showPinSetup(){pinMode='setup';pinInput='';renderPin();$('pin-title').textContent='🔒 Vendos PIN-in';$('pin-sub').textContent='PIN-i ruajtur lokalisht. Përdedor në Çdo hyrje.';$('mo-pin').classList.add('on');}
 function renderPin(){$('pin-display').textContent=(pinInput+'----').slice(0,4);$('pin-pad').innerHTML='';
   const keys=fisher([1,2,3,4,5,6,7,8,9,null,0,'⌫']);
   keys.forEach(k=>{const b=document.createElement('button');b.className='key';b.textContent=k!==null?k:'';
@@ -307,7 +313,8 @@ function renderPin(){$('pin-display').textContent=(pinInput+'----').slice(0,4);$
       $('pin-display').textContent=(pinInput+'----').slice(0,4);if(pinInput.length===4)checkPin();};$('pin-pad').appendChild(b);});}
 function fisher(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function checkPin(){if(S.duress&&pinInput===S.duress){panicWipe('duress');return;}
-  if(S.pin&&pinInput===S.pin){$('mo-pin').classList.remove('on');resetLockTimer();}else{pinInput='';$('pin-display').textContent='✖';}}
+  if(pinMode==='setup'){S.pin=pinInput;localStorage.setItem('cm_pin',pinInput);$('pin-title').textContent='✔ PIN-i ruajtur';$('pin-sub').textContent='Hapjeni me PIN-i.';setTimeout(()=>{$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();},450);return;}
+  if(S.pin&&pinInput===S.pin){$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();}else{pinInput='';$('pin-display').textContent='✖';}}
 function panicWipe(reason){Object.keys(S.sess).forEach(k=>{delete S.sess[k];delete S.pull[k];});
   S.myKP=null;S.duress=null;pinInput='';localStorage.clear();sessionStorage.clear();
   $('mlist').innerHTML='';$('clist').innerHTML='';$('chatarea').classList.remove('on');$('empty').style.display='';
@@ -392,12 +399,13 @@ async function boot(){
   catch(e){bootLog('[7/8] Server: hap npm run relay');}
   bootP(100);bootLog('[8/8] GATI ✓');
   let taps=0,tmr=null;$('my-ghost').onclick=()=>{taps++;if(taps===1)tmr=setTimeout(()=>taps=0,1500);if(taps>=7){taps=0;panicWipe('panic-gesture');}};
-  $('btn-send').onclick=sendMessage;$('btn-send').onclick=sendMessage;
+  $('btn-send').onclick=sendMessage;
   $('minput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
   $('btn-panic').onclick=()=>{if(confirm('☠ NUCLEAR WIPE?'))panicWipe('manual');};
   $('btn-bk').onclick=doBackup;$('btn-rs').onclick=restoreBackup;$('btn-rotate').onclick=rotateEpoch;
   $('btn-verify').onclick=()=>openModal('safety');
-  setTimeout(()=>showScreen('main'),1500);
+  S.pin=localStorage.getItem('cm_pin')||null;
+  setTimeout(()=>{if(S.pin)showPinScreen();else showPinSetup();},1400);
 }
 document.addEventListener('DOMContentLoaded',()=>boot());
 </script>
