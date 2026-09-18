@@ -74,6 +74,14 @@ Pas kërkimit të krahasuar të aplikacioneve më të mirë të sigurt, shtova 3
 | **LOCAL-ONLY MODE** | SimpleX | Butoni LO: toggle për izolim të plotë të rrjetit, me badge vizuel në statusbar. |
 
 Gjithashtu e konfirmuam: Double Ratchet ✅, Safety Numbers ✅, Ghost Noise (=SimpleX decoy queues) ✅, Panic gesture (=Briar panic button) ✅, Duress PIN ✅ (best-practice nga GrapheneOS/Tinfoil), deniability ✅. Post-quantum (ML-KEM) mbetet roadmap (kërkon KEM të vërtetë, stub kyber.js është bosh).
+## 🆕 v5.4 — ANTI-SPY (skaner stalkerware i integruar)
+Skaner anti-stalkerware BRENDA aplikacionit (jo APK i veçantë): skanim automatik në nisje (alarm në risk ≥30) + buton ANTISPY SCAN në MainActivity.
+- `SpyDatabase.java` — ~70 stalkerware të njohura + fjalë kyçe + whitelist + grayware
+- `AntiSpyScan.java` — skanim apps: permission combos, accessibility abuse, notification listeners, VPN, app të fshehura, sideload
+- `SysScan.java` — root/Magisk, device admin, ADB, mock-location, SELinux, test-keys
+- Amanet: nuk wipe automatikisht — paralajmëron (PRM ka politikën e vet për mjedisin); përdoruesi vendos fshirjen.
+- Për PC Windows: `tools/antispy_scan_windows.py`
+
 ## 🛡️ v5.3 — DeepGuard (Anti-tamper / Anti-duplicate) + Tor Roadmap
 
 ### DeepGuard — vetë-mbrojtje kundra ripaketimit/duplikimit

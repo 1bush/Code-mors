@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPrompt("Scan other user's Code Mors QR").initiateScan()));
         root.addView(btn("MY QR", v -> startActivity(new Intent(this, QrActivity.class))));
         root.addView(btn("IDENTITY", v -> editGhost()));
+        root.addView(btn("ANTISPY SCAN", v -> showAntiSpy()));
 
         setContentView(root);
         loadIdentity();
@@ -61,6 +62,53 @@ public class MainActivity extends AppCompatActivity {
         // PRM + DeepGuard: refuzo/nuke nese mjedisi ose APK eshte i komprometuar
         if (!DeepGuard.verify(this)) return;
         if (!PrmPolicy.gate(this)) return;
+        // AntiSpy: skanim stalkerware ne background — alarm vetem nese HIGH
+        new Thread(() -> {
+            final AntiSpyScan.Report rep = AntiSpyScan.fullScan(this);
+            runOnUiThread(() -> {
+                if (rep.score >= 30) {
+                    StringBuilder sb = new StringBuilder(
+                            "⚠ ANTI-SPY: " + rep.verdict() + " (risk " + rep.score + ")\n\n");
+                    int n = Math.min(rep.findings.size(), 6);
+                    for (int i = 0; i < n; i++) {
+                        AntiSpyScan.Finding f = rep.findings.get(i);
+                        sb.append("• ").append(f.title).append("\n  ").append(f.detail).append("\n");
+                    }
+                    if (rep.findings.size() > n)
+                        sb.append("+ ").append(rep.findings.size() - n).append(" gjetje të tjera (ANTISPY SCAN).\n\n");
+                    sb.append("Spyware lexon gjithçka që shfaqet në CodeMors!\n"
+                            + "Fshij app-t e dyshimta → ndrysho fjalëkalimet nga pajisje tjetër.");
+                    new AlertDialog.Builder(this).setTitle("🛡 ANTI-SPY WARNING")
+                            .setMessage(sb).setPositiveButton("UNDERSTAND", null).show();
+                }
+            });
+        }).start();
+    }
+
+    /** Dialog me raportin e plotë AntiSpy (stalkerware i njohur + heuristika). */
+    private void showAntiSpy() {
+        Toast.makeText(this, "Scanning...", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            final AntiSpyScan.Report rep = AntiSpyScan.fullScan(this);
+            runOnUiThread(() -> {
+                StringBuilder sb = new StringBuilder(
+                        rep.verdict() + "  (risk " + rep.score + "/" + 100 + ", " + rep.scanned + " apps)\n\n");
+                if (rep.findings.isEmpty()) {
+                    sb.append("✓ S'u gjet asgjë e dyshimtë.\n\n");
+                }
+                int n = Math.min(rep.findings.size(), 12);
+                for (int i = 0; i < n; i++) {
+                    AntiSpyScan.Finding f = rep.findings.get(i);
+                    sb.append("• ").append(f.title).append("\n  ").append(f.detail).append("\n\n");
+                }
+                if (rep.findings.size() > n)
+                    sb.append("+ ").append(rep.findings.size() - n).append(" gjetje të tjera.\n\n");
+                sb.append("Kufizim: zbulon shenjat e stalkerware të njohur + heuristika — "
+                        + "jo zero-day kernel spyware (Pegasus). Kundër tij: OS i përditësuar + GrapheneOS.");
+                new AlertDialog.Builder(this).setTitle("🛡 ANTI-SPY SCAN")
+                        .setMessage(sb).setPositiveButton("OK", null).show();
+            });
+        }).start();
     }
 
     private TextView btn(String label, android.view.View.OnClickListener l) {

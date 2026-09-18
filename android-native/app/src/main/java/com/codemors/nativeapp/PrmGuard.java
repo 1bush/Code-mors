@@ -131,15 +131,17 @@ public final class PrmGuard {
 
     private static boolean portOpen(String host, int port) {
         try (java.net.Socket s = new java.net.Socket()) {
-            s.connect(new java.net.InetSocketAddress(host,port, 60));
+            s.connect(new java.net.InetSocketAddress(host, port), 60);
             return true;
         } catch (Exception e) { return false; }
     }
 
     private static String sha256(byte[] data) {
-        byte[] h = MessageDigest.getInstance("SHA-256").digest(data);
-        StringBuilder sb = new StringBuilder();
-        for (byte b : h) sb.append(String.format("%02x", b));
-        return sb.toString();
+        try {
+            byte[] h = MessageDigest.getInstance("SHA-256").digest(data);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : h) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) { return ""; }
     }
 }

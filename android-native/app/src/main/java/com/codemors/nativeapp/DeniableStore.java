@@ -61,7 +61,8 @@ public final class DeniableStore {
             sp.edit().clear().commit();
             Store.init(ctx);
             android.content.SharedPreferences.Editor e = sp.edit();
-            for (String k : all.keySet()) e.putString(k, all.getString(k, ""));
+            java.util.Iterator<String> it = all.keys();
+            while (it.hasNext()) { String k = it.next(); e.putString(k, all.optString(k, "")); }
             e.commit();
             return true;
         } catch (Exception e) { return false; }

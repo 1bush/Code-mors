@@ -29,12 +29,16 @@ class Relay {
     this.maxMsgBytes = opts.maxMsgBytes || 64 * 1024;
     this.logging = opts.logging !== false; // IP-logging OPTIONAL, i fikur me --no-log
     this.queues = new Map(); // queueId -> push/pull hashes, blob-e, seq
+    this.invites = new Map(); // Short-lived, atomically claimed invitations.
     this._sweeper = setInterval(() => this._sweep(), 60000);
     if (this._sweeper.unref) this._sweeper.unref();
   }
 
   _sweep() {
     const now = Date.now();
+    for (const [id, invite] of this.invites) {
+      if (invite.expires <= now) this.invites.delete(id);
+    }
     for (const [id, q] of this.queues) {
       if (now - q.lastAccess > this.ttlMs && q.msgs.length === 0) this.queues.delete(id);
     }
@@ -152,6 +156,50 @@ class Relay {
       const token = u.searchParams.get('token') || '';
       const r = this.rotPullToken(id, token, u.searchParams.get('epoch'));
       return this._json(res, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { pullToken: r.pullToken, pullEpoch: r.pullEpoch } : { err: r.err }) });
+    }
+
+    // The invitation is consumed, never the live message queues.
+    if (req.method === 'POST' && /^\/v1\/invite(?:\/[^/]+\/(?:claim|revoke))?$/.test(p)) {
+      let body = '';
+      req.on('data', c => { body += c; if (body.length > this.maxMsgBytes * 2) req.destroy(); });
+      req.on('end', () => {
+        let data;
+        try { data = JSON.parse(body); } catch { return this._json(res, 400, {ok:false, err:'bad_json'}); }
+        if (!data || typeof data !== 'object') return this._json(res, 400, {ok:false, err:'bad_body'});
+        if (p === '/v1/invite') {
+          const recv = this._q(data.recvId), send = this._q(data.sendId);
+          if (!recv || !send || data.recvId === data.sendId ||
+              recv.pullHash !== hashToken(data.recvToken) || send.pullHash !== hashToken(data.sendToken)) {
+            return this._json(res, 403, {ok:false, err:'bad_owner'});
+          }
+          const id = randomId(24), owner = randomId(24);
+          this.invites.set(id, {recvId:data.recvId, sendId:data.sendId, ownerHash:hashToken(owner), expires:Date.now()+15*60*1000});
+          return this._json(res, 200, {ok:true, id, owner});
+        }
+        const id = p.split('/')[3], invite = this.invites.get(id);
+        if (!invite || invite.expires <= Date.now()) {
+          this.invites.delete(id);
+          return this._json(res, 410, {ok:false, err:'used_or_expired'});
+        }
+        if (p.endsWith('/revoke')) {
+          if (invite.ownerHash !== hashToken(data.owner)) return this._json(res, 403, {ok:false, err:'bad_owner'});
+          this.invites.delete(id);
+          this.queues.delete(invite.recvId); this.queues.delete(invite.sendId);
+          return this._json(res, 200, {ok:true});
+        }
+        if (typeof data.pub !== 'string' || !/^B[A-Za-z0-9+/]{86}=$/.test(data.pub) ||
+            typeof data.ghost !== 'string' || !/^[A-Z]+-[A-F0-9]{4}$/.test(data.ghost)) {
+          return this._json(res, 400, {ok:false, err:'bad_peer'});
+        }
+        const recv = this._q(invite.recvId), send = this._q(invite.sendId);
+        if (!recv || !send || recv.msgs.length >= this.maxMsgsPerQueue) return this._json(res, 409, {ok:false, err:'unavailable'});
+        const pushToken = randomId(24), pullToken = randomId(24);
+        recv.pushHash = hashToken(pushToken); send.pullHash = hashToken(pullToken);
+        this.invites.delete(id); // Atomic within this synchronous request callback.
+        recv.msgs.push({seq:recv.nextSeq++, blob:JSON.stringify({type:'connect', pub:data.pub, ghost:data.ghost}), ts:Date.now()});
+        return this._json(res, 200, {ok:true, recv:{id:invite.recvId,tok:pushToken}, send:{id:invite.sendId,tok:pullToken,ep:send.pullEpoch}});
+      });
+      return;
     }
 
     return this._json(res, 404, { ok: false, err: 'not_found' });

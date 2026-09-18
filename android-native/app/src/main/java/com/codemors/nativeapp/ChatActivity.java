@@ -55,7 +55,7 @@ public class ChatActivity extends AppCompatActivity {
 
         LinearLayout opts = new LinearLayout(this); opts.setOrientation(LinearLayout.HORIZONTAL);
         TextView bOff = opt("OFF", -1), bOnce = opt("READ-ONCE", 0), b10s = opt("10s", 10), b60s = opt("60s", 60);
-        bOnce.setTextColor(0xff_ffaa00); // default selected
+        bOnce.setTextColor(0xffd8c9a3); // default selected — camo tan
         opts.addView(bOff); opts.addView(bOnce); opts.addView(b10s); opts.addView(b60s);
         root.addView(opts);
 
@@ -98,7 +98,7 @@ public class ChatActivity extends AppCompatActivity {
                 String who = m.getBoolean("self") ? ghost() : submask;
                 tv.setText((m.getBoolean("self") ? who + " [ok]" : who) + ": " + m.getString("text"));
                 tv.setTextSize(14); tv.setPadding(8, 8, 8, 8);
-                tv.setBackgroundColor(m.getBoolean("self") ? 0x2200ff41 : 0x1100ff41);
+                tv.setBackgroundColor(m.getBoolean("self") ? 0x336b5a34 : 0x264a5d3a); // camo: kafe (self) / ullinj (other)
                 msgList.addView(tv);
             }
         } catch (Exception ignored) {}

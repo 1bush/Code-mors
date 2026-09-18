@@ -94,19 +94,19 @@ npm run relay      # nis serverin
 npm run test:app   # rrjedha një-hapi: 8/8 PASS
 ```
 
-Hapi i vjetër me 3 kodi mbetet si `ghost-relay-chat.html` (referencë).
+Hapi i vjetër me 3 kodi mbetet si `legacy/ghost-relay-chat.html` (referencë).
 
 ---
 
 ## 👻📡 GHOST RELAY CHAT — klient browser live
 
-`ghost-relay-chat.html` — chat E2E i plotë në browser kundër serverit relay:
+`legacy/ghost-relay-chat.html` — chat E2E i plotë në browser kundër serverit relay:
 
 ```bash
 npm run relay          # nis serverin (port 7000)
 ```
 
-Hap `ghost-relay-chat.html` në **dy dritare** (dy përdorues):
+Hap `legacy/ghost-relay-chat.html` në **dy dritare** (dy përdorues):
 1. Ana A: **① KRIJO LINK** → kopjo kodin te ana B
 2. Ana B: ngjit kodin → **② BASHKOHU** → kopjo Kodin Përgjigje te ana A
 3. Ana A: ngjit përgjigjen → **③ PËRFUNDO** → chat E2E aktiv 🟢
@@ -187,10 +187,11 @@ cd android-native
 
 ### 2. Web/PWA (`code-mors-v4.html`)
 Single-file app (also bundled as APK). Same protocol stack in JavaScript via WebCrypto.
-Open directly in a browser, or install as a PWA. Prebuilt APKs are included in this repo:
+Open directly in a browser, or install as a PWA. Prebuilt APKs are **not** kept in the repo
+(kept lean — binaries bloat git history). Shkarkoji nga **GitHub Releases**, ose build-oji vetë:
 
-- `CodeMors-NATIVE.apk` — native Java build
-- `CodeMors-v4.apk` — WebView build
+- `CodeMors-NATIVE.apk` — native Java build: `cd android-native && ./gradlew assembleDebug`
+- `CodeMors-v4.apk` — WebView build (nga `code-mors-v4.html`)
 
 ## 🚀 Usage
 
@@ -205,6 +206,25 @@ Open directly in a browser, or install as a PWA. Prebuilt APKs are included in t
 ✅ Protected against: passive eavesdropping, server-side data collection (there is no server), metadata harvesting, traffic-size analysis, forensic recovery of deleted messages, screenshot/recents leakage.
 
 ⚠️ Not magic: a compromised device (malware/root) can read anything shown on screen; "zero-day proof" is impossible for any software. Physical screen-to-camera transfer removes even network observation but requires proximity.
+
+## 🛡️ ANTI-SPY — skaner stalkerware i integruar (v5.4)
+
+**Brenda aplikacionit CodeMors** (native): skanim automatik në çdo nisje + buton **ANTISPY SCAN** në ekranin kryesor.
+
+| Kontrolli | Risk |
+|---|---|
+| ~70 stalkerware të njohura (mSpy, FlexiSPY, Hoverwatch, KidsGuard, Cocospy, Spyzie, eyeZy, uMobix, WebWatcher, SpyNote/AhMyth RAT...) | HIGH |
+| Permission combos stalkerware (SMS+GPS+mic+call-log) | HIGH |
+| Accessibility abuse (keystroke/ekran logging) | HIGH |
+| Device Admin aktiv (bllokon uninstall), root/Magisk, SELinux permissive | HIGH/MED |
+| VPN hijack (MITM), notification listeners (vjedh OTP) | MED |
+| App të fshehura (pa launcher), emra të dyshimtë, sideload | MED/LOW |
+
+Klasat: `SpyDatabase.java` (baza) + `AntiSpyScan.java` (skanim apps) + `SysScan.java` (root/admin) — të integruara në build-in native, pa varësi të reja. APK pa INTERNET të re. Nëse risk ≥ 30, app paralajmëron automatikisht në nisje.
+
+Skaner për PC Windows: `tools/antispy_scan_windows.py` (python, vetëm stdlib — kontrollon procese/startup/tasks/hosts/browser).
+
+⚠️ Kufizim: zbulon shenjat e stalkerware të njohur + heuristika — jo zero-day kernel spyware (Pegasus). Kundër tij: OS i përditësuar + GrapheneOS.
 
 ## 📄 License
 

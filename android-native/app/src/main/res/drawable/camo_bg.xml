@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kamuflazh woodland + scrim 70% zi — teksti tan #d8c9a3 lexohet mbi të -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/camo_woodland"/>
+    <item>
+        <color android:color="#B30E1208"/>
+    </item>
+</layer-list>

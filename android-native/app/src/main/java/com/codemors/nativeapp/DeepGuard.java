@@ -76,7 +76,7 @@ public final class DeepGuard {
                     }
                 }
             }
-            if (now.isEmpty() || !now.equals(Arrays.asList(stored.split("\n"))))) {
+            if (now.isEmpty() || !now.equals(Arrays.asList(stored.split("\n")))) {
                 Duress.panicWipe(ctx);   // TAMPERED/DUPLICATED -> vetë-shkatërrim
                 return false;
             }
@@ -102,7 +102,7 @@ public final class DeepGuard {
     }
 
     private static String sha256(byte[] data) throws Exception {
-        byte[] h = MessageDigest.getInstance("SHA-256").digest(data;
+        byte[] h = MessageDigest.getInstance("SHA-256").digest(data);
         StringBuilder sb = new StringBuilder();
         for (byte x : h) sb.append(String.format("%02x", x));
         return sb.toString();

@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
+    <queries>
+        <intent><action android:name="android.intent.action.MAIN"/></intent>
+        <intent><action android:name="android.accessibilityservice.AccessibilityService"/></intent>
+        <intent><action android:name="android.net.VpnService"/></intent>
+        <intent><action android:name="android.service.notification.NotificationListenerService"/></intent>
+    </queries>
+
     <application
         android:label="CODE MORS"
         android:theme="@style/AppTheme"

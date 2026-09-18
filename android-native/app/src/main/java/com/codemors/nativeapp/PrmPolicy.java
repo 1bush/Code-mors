@@ -39,14 +39,14 @@ public final class PrmPolicy {
         PrmGuard.Integrity ig = PrmGuard.audit(ctx);
         flags.addAll(ig.flags);
         int score = Math.max(env.score, ig.score);
-        String reason = env.root?"ROOT":(ig.frida?"FRIDA":(ig.xposed?"XPOSED":(env.emulator?"EMULATOR":(ig.debugger?"DEBUGGER":(env.adb?"ADB":""))))));
+        String reason = env.root?"ROOT":(ig.frida?"FRIDA":(ig.xposed?"XPOSED":(env.emulator?"EMULATOR":(ig.debugger?"DEBUGGER":(env.adb?"ADB":"")))));
         return new Report(score, flags, reason);
     }
 
     /** Kontroll parakalimi: kthe false nëse operacionet duhet të ndalen. */
     public static synchronized boolean gate(Context ctx) {
         if (locked) return false;
-        Report r = assess(ctx;
+        Report r = assess(ctx);
         if (r.score >= WIPE_THRESHOLD) {
             lockdownWipe(ctx, r);
             return false;
@@ -60,7 +60,7 @@ public final class PrmPolicy {
     }
 
     /** Regjistro një PIN të pasuksesshëm; fshi gjithçka pas MAX_FAILED_PIN. */
-    public static synchronized void pinFailed(Context ctx)) {
+    public static synchronized void pinFailed(Context ctx) {
         failCount++;
         if (failCount >= MAX_FAILED_PIN) {
             panicWipe(ctx);
@@ -83,6 +83,6 @@ public final class PrmPolicy {
         locked =false; failCount =0;
     }
     private static void Toast(Context ctx, String m) {
-        android.widget.Toast.makeText(ctx, m, android.widget.Toast.LENGTH_LONG.show();
+        android.widget.Toast.makeText(ctx, m, android.widget.Toast.LENGTH_LONG).show();
     }
 }

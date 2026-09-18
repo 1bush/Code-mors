@@ -1,0 +1,13 @@
+# Local builds, caches, logs and machine configuration
+node_modules/
+.gradle/
+build/
+__pycache__/
+*.pyc
+*.log
+*_log.txt
+local.properties
+.env
+.env.*
+!.env.example
+tools/_mors_js_check.js

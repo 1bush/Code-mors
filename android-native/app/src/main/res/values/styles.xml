@@ -1,8 +1,10 @@
 <resources>
+    <!-- CAMO THEME (woodland) — sfond kamuflazh + scrim i errët për lexueshmëri -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">#010801</item>
-        <item name="android:statusBarColor">#010801</item>
-        <item name="android:textColor">#00ff41</item>
-        <item name="colorAccent">#00ff41</item>
+        <item name="android:windowBackground">@drawable/camo_bg</item>
+        <item name="android:statusBarColor">#1c2115</item>
+        <item name="android:navigationBarColor">#1c2115</item>
+        <item name="android:textColor">#d8c9a3</item>
+        <item name="colorAccent">#4a5d3a</item>
     </style>
 </resources>
