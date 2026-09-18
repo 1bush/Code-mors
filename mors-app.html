@@ -193,8 +193,8 @@ const pushB=(id,t,b)=>api(`/v1/queue/${id}/msg?t=${encodeURIComponent(t)}`,{meth
 const pullB=(id,t,e,s)=>{if(s===undefined)s=0;return api(`/v1/queue/${id}/msg?token=${encodeURIComponent(t)}&epoch=${e}&since=${s}`).then(x=>x.data);};
 const rotT=(id,t,e)=>api(`/v1/queue/${id}/rotate?token=${encodeURIComponent(t)}&epoch=${e}`,{method:'POST'}).then(x=>x.data);
 /* ---- kontaktet & sesioni ---- */
-/* Checksum jo-kriptografik (FNV-1a i dyfishuar) per burn lokal te one-time invite. JO SHA-256: ka colizione, mos e perdor per autentikim. */
-const S32hex=s=>{let h1=0x811c9dc5,h2=0x01000193;for(let i=0;i<s.length;i++){h1=Math.imul(h1^s.charCodeAt(i),16777619)>>>0;h2=Math.imul(h2+s.charCodeAt(i),31)>>>0;}return h1.toString(16)+h2.toString(16)+s.length.toString(16);};
+/* SHA-256 i vertete (WebCrypto) - marker i perdorimit lokal te ftesave one-time (burn). */
+const sha256hex=async s=>hex(new Uint8Array(await subtle.digest('SHA-256',TE.encode(s))));
 const S={myKP:null,ghost:'',myPub:'',sess:{},pull:{},burn:0,last:{},cur:null,usedInv:{},
   sw:{noise:true,zero:true,lock:true,local:false,tlp:false},
   duress:null,lockTimer:null,pinTapCount:0,pinTapTimer:null,poller:null,noiseTimer:null};const REL_ONLINE={v:false};
@@ -441,9 +441,11 @@ async function handleLink(raw){
     }
     const o=JSON.parse(js);
     if(o.v!==2||typeof o.n!=='string'||!/^[A-Z]+-[A-F0-9]{4}$/.test(o.n)||typeof o.i!=='string'||!/^[A-Za-z0-9_-]{32}$/.test(o.i)||o.k===S.myPub||S.sess[o.n])throw new Error('bad');
+    if(S.usedInv[o.i])throw new Error('used');
     const ss=await makeSession(S.myKP,o.k);
     const claimed=await postJson('/v1/invite/'+o.i+'/claim',{pub:S.myPub,ghost:S.ghost});
     if(!claimed.ok)throw new Error('used');
+    S.usedInv[o.i]=await sha256hex(o.i);
     S.last[o.n]={pub:o.k};S.sess[o.n]=ss;
     S.pull[o.n]={queueId:claimed.send.id,tok:claimed.send.tok,epoch:claimed.send.ep,since:0,mask:''};
     ss.pushQueue=claimed.recv.id;ss.pushTok=claimed.recv.tok;
