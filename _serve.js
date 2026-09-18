@@ -1,6 +1,6 @@
 const h=require('http'),f=require('fs'),p=require('path');
 const ROOT=__dirname;
-const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml'};
+const T={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml'};
 h.createServer((q,u)=>{
   let fp=q.url==='/'?'/mors-app.html':q.url.split('?')[0];
   const safe=p.normalize(fp).replace(/^(\.\.[\\/])+/,'/');

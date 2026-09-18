@@ -196,7 +196,7 @@ class Relay {
         const pushToken = randomId(24), pullToken = randomId(24);
         recv.pushHash = hashToken(pushToken); send.pullHash = hashToken(pullToken);
         this.invites.delete(id); // Atomic within this synchronous request callback.
-        recv.msgs.push({seq:recv.nextSeq++, blob:JSON.stringify({type:'connect', pub:data.pub, ghost:data.ghost}), ts:Date.now()});
+        recv.msgs.push({seq:recv.nextSeq++, blob:JSON.stringify({type:'connect', pub:data.pub, ghost:data.ghost, pq:data.pq}), ts:Date.now()});
         return this._json(res, 200, {ok:true, recv:{id:invite.recvId,tok:pushToken}, send:{id:invite.sendId,tok:pullToken,ep:send.pullEpoch}});
       });
       return;

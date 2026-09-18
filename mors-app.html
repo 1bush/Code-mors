@@ -125,7 +125,7 @@ html,body{background:var(--bg);color:var(--g);font-family:-apple-system,'Segoe U
     <div class="tog"><span>👻 Ghost Noise</span><div class="sw on" id="sw-noise" onclick="toggleSw('noise')"></div></div>
     <div class="tog"><span>🧊 Whisper Zeroize</span><div class="sw on" id="sw-zero" onclick="toggleSw('zero')"></div></div>
     <div class="tog"><span>🔒 Auto-Lock 5 min</span><div class="sw on" id="sw-lock" onclick="toggleSw('lock')"></div></div>
-    <div class="tog"><span>🛡 Local-Only</span><div class="sw" id="sw-local" onclick="toggleSw('local')"></div></div></div>
+    <div class="tog"><span>🛡 Local-Only</span><div class="sw" id="sw-local" onclick="toggleSw('local')"></div></div><div class="tog"><span>WIPE ON CLOSE (zeroize)</span><div class="sw on" id="sw-woc" onclick="toggleSw('woc')"></div></div><div class="ri">PQ: <b id="pq-state">--</b></div></div>
   <div class="sec"><h4>🔫 PANIK &amp; DURESS</h4>
     <div class="ri">7 klikime të shpejta mbi emër = <b>nuclear wipe</b></div>
     <button class="bnw btn-bl" id="btn-pin-change" onclick="changePin()">🔑 Ndrysho PIN</button></div>
@@ -183,7 +183,12 @@ class Channel{
 async function makeSession(myKP,peerPubB64){
   const P=await impPub(peerPubB64);
   const root=await hkdf(await dh(myKP.privateKey,P),S32(),TE.encode('GHOST-RELAY-v1-link'),32);
-  return{new:new Channel(myKP,P,root),inr:new Channel(myKP,P,root)};}
+  return{new:new Channel(myKP,P,root),inr:new Channel(myKP,P,root),pqDone:!S.pq};}
+/* ---- PQ HARDENING: ML-KEM-768 hibrid mbi kanalin ekzistues (harvest-now-decrypt-later) ---- */
+async function pqRekey(ss,ssPQ){for(const c of[ss.new,ss.inr]){const ikm=new Uint8Array(c.rk.length+ssPQ.length);ikm.set(c.rk,0);ikm.set(ssPQ,c.rk.length);c.rk=await hkdf(ikm,S32(),TE.encode('GHOST-PQ-v1-hybrid'),32);zeroize(ikm);}zeroize(ssPQ);ss.pqDone=true;}
+async function pqFlush(name){const ss=S.sess[name];if(!ss||!ss.pqQueue||!ss.pqQueue.length)return;const q=ss.pqQueue;ss.pqQueue=[];for(const it of q){try{const blob=await encMsg(ss.new,it.t,it.b);await pushB(ss.pushQueue,ss.pushTok,blob);}catch(e){}}if(q.length)bootLog('[PQ] mesazhe te radhitur u derguan: '+q.length);}
+async function pqOnConnect(name,ss,pqB64){if(!S.pq||!pqB64||ss.pqDone)return;const[ct,ssPQ]=S.pq.encap(s2b(pqB64));const blob=await encMsg(ss.new,JSON.stringify({type:'pq',ct:b2s(ct)}),-1);await pushB(ss.pushQueue,ss.pushTok,blob);zeroize(ct);await pqRekey(ss,ssPQ);await pqFlush(name);bootLog('[PQ] upgrade derguar');}
+async function pqOnUpgrade(name,ctB64){const ss=S.sess[name];if(!ss||!S.pq||ss.pqDone)return;const ssPQ=new Uint8Array(S.pq.decap(s2b(ctB64),S.myPQsk));await pqRekey(ss,ssPQ);await pqFlush(name);bootLog('[PQ] kanal hibrid aktiv (ML-KEM-768)');}
 /* ---- rrjeti GHOST RELAY (CORS, jo IP-logging) ---- */
 const RELAY='http://127.0.0.1:7000';
 const api=async(p,o)=>{const r=await fetch(RELAY+p,o);return{status:r.status,data:await r.json().catch(()=>({ok:false,err:'bad'}))};};
@@ -195,8 +200,8 @@ const rotT=(id,t,e)=>api(`/v1/queue/${id}/rotate?token=${encodeURIComponent(t)}&
 /* ---- kontaktet & sesioni ---- */
 /* SHA-256 i vertete (WebCrypto) - marker i perdorimit lokal te ftesave one-time (burn). */
 const sha256hex=async s=>hex(new Uint8Array(await subtle.digest('SHA-256',TE.encode(s))));
-const S={myKP:null,ghost:'',myPub:'',sess:{},pull:{},burn:0,last:{},cur:null,usedInv:{},
-  sw:{noise:true,zero:true,lock:true,local:false,tlp:false},
+const S={myKP:null,myPub:'',myPQ:null,myPQpk:'',myPQsk:null,ghost:'',sess:{},pull:{},burn:0,last:{},cur:null,usedInv:{},
+  sw:{noise:true,zero:true,lock:true,local:false,tlp:false,woc:true},
   duress:null,lockTimer:null,pinTapCount:0,pinTapTimer:null,poller:null,noiseTimer:null};const REL_ONLINE={v:false};
 function $(q){if(q.charAt(0)==='.')return document.querySelectorAll(q);return document.getElementById(q);}
 function bootLog(m){const b=$('blog');b.textContent+=m+'\n';}
@@ -229,7 +234,7 @@ function getPub(name){
   return S.last[name]?S.last[name].pub:'';}
 /* ---- mesazhi ---- */
 async function sendMessage(){
-  const t=$('minput').value.trim();if(!t||!S.cur)return;
+  const t=$('minput').value.trim();if(!t||!S.cur)return;if(S.pq&&S.sess[S.cur]&&!S.sess[S.cur].pqDone){const s0=S.sess[S.cur];s0.pqQueue=s0.pqQueue||[];s0.pqQueue.push({t,b:S.burn});$('minput').value='';addBubble('PQ handshake - u radhit','me',-1);return;}
   $('minput').value='';
   try{
     const blob=await encMsg(S.sess[S.cur].new,t,S.burn);
@@ -250,7 +255,7 @@ async function pollAll(){
       S.last[obj.ghost]={pub:obj.pub};
       const ss=await addContact(obj.ghost,obj.pub);
       S.pull[obj.ghost]={queueId:inv.qRecv.queueId,tok:inv.qRecv.pullToken,epoch:inv.qRecv.pullEpoch,since:m.seq,mask:''};
-      ss.pushQueue=inv.qSend.queueId;ss.pushTok=inv.qSend.pushToken;
+      ss.pushQueue=inv.qSend.queueId;ss.pushTok=inv.qSend.pushToken;if(obj.pq)await pqOnConnect(obj.ghost,ss,obj.pq);
       S.invite=null;renderContacts();await startChat(obj.ghost,'');
       break;
     }
@@ -263,7 +268,7 @@ async function pollAll(){
       let obj;try{obj=JSON.parse(m.blob);}catch(e){continue;}
       if(obj.type==='connect')continue;
       if(obj.v===1&&S.sess[name]){
-        try{const txt=await decMsg(S.sess[name].inr,m.blob);
+        try{const txt=await decMsg(S.sess[name].inr,m.blob);let inn=null;try{inn=JSON.parse(txt);}catch(e2){}if(inn&&inn.type==='pq'){await pqOnUpgrade(name,inn.ct);continue;}
           addBubble(txt,'them',typeof obj.burn==='number'?obj.burn:-1);
         }catch(e){breach('🚨 GCM FAIL — mesazh i ndryshuar!');}}
     }
@@ -334,7 +339,7 @@ function checkPin(){if(S.duress&&pinInput===S.duress){panicWipe('duress');return
   if(pinMode==='changeNew'){S.pin=pinInput;localStorage.setItem('cm_pin',pinInput);$('pin-title').textContent='✔ PIN-i ndryshuar';$('pin-sub').textContent='Hape aplikacionin me PIN-in e ri.';setTimeout(()=>{$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();},450);return;}
   if(S.pin&&pinInput===S.pin){pinFails=0;$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();offerPendingInvite();}else{pinFails++;if(pinFails>=MAX_PIN_FAILS){panicWipe('pin-fails');return;}pinInput='';$('pin-display').textContent='✖';}}
 function panicWipe(reason){Object.keys(S.sess).forEach(k=>{delete S.sess[k];delete S.pull[k];});
-  S.myKP=null;S.duress=null;pinInput='';localStorage.clear();sessionStorage.clear();
+  if(S.myPQsk)zeroize(S.myPQsk);S.myPQsk=null;S.myPQ=null;S.myPQpk=0;S.myKP=null;S.duress=null;pinInput='';localStorage.clear();sessionStorage.clear();
   $('mlist').innerHTML='';$('clist').innerHTML='';$('chatarea').classList.remove('on');$('empty').style.display='';
   showScreen('main');$('breach').textContent='☠ PANIC WIPE ('+(reason||'')+')';$('breach').style.display='block';
   bootLog('[☠] PANIC WIPE ('+reason+')');}
@@ -357,7 +362,7 @@ async function restoreBackup(){const pass=$('bk-pass').value;if(!pass)return;
     catch(er){bootLog('[✖] Fjalëkalim i gabuar');}};inp.click();}
 function setLocalOnly(on){if(on){clearInterval(S.poller);bootLog('[🛡] Local-Only ON');}else{S.poller=setInterval(pollAll,2000);}}
 function toggleSw(id){S.sw[id]=!S.sw[id];const el=$('sw-'+id);if(el)el.classList.toggle('on',S.sw[id]);
-  if(id==='local')setLocalOnly(S.sw.local);if(id==='noise')startGhostNoise();if(id==='lock')resetLockTimer();}
+  if(id==='woc'){try{localStorage.setItem('cm_woc',S.sw.woc?'1':'0');}catch(e){}}if(id==='local')setLocalOnly(S.sw.local);if(id==='noise')startGhostNoise();if(id==='lock')resetLockTimer();}
 function openModal(m){if(m==='qr')genQr();if(m==='safety')showSafety();if(m==='scan')startScan();
   if(m==='settings'){try{prmAssess();}catch(e){}}$('mo-'+m).classList.add('on');}
 function closeModal(){document.querySelectorAll('.mo').forEach(x=>x.classList.remove('on'));stopScan();}
@@ -443,7 +448,7 @@ async function handleLink(raw){
     if(o.v!==2||typeof o.n!=='string'||!/^[A-Z]+-[A-F0-9]{4}$/.test(o.n)||typeof o.i!=='string'||!/^[A-Za-z0-9_-]{32}$/.test(o.i)||o.k===S.myPub||S.sess[o.n])throw new Error('bad');
     if(S.usedInv[o.i])throw new Error('used');
     const ss=await makeSession(S.myKP,o.k);
-    const claimed=await postJson('/v1/invite/'+o.i+'/claim',{pub:S.myPub,ghost:S.ghost});
+    const claimed=await postJson('/v1/invite/'+o.i+'/claim',{pub:S.myPub,ghost:S.ghost,pq:S.myPQpk});
     if(!claimed.ok)throw new Error('used');
     S.usedInv[o.i]=await sha256hex(o.i);
     S.last[o.n]={pub:o.k};S.sess[o.n]=ss;
@@ -466,7 +471,7 @@ function showSafety(){$('sn-a').textContent=hex(crypto.getRandomValues(new Uint8
 async function boot(){
   if(location.hash.startsWith('#invite=')){S.pendingInvite=location.href;history.replaceState(null,'',location.pathname+location.search);}
   bootP(10);bootLog('[1/8] 🟢');
-  S.myKP=await genKP();S.myPub=await expPub(S.myKP);bootP(25);bootLog('[2/8] 🟢');
+  S.myKP=await genKP();S.myPub=await expPub(S.myKP);try{const M=await import('/libs/mlkem.mjs');S.pq=await M.createMlKem768();const[pqk,pqs]=S.pq.generateKeyPair();S.myPQpk=b2s(new Uint8Array(pqk));S.myPQsk=new Uint8Array(pqs);const pe=$('pq-state');if(pe)pe.textContent='ML-KEM-768 aktiv';}catch(e){S.pq=null;}bootP(25);bootLog('[2/8] 🟢');
   const W=['VOID','GHOST','RAVEN','ONYX','CIPHER','NOMAD','PHANTOM','ZERO'];
   S.ghost=W[Math.floor(Math.random()*W.length)]+'-'+hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase();
   $('my-ghost').textContent=S.ghost;bootP(40);bootLog('[3/8] 🟢 '+S.ghost);
@@ -482,10 +487,10 @@ async function boot(){
   $('btn-panic').onclick=()=>{if(confirm('☠ NUCLEAR WIPE?'))panicWipe('manual');};
   $('btn-bk').onclick=doBackup;$('btn-rs').onclick=restoreBackup;$('btn-rotate').onclick=rotateEpoch;
   $('btn-verify').onclick=()=>openModal('safety');
-  S.pin=localStorage.getItem('cm_pin')||'0000';
+  try{S.sw.woc=localStorage.getItem('cm_woc')!=='0';const we=$('sw-woc');if(we)we.classList.toggle('on',S.sw.woc);}catch(e){}S.pin=localStorage.getItem('cm_pin')||'0000';
   setTimeout(()=>{showScreen('main');if(localStorage.getItem('cm_pin'))showPinScreen();else showPinSetup();},1400);
 }
-document.addEventListener('DOMContentLoaded',()=>boot());
+addEventListener('pagehide',()=>{try{if(S.sw.woc){if(S.myPQsk)zeroize(S.myPQsk);panicWipe('close');localStorage.setItem('cm_woc','1');}}catch(e){}});document.addEventListener('DOMContentLoaded',()=>boot());
 </script>
 <!--@@P2-->
 </body>

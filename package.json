@@ -10,6 +10,9 @@
     "test": "node test-hybrid.js",
     "test:sentinel": "node test-sentinel.js",
     "test:pairing": "node test-pairing.js",
+    "test:pq": "node test-pq.js",
+    "test:threshold": "node test-threshold.js",
+    "test:all": "node test-hybrid.js && node test-sentinel.js && node test-pairing.js && node test-app-flow.js && node test-pq.js && node test-threshold.js",
     "test:app": "node test-app-flow.js",
     "sentinel:demo": "start sentinel-demo.html"
   }

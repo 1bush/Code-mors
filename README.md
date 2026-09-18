@@ -226,6 +226,17 @@ Skaner për PC Windows: `tools/antispy_scan_windows.py` (python, vetëm stdlib �
 
 ⚠️ Kufizim: zbulon shenjat e stalkerware të njohur + heuristika — jo zero-day kernel spyware (Pegasus). Kundër tij: OS i përditësuar + GrapheneOS.
 
+## ⚛ Q-GHOST — PQ hibrid + wipe on close (v5.5)
+
+| Veçori | Detaj | Prova |
+|---|---|---|
+| **PQ hibrid (ML-KEM-768)** | Pas `connect`, ftesëdhënësi enkapsulon drejt claimuesit; ciphertext-i kalon **brenda kanalit E2EE**; të dyja anët bëjnë `rk' = HKDF(rk ‖ ssPQ)`. Mbron kundër *harvest-now-decrypt-later*. | `npm run test:pq` → 7/7 + E2E 4/4 |
+| **Wipe on Close** | `pagehide` → zeroize i çelësave PQ + `panicWipe` (kontakte, sesione, `localStorage`). Butoni në Settings (default ON). | provuar në browser real |
+| **RBSR (primitivë e re)** | Shamir GF(256) + rotacion i share-ve i lidhur me ratchet-in: `y'_i = y_i XOR HKDF(ratchetKey, epoch)`. Share i vjedhur në epokën *k* nuk vlen në *k+1*. | `npm run test:threshold` → 13/13 |
+| **Relay pa çelësa** | Serveri ruan vetëm hash-e token-ash + ciphertext; **asnjë çelës, as share** (ndryshe nga "3 çelësa në server") — shih [CRYPTO-DESIGN.md](CRYPTO-DESIGN.md) |
+
+> ⚠️ Niveli i arritur PQ = ai i **PQXDH** (Signal): PQ vetëm në handshake, jo PQ-ratchet i vazhdueshëm (PQ3 i Apple-it). Analizë e plotë, burime dhe kufizime: **[CRYPTO-DESIGN.md](CRYPTO-DESIGN.md)**.
+
 ## 📄 License
 
 MIT
