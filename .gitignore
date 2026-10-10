@@ -13,3 +13,4 @@ local.properties
 tools/_mors_js_check.js
 # Certifikata lokale te testimit (self-signed, gjenerohen me: npm run cert)
 certs/
+_srv.*
