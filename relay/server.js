@@ -137,7 +137,7 @@ class Relay {
       'content-type': 'application/json',
       'access-control-allow-origin': origin,
       'access-control-allow-methods': 'GET, POST, OPTIONS',
-      'access-control-allow-headers': 'content-type, x-push-token',
+      'access-control-allow-headers': 'content-type, x-push-token, x-pull-token',
       'access-control-max-age': '86400',
     };
   }
