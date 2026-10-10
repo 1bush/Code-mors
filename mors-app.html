@@ -190,7 +190,21 @@ async function pqFlush(name){const ss=S.sess[name];if(!ss||!ss.pqQueue||!ss.pqQu
 async function pqOnConnect(name,ss,pqB64){if(!S.pq||!pqB64||ss.pqDone)return;const[ct,ssPQ]=S.pq.encap(s2b(pqB64));const blob=await encMsg(ss.new,JSON.stringify({type:'pq',ct:b2s(ct)}),-1);await pushB(ss.pushQueue,ss.pushTok,blob);zeroize(ct);await pqRekey(ss,ssPQ);await pqFlush(name);bootLog('[PQ] upgrade derguar');}
 async function pqOnUpgrade(name,ctB64){const ss=S.sess[name];if(!ss||!S.pq||ss.pqDone)return;const ssPQ=new Uint8Array(S.pq.decap(s2b(ctB64),S.myPQsk));await pqRekey(ss,ssPQ);await pqFlush(name);bootLog('[PQ] kanal hibrid aktiv (ML-KEM-768)');}
 /* ---- rrjeti GHOST RELAY (CORS, jo IP-logging) ---- */
-const RELAY='http://127.0.0.1:7000';
+/* Relay-i zgjidhet automatikisht:
+   - ?relay=URL  (parametër)          -> prioritet
+   - localStorage 'cm_relay'          -> ruajtur nga përdoruesi
+   - port 5173 (dev statik)           -> i njëjti host, porta 7000
+   - http(s) tjetër (server i unifikuar) -> i njëjti origin
+   - file://                          -> 127.0.0.1:7000 */
+const RELAY=(()=>{try{
+  const q=new URLSearchParams(location.search).get('relay');if(q)return q.replace(/\/+$/,'');
+  const ls=localStorage.getItem('cm_relay');if(ls)return ls.replace(/\/+$/,'');
+  if(location.protocol==='http:'||location.protocol==='https:'){
+    if(location.port==='5173')return location.protocol+'//'+location.hostname+':7000';
+    return location.origin;
+  }
+  return 'http://127.0.0.1:7000';
+}catch(e){return 'http://127.0.0.1:7000';}})();
 const api=async(p,o)=>{const r=await fetch(RELAY+p,o);return{status:r.status,data:await r.json().catch(()=>({ok:false,err:'bad'}))};};
 const postJson=(p,data)=>api(p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}).then(x=>x.data);
 const mkQ=()=>api('/v1/queue',{method:'POST'}).then(x=>x.data);

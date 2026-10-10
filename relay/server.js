@@ -22,16 +22,38 @@ const { URL } = require('url');
 const hashToken = (t) => crypto.createHash('sha256').update(String(t)).digest('hex');
 const randomId = (n) => crypto.randomBytes(n).toString('base64url');
 
+function eqHex(a, b) {
+  const ba = Buffer.from(String(a), 'hex');
+  const bb = Buffer.from(String(b), 'hex');
+  if (ba.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ba, bb);
+}
+
 class Relay {
   constructor(opts = {}) {
     this.ttlMs = opts.ttlMs || 7 * 24 * 3600 * 1000; // 7 ditÃ« default
     this.maxMsgsPerQueue = opts.maxMsgsPerQueue || 1000;
     this.maxMsgBytes = opts.maxMsgBytes || 64 * 1024;
+    this.maxQueues = opts.maxQueues || 50000;
+    this._createHits = new Map();
+    this.allowedOrigins = opts.allowedOrigins || null; // null = '*' (publik); ose ['https://app.example']
+    this.createBurst = opts.createBurst || 10;
+    this.createWindowMs = opts.createWindowMs || 60 * 1000;
     this.logging = opts.logging !== false; // IP-logging OPTIONAL, i fikur me --no-log
     this.queues = new Map(); // queueId -> push/pull hashes, blob-e, seq
     this.invites = new Map(); // Short-lived, atomically claimed invitations.
     this._sweeper = setInterval(() => this._sweep(), 60000);
     if (this._sweeper.unref) this._sweeper.unref();
+  }
+
+  _rateOk(ip) {
+    const now = Date.now();
+    const arr = this._createHits.get(ip || 'unknown') || [];
+    while (arr.length && now - arr[0] > this.createWindowMs) arr.shift();
+    if (arr.length >= this.createBurst) return false;
+    arr.push(now);
+    this._createHits.set(ip || 'unknown', arr);
+    return true;
   }
 
   _sweep() {
@@ -72,7 +94,7 @@ class Relay {
   pushMessage(queueId, pushToken, blob) {
     const q = this._q(queueId);
     if (!q) return { ok: false, err: 'no_queue' };
-    if (q.pushHash !== hashToken(pushToken)) return { ok: false, err: 'bad_push_token' };
+    if (!eqHex(q.pushHash, hashToken(pushToken))) return { ok: false, err: 'bad_push_token' };
     if (Buffer.byteLength(blob, 'utf8') > this.maxMsgBytes) return { ok: false, err: 'too_large' };
     if (q.msgs.length >= this.maxMsgsPerQueue) return { ok: false, err: 'queue_full' };
     const seq = q.nextSeq++;
@@ -85,7 +107,7 @@ class Relay {
   pullMessages(queueId, pullToken, pullEpoch, since = 0) {
     const q = this._q(queueId);
     if (!q) return { ok: false, err: 'no_queue' };
-    if (q.pullHash !== hashToken(pullToken)) return { ok: false, err: 'bad_pull_token' };
+    if (!eqHex(q.pullHash, hashToken(pullToken))) return { ok: false, err: 'bad_pull_token' };
     if (Number(pullEpoch) !== q.pullEpoch) return { ok: false, err: 'stale_epoch' };
     const out = q.msgs.filter((m) => m.seq > Number(since)).map((m) => ({ seq: m.seq, blob: m.blob }));
     q.lastAccess = Date.now();
@@ -96,7 +118,7 @@ class Relay {
   rotPullToken(queueId, pullToken, epochHint) {
     const q = this._q(queueId);
     if (!q) return { ok: false, err: 'no_queue' };
-    if (q.pullHash !== hashToken(pullToken)) return { ok: false, err: 'bad_pull_token' };
+    if (!eqHex(q.pullHash, hashToken(pullToken))) return { ok: false, err: 'bad_pull_token' };
     const nextPull = randomId(24);
     q.pullHash = hashToken(nextPull);
     q.pullEpoch += 1;
@@ -105,16 +127,21 @@ class Relay {
   }
 
 /* ---- HTTP ---- */
-  _headers() {
+  _headers(req) {
+    let origin = '*';
+    if (this.allowedOrigins) {
+      const o = req && req.headers && req.headers.origin;
+      origin = (o && this.allowedOrigins.includes(o)) ? o : this.allowedOrigins[0];
+    }
     return {
       'content-type': 'application/json',
-      'access-control-allow-origin': '*',
+      'access-control-allow-origin': origin,
       'access-control-allow-methods': 'GET, POST, OPTIONS',
       'access-control-allow-headers': 'content-type, x-push-token',
       'access-control-max-age': '86400',
     };
   }
-  _json(res, code, obj) { res.writeHead(code, this._headers()); res.end(JSON.stringify(obj)); }
+  _json(res, req, code, obj) { res.writeHead(code, this._headers(req)); res.end(JSON.stringify(obj)); }
 
   handle(req, res) {
     if (req.method === 'OPTIONS') { res.writeHead(204, this._headers()); return res.end(); }
@@ -123,9 +150,11 @@ class Relay {
     const rip = req.socket.remoteAddress || '';
 
     if (req.method === 'POST' && p === '/v1/queue') {
+      if (!this._rateOk(rip)) return this._json(res, req, 429, { ok: false, err: 'rate_limited' });
+      if (this.queues.size >= this.maxQueues) return this._json(res, req, 503, { ok: false, err: 'capacity' });
       const q = this.createQueue();
       if (this.logging) console.log(`[relay] queue ${q.queueId} @ ${rip}`);
-      return this._json(res, 200, { ok: true, ...q });
+      return this._json(res, req, 200, { ok: true, ...q });
     }
 
     if (req.method === 'POST' && /^\/v1\/queue\/([^/]+)\/msg$/.test(p)) {
@@ -134,28 +163,28 @@ class Relay {
       req.on('data', (c) => { body += c; if (body.length > 2 * this.maxMsgBytes) req.destroy(); });
       req.on('end', () => {
         let parsed;
-        try { parsed = JSON.parse(body); } catch { return this._json(res, 400, { ok: false, err: 'bad_json' }); }
+        try { parsed = JSON.parse(body); } catch { return this._json(res, req, 400, { ok: false, err: 'bad_json' }); }
         const token = u.searchParams.get('t') || (req.headers['x-push-token'] || '');
         const r = this.pushMessage(id, token, parsed.blob || '');
-        return this._json(res, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { seq: r.seq } : { err: r.err }) });
+        return this._json(res, req, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { seq: r.seq } : { err: r.err }) });
       });
       return;
     }
 
     if (req.method === 'GET' && /^\/v1\/queue\/([^/]+)\/msg$/.test(p)) {
       const id = p.split('/')[3];
-      const token = u.searchParams.get('token') || '';
+      const token = req.headers['x-pull-token'] || u.searchParams.get('token') || '';
       const epoch = u.searchParams.get('epoch') ?? '0';
       const since = u.searchParams.get('since') || '0';
       const r = this.pullMessages(id, token, epoch, since);
-      return this._json(res, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { msgs: r.msgs, nextSeq: r.nextSeq, pullEpoch: r.pullEpoch } : { err: r.err }) });
+      return this._json(res, req, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { msgs: r.msgs, nextSeq: r.nextSeq, pullEpoch: r.pullEpoch } : { err: r.err }) });
     }
 
     if (req.method === 'POST' && /^\/v1\/queue\/([^/]+)\/rotate$/.test(p)) {
       const id = p.split('/')[3];
       const token = u.searchParams.get('token') || '';
       const r = this.rotPullToken(id, token, u.searchParams.get('epoch'));
-      return this._json(res, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { pullToken: r.pullToken, pullEpoch: r.pullEpoch } : { err: r.err }) });
+      return this._json(res, req, r.ok ? 200 : (r.err === 'no_queue' ? 404 : 403), { ok: r.ok, ...(r.ok ? { pullToken: r.pullToken, pullEpoch: r.pullEpoch } : { err: r.err }) });
     }
 
     // The invitation is consumed, never the live message queues.
@@ -164,45 +193,45 @@ class Relay {
       req.on('data', c => { body += c; if (body.length > this.maxMsgBytes * 2) req.destroy(); });
       req.on('end', () => {
         let data;
-        try { data = JSON.parse(body); } catch { return this._json(res, 400, {ok:false, err:'bad_json'}); }
-        if (!data || typeof data !== 'object') return this._json(res, 400, {ok:false, err:'bad_body'});
+        try { data = JSON.parse(body); } catch { return this._json(res, req, 400, {ok:false, err:'bad_json'}); }
+        if (!data || typeof data !== 'object') return this._json(res, req, 400, {ok:false, err:'bad_body'});
         if (p === '/v1/invite') {
           const recv = this._q(data.recvId), send = this._q(data.sendId);
           if (!recv || !send || data.recvId === data.sendId ||
               recv.pullHash !== hashToken(data.recvToken) || send.pullHash !== hashToken(data.sendToken)) {
-            return this._json(res, 403, {ok:false, err:'bad_owner'});
+            return this._json(res, req, 403, {ok:false, err:'bad_owner'});
           }
           const id = randomId(24), owner = randomId(24);
           this.invites.set(id, {recvId:data.recvId, sendId:data.sendId, ownerHash:hashToken(owner), expires:Date.now()+15*60*1000});
-          return this._json(res, 200, {ok:true, id, owner});
+          return this._json(res, req, 200, {ok:true, id, owner});
         }
         const id = p.split('/')[3], invite = this.invites.get(id);
         if (!invite || invite.expires <= Date.now()) {
           this.invites.delete(id);
-          return this._json(res, 410, {ok:false, err:'used_or_expired'});
+          return this._json(res, req, 410, {ok:false, err:'used_or_expired'});
         }
         if (p.endsWith('/revoke')) {
-          if (invite.ownerHash !== hashToken(data.owner)) return this._json(res, 403, {ok:false, err:'bad_owner'});
+          if (invite.ownerHash !== hashToken(data.owner)) return this._json(res, req, 403, {ok:false, err:'bad_owner'});
           this.invites.delete(id);
           this.queues.delete(invite.recvId); this.queues.delete(invite.sendId);
-          return this._json(res, 200, {ok:true});
+          return this._json(res, req, 200, {ok:true});
         }
         if (typeof data.pub !== 'string' || !/^B[A-Za-z0-9+/]{86}=$/.test(data.pub) ||
             typeof data.ghost !== 'string' || !/^[A-Z]+-[A-F0-9]{4}$/.test(data.ghost)) {
-          return this._json(res, 400, {ok:false, err:'bad_peer'});
+          return this._json(res, req, 400, {ok:false, err:'bad_peer'});
         }
         const recv = this._q(invite.recvId), send = this._q(invite.sendId);
-        if (!recv || !send || recv.msgs.length >= this.maxMsgsPerQueue) return this._json(res, 409, {ok:false, err:'unavailable'});
+        if (!recv || !send || recv.msgs.length >= this.maxMsgsPerQueue) return this._json(res, req, 409, {ok:false, err:'unavailable'});
         const pushToken = randomId(24), pullToken = randomId(24);
         recv.pushHash = hashToken(pushToken); send.pullHash = hashToken(pullToken);
         this.invites.delete(id); // Atomic within this synchronous request callback.
         recv.msgs.push({seq:recv.nextSeq++, blob:JSON.stringify({type:'connect', pub:data.pub, ghost:data.ghost, pq:data.pq}), ts:Date.now()});
-        return this._json(res, 200, {ok:true, recv:{id:invite.recvId,tok:pushToken}, send:{id:invite.sendId,tok:pullToken,ep:send.pullEpoch}});
+        return this._json(res, req, 200, {ok:true, recv:{id:invite.recvId,tok:pushToken}, send:{id:invite.sendId,tok:pullToken,ep:send.pullEpoch}});
       });
       return;
     }
 
-    return this._json(res, 404, { ok: false, err: 'not_found' });
+    return this._json(res, req, 404, { ok: false, err: 'not_found' });
   }
 
   listen(port = 7000, host = '127.0.0.1') {
@@ -211,15 +240,17 @@ class Relay {
   }
 }
 
-// NÃ«se niset si skenar i vetÃ«m (node relay/server.js --port 7000 --no-log)
+// Nese niset si skenar i vetem (node relay/server.js --port 7000 --no-log [--host 0.0.0.0])
 if (require.main === module) {
   const args = process.argv.slice(2);
-  const portIdx = args.indexOf('--port');
-  const port = portIdx >= 0 ? Number(args[portIdx + 1]) : 7000;
+  const val = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
+  const port = Number(val('--port', 7000));
+  const host = val('--host', '127.0.0.1'); // 0.0.0.0 = i arritshem nga telefoni ne LAN
   const relay = new Relay({ logging: args.indexOf('--no-log') < 0 });
-  relay.listen(port, '127.0.0.1').then((p) => {
-    console.log(`[GHOST-RELAY] relay listening on 127.0.0.1:${p}`);
-    console.log('[GHOST-RELAY] radhÃ« njÃ«drejtimÃ«she | no-user-id | RBQR enabled');
+  relay.listen(port, host).then((p) => {
+    console.log(`[GHOST-RELAY] relay listening on ${host}:${p}`);
+    console.log('[GHOST-RELAY] radhë njëdrejtimëshe | no-user-id | RBQR enabled');
+    if (host === '0.0.0.0') console.log('[GHOST-RELAY] KUJDES: i ekspozuar ne LAN — vetem per testim lokal, jo ne internet.');
   });
 }
 

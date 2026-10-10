@@ -1,15 +1,18 @@
-"""Local-only pairing regression. Requires web :5173 and relay :7000."""
-import asyncio
+"""Local-only pairing regression. Requires web :5173 and relay :7000.
+Per serverin e unifikuar (test-server.js): CODEMORS_BASE=https://<IP>:8443 python tools/test_pairing_browser.py
+(gjithashtu CODEMORS_IGNORE_HTTPS=1 per certifikate self-signed)"""
+import asyncio, os
 from playwright.async_api import async_playwright, expect
 
-BASE = 'http://localhost:5173'
+BASE = os.environ.get('CODEMORS_BASE', 'http://localhost:5173')  # ose serveri i unifikuar: https://<IP>:8443
+IGNORE_TLS = os.environ.get('CODEMORS_IGNORE_HTTPS', '').lower() in ('1', 'true', 'yes')
 
-async def enter(browser, errors, url=BASE):
-    context = await browser.new_context()
+async def enter(browser, errors, url=None):
+    context = await browser.new_context(ignore_https_errors=IGNORE_TLS)
     page = await context.new_page()
     page.set_default_timeout(8000)
     page.on('pageerror', lambda error: errors.append(str(error)))
-    await page.goto(BASE, wait_until='domcontentloaded')
+    await page.goto(url or BASE, wait_until='domcontentloaded')
     await page.locator('#mo-pin.on').wait_for()
     for _ in range(4):
         await page.locator('#pin-pad .key').filter(has_text='0').click()
@@ -25,7 +28,7 @@ async def submit(page, invite):
 async def main():
     errors = []
     async with async_playwright() as pw:
-        browser = await pw.chromium.launch(headless=True)
+        browser = await pw.chromium.launch(headless=True, args=['--ignore-certificate-errors'] if IGNORE_TLS else [])
         try:
             a, b, c = [await enter(browser, errors) for _ in range(3)]
             await a.click('#btn-qr')

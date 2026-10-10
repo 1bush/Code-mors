@@ -12,7 +12,11 @@
     "test:pairing": "node test-pairing.js",
     "test:pq": "node test-pq.js",
     "test:threshold": "node test-threshold.js",
-    "test:all": "node test-hybrid.js && node test-sentinel.js && node test-pairing.js && node test-app-flow.js && node test-pq.js && node test-threshold.js",
+    "test:hardlava": "node test-hardlava.js",
+    "serve:test": "node test-server.js",
+    "serve:test:http": "node test-server.js --http --port 8080",
+    "cert": "node tools/make_cert.js",
+    "test:all": "node test-hybrid.js && node test-sentinel.js && node test-pairing.js && node test-app-flow.js && node test-pq.js && node test-threshold.js && node test-hardlava.js",
     "test:app": "node test-app-flow.js",
     "sentinel:demo": "start sentinel-demo.html"
   }
