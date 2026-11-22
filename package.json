@@ -16,8 +16,12 @@
     "serve:test": "node test-server.js",
     "serve:test:http": "node test-server.js --http --port 8080",
     "cert": "node tools/make_cert.js",
-    "test:all": "node test-hybrid.js && node test-sentinel.js && node test-pairing.js && node test-app-flow.js && node test-pq.js && node test-threshold.js && node test-hardlava.js",
-    "test:app": "node test-app-flow.js",
-    "sentinel:demo": "start sentinel-demo.html"
+    "test:all": "node test-hybrid.js && node test-sentinel.js && node test-pairing.js && node test-pq.js && node test-threshold.js && node test-hardlava.js",
+    "sentinel:demo": "start sentinel-demo.html",
+    "build:secure": "node tools/build.js"
+  },
+  "devDependencies": {
+    "@reticlehq/browser": "^3.10.11",
+    "javascript-obfuscator": "^5.10.1"
   }
 }

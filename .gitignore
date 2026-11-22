@@ -14,3 +14,11 @@ tools/_mors_js_check.js
 # Certifikata lokale te testimit (self-signed, gjenerohen me: npm run cert)
 certs/
 _srv.*
+reticle.local.js
+# Konfigurime lokalet te agenteve / të dhëna runtime
+.claude/
+.codex/
+.factory/
+.gemini/
+.github/hooks/
+.reticle/

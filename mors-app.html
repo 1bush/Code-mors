@@ -2,145 +2,211 @@
 <html lang="sq">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CODE MORS</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#020604">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CODE MORS">
+<meta name="application-name" content="CODE MORS">
+<meta name="description" content="Aplikacion ushtarak i enkriptuar P2P. Pa identitet, pa gjurmë.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<title>CODE MORS — Tactical Uplink</title>
 <style>
-:root{--g:#00ff66;--bg:#040804;--bg2:#08130c;--bd:rgba(0,255,100,.13);--bdb:rgba(0,255,100,.42);--dim:rgba(0,255,100,.4);--red:#ff3b5c;--amber:#ffaa00;--blue:#36b0ff;}
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{background:var(--bg);color:var(--g);font-family:-apple-system,'Segoe UI',sans-serif;height:100dvh;overflow:hidden;font-size:14px;}
-.sc{display:none;height:100dvh;flex-direction:column;}.sc.on{display:flex;}
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
+:root{--g:#3dff88;--gd:#1fbf63;--bg:#020604;--bg2:#060d08;--panel:#08120c;--bd:rgba(110,255,170,.15);--bdb:rgba(110,255,170,.5);--dim:rgba(170,255,205,.45);--faint:rgba(170,255,205,.28);--red:#ff4d5e;--amber:#ffb02e;--blue:#5ec8ff;--mono:'Share Tech Mono',ui-monospace,Menlo,Consolas,monospace;--ui:'Rajdhani','Segoe UI',system-ui,sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);color:var(--g);font-family:var(--ui);height:100vh;height:100dvh;overflow:hidden;font-size:14px;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(110,255,170,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(110,255,170,.025) 1px,transparent 1px);background-size:44px 44px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9997;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.14) 2px 4px);}
+.sc{display:none;height:100%;flex-direction:column;position:relative;z-index:1;}.sc.on{display:flex;}
 #s-boot{position:fixed;inset:0;z-index:999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:12px;}
 #s-boot.on{display:flex;}
-.bl{font-size:38px;font-weight:900;letter-spacing:8px;animation:f 3s infinite;}@keyframes f{0%,100%{opacity:1}50%{opacity:.5}}
-.bt{font-size:10px;letter-spacing:5px;color:var(--dim);}
-.blog{width:min(400px,86vw);font-size:11px;color:#00ff41;line-height:1.9;max-height:160px;overflow:hidden;text-shadow:0 0 6px rgba(0,255,100,.55);letter-spacing:1px;}
-.pbar{width:min(260px,68vw);height:2px;background:rgba(0,255,100,.06);margin-top:8px;overflow:hidden;}
-.pf{height:100%;background:var(--g);width:0;transition:width .1s linear;}
-.tb{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--bg2);flex-shrink:0;}
-.tl{font-weight:900;font-size:13px;letter-spacing:4px;}
-.bdg{display:flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid var(--bd);font-size:9px;color:var(--dim);border-radius:6px;}
-.dt{width:5px;height:5px;border-radius:50%;background:var(--g);animation:p 2s infinite;}@keyframes p{50%{opacity:.2}}
-.gtag{font-size:11px;padding:3px 8px;border:1px solid rgba(0,255,100,.5);cursor:pointer;background:rgba(0,255,100,.04);border-radius:6px;}
-.main{flex:1;display:flex;overflow:hidden;}
-.sb{width:232px;border-right:1px solid var(--bd);display:flex;flex-direction:column;background:var(--bg2);}
-.sbh{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;font-size:10px;letter-spacing:2px;color:var(--dim);border-bottom:1px solid var(--bd);}
+.bl{font-family:var(--mono);font-size:clamp(30px,8vw,44px);font-weight:400;letter-spacing:10px;color:var(--g);text-shadow:0 0 18px rgba(61,255,136,.5),0 0 60px rgba(61,255,136,.2);animation:f 3s infinite;}@keyframes f{0%,100%{opacity:1}50%{opacity:.55}}
+.bt{font-family:var(--mono);font-size:9px;letter-spacing:6px;color:var(--dim);border:1px solid var(--bd);padding:4px 12px;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);}
+.blog{width:min(400px,86vw);font-family:var(--mono);font-size:11px;color:#5dff9d;line-height:1.9;max-height:160px;overflow:hidden;text-shadow:0 0 6px rgba(61,255,136,.5);letter-spacing:1px;}
+.pbar{width:min(260px,68vw);height:2px;background:rgba(110,255,170,.08);margin-top:8px;overflow:hidden;}
+.pf{height:100%;background:var(--g);width:0;transition:width .1s linear;box-shadow:0 0 8px var(--g);}
+.clsbar{display:flex;align-items:center;justify-content:space-between;gap:8px;height:24px;padding:0 10px;background:#030805;border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:8.5px;letter-spacing:2.5px;color:var(--faint);flex-shrink:0;user-select:none;}
+.clsbar .hz{color:var(--amber);}
+.clsbar #utc{color:var(--dim);font-variant-numeric:tabular-nums;}
+.tb{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;padding-top:calc(8px + env(safe-area-inset-top));border-bottom:1px solid var(--bd);background:linear-gradient(180deg,var(--bg2),var(--bg));flex-shrink:0;}
+.tl{font-family:var(--mono);font-weight:400;font-size:14px;letter-spacing:5px;color:var(--g);text-shadow:0 0 10px rgba(61,255,136,.4);}
+.tst{display:flex;align-items:center;gap:5px;}
+.bdg{display:flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid var(--bd);font-family:var(--mono);font-size:8.5px;color:var(--dim);clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px);}
+.dt{width:5px;height:5px;border-radius:50%;background:var(--g);animation:p 2s infinite;box-shadow:0 0 6px var(--g);}@keyframes p{50%{opacity:.2}}
+.gtag{font-family:var(--mono);font-size:11.5px;padding:4px 9px;border:1px solid var(--bdb);cursor:pointer;background:rgba(61,255,136,.05);color:var(--g);clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px);}
+.hamb{display:none;width:44px;height:44px;border:1px solid var(--bdb);background:transparent;color:var(--g);font-size:17px;cursor:pointer;align-items:center;justify-content:center;clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px);}
+.main{flex:1;display:flex;overflow:hidden;position:relative;}
+.sb{width:236px;border-right:1px solid var(--bd);display:flex;flex-direction:column;background:var(--panel);flex-shrink:0;}
+.sbh{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);border-bottom:1px solid var(--bd);}
 .cl{flex:1;overflow-y:auto;}
-.cit{padding:11px 12px;border-bottom:1px solid rgba(0,255,100,.07);cursor:pointer;display:flex;gap:10px;align-items:center;}
-.cit.active{background:rgba(0,255,100,.13);border-left:2px solid var(--g);padding-left:10px;}
-.av{width:36px;height:36px;border-radius:50%;background:rgba(0,255,100,.13);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
-.cn{font-size:13px;display:flex;align-items:center;gap:5px;}
-.cm{font-size:9px;color:var(--blue);}.cmm{font-size:9px;color:var(--dim);margin-top:3px;}
-.bb{font-size:8px;color:var(--amber);border:1px solid rgba(255,170,0,.3);padding:0 4px;border-radius:4px;}
-.cw{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-.emp{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--dim);padding:20px;text-align:center;}
+.cit{padding:11px 12px;border-bottom:1px solid rgba(110,255,170,.07);cursor:pointer;display:flex;gap:10px;align-items:center;user-select:none;}
+.cit.active{background:rgba(61,255,136,.12);border-left:2px solid var(--g);padding-left:10px;}
+.av{width:48px;height:48px;flex-shrink:0;background:rgba(61,255,136,.1);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--g);clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);}
+.cn{font-size:13px;display:flex;align-items:center;gap:5px;font-weight:600;letter-spacing:.5px;}
+.cm{font-size:9px;color:var(--blue);font-family:var(--mono);}.cmm{font-size:9px;color:var(--dim);margin-top:3px;font-family:var(--mono);}
+.bb{font-size:8px;color:var(--amber);border:1px solid rgba(255,176,46,.4);padding:0 4px;font-family:var(--mono);}
+.cw{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.emp{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--dim);padding:20px;text-align:center;}
+.emp b{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--faint);}
 .ca{flex:1;display:none;flex-direction:column;overflow:hidden;}.ca.on{display:flex;}
-.ch{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--bd);}
-.ch-t{font-size:14px;font-weight:700;}.ch-s{font-size:9px;color:var(--dim);}
-.bn{background:transparent;border:1px solid var(--bdb);color:var(--g);padding:5px 10px;font-family:inherit;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:7px;}
-.bnd{border-color:rgba(255,59,92,.5);color:var(--red);}.bnw{border-color:rgba(255,170,0,.4);color:var(--amber);}
-.or{display:flex;align-items:center;gap:6px;padding:5px 12px;border-bottom:1px solid var(--bd);}
-.opt{padding:3px 9px;border:1px solid var(--bd);font-size:10px;color:var(--dim);cursor:pointer;border-radius:6px;}
-.opt.sel{border-color:var(--bdb);color:var(--g);}
-.ml{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:5px;}
-.bub{max-width:80%;padding:9px 12px;border-radius:16px;font-size:14px;word-break:break-word;}
-.bub.m{align-self:flex-end;background:var(--g);color:#02130a;border-bottom-right-radius:6px;}
-.bub.t{align-self:flex-start;background:var(--bg2);border:1px solid var(--bd);border-bottom-left-radius:6px;}
-.bub .tm{display:block;font-size:8px;margin-top:3px;}.bub.t .tm{color:var(--dim);}
-.bub.br{transition:opacity .5s,transform .5s;opacity:0;transform:scale(.85);filter:blur(3px);}
-.comp{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--bd);background:var(--bg2);}
-.comp textarea{flex:1;background:#010a02;border:1px solid var(--bd);color:var(--g);border-radius:18px;padding:10px 14px;font-size:14px;resize:none;max-height:80px;outline:none;}
-.snd{width:40px;height:40px;border-radius:50%;border:0;background:var(--g);color:#02130a;font-size:17px;cursor:pointer;}
-.mo{position:absolute;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;overflow-y:auto;}.mo.on{display:flex;}
-.md{max-width:370px;width:100%;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:18px;}
-.md .ti{font-size:15px;font-weight:700;margin-bottom:5px;}.md .sb{font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:10px;}
-.md input,.md textarea{width:100%;background:#010a02;border:1px solid var(--bd);color:var(--g);border-radius:9px;padding:10px;font-size:12px;margin-bottom:8px;}
-.md textarea{font-family:monospace;font-size:9px;height:56px;resize:none;word-break:break-all;}
-.md .rw{display:flex;gap:8px;margin-top:6px;}.md .rw .bn{flex:1;text-align:center;}
+.ch{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--bd);background:var(--panel);}
+.bk{display:none;width:38px;height:38px;flex-shrink:0;border:1px solid var(--bd);background:transparent;color:var(--g);font-size:14px;cursor:pointer;align-items:center;justify-content:center;}
+.ch-t{font-size:14px;font-weight:700;letter-spacing:1px;}.ch-s{font-family:var(--mono);font-size:9px;color:var(--dim);}
+.bn{background:transparent;border:1px solid var(--bdb);color:var(--g);padding:8px 14px;font-family:var(--mono);font-size:12px;letter-spacing:1.5px;cursor:pointer;clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px);transition:background .12s,box-shadow .12s;touch-action:manipulation;}
+.bn:hover{background:rgba(61,255,136,.1);box-shadow:0 0 10px rgba(61,255,136,.15);}
+.bn:active{background:rgba(61,255,136,.2);}
+.bnd{border-color:rgba(255,77,94,.55);color:var(--red);}.bnd:hover{background:rgba(255,77,94,.1);box-shadow:0 0 10px rgba(255,77,94,.2);}
+.bnw{border-color:rgba(255,176,46,.5);color:var(--amber);}.bnw:hover{background:rgba(255,176,46,.1);box-shadow:0 0 10px rgba(255,176,46,.2);}
+.or{display:flex;align-items:center;gap:6px;padding:6px 12px;border-bottom:1px solid var(--bd);background:rgba(3,8,5,.6);flex-wrap:wrap;}
+.or>span{font-family:var(--mono);font-size:8.5px;color:var(--faint);letter-spacing:1px;white-space:nowrap;}
+.opt{padding:3px 9px;border:1px solid var(--bd);font-family:var(--mono);font-size:9.5px;color:var(--dim);cursor:pointer;user-select:none;touch-action:manipulation;}
+.opt.sel{border-color:var(--g);color:var(--g);background:rgba(61,255,136,.1);box-shadow:0 0 8px rgba(61,255,136,.2);}
+.ml{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:6px;background-image:radial-gradient(rgba(110,255,170,.03) 1px,transparent 1px);background-size:18px 18px;}
+.bub{max-width:82%;padding:9px 12px;font-size:14px;word-break:break-word;line-height:1.45;position:relative;}
+.bub.m{align-self:flex-end;background:linear-gradient(160deg,rgba(61,255,136,.9),rgba(31,191,99,.9));color:#02130a;border-bottom-right-radius:4px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);box-shadow:0 0 14px rgba(61,255,136,.18);}
+.bub.t{align-self:flex-start;background:var(--panel);border:1px solid var(--bd);border-bottom-left-radius:4px;clip-path:polygon(10px 0,100% 0,100% 100%,0 100%,0 10px);}
+.bub .tm{display:block;font-family:var(--mono);font-size:8px;margin-top:3px;opacity:.65;}
+.bub.br{transition:opacity .5s,transform .5s,filter .5s;opacity:0;transform:scale(.9);filter:blur(3px);}
+.comp{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--bd);background:var(--panel);}
+.comp textarea{flex:1;background:#020a05;border:1px solid var(--bd);color:var(--g);border-radius:4px;padding:10px 13px;font-family:var(--ui);font-size:14px;resize:none;max-height:90px;outline:none;transition:border-color .15s,box-shadow .15s;}
+.comp textarea:focus{border-color:var(--bdb);box-shadow:0 0 10px rgba(61,255,136,.12);}
+.snd{width:54px;height:54px;flex-shrink:0;border:0;background:var(--g);color:#02130a;font-size:18px;cursor:pointer;clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);transition:box-shadow .12s,transform .08s;touch-action:manipulation;}
+.snd:hover{box-shadow:0 0 16px rgba(61,255,136,.5);}
+.snd:active{transform:scale(.94);}
+.mo{position:absolute;inset:0;background:rgba(1,4,2,.78);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:16px;z-index:50;overflow-y:auto;}
+.mo.on{display:flex;}
+.md{position:relative;max-width:380px;width:100%;background:var(--panel);border:1px solid var(--bdb);padding:18px;
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));
+  box-shadow:0 0 40px rgba(0,0,0,.6),0 0 24px rgba(61,255,136,.08);}
+.md::before,.md::after{content:'';position:absolute;width:14px;height:14px;pointer-events:none;}
+.md::before{top:-1px;left:-1px;border-top:2px solid var(--g);border-left:2px solid var(--g);}
+.md::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--g);border-right:2px solid var(--g);}
+.md .ti{font-family:var(--mono);font-size:13px;letter-spacing:2.5px;text-transform:uppercase;color:var(--g);margin-bottom:6px;}
+.md .sb{font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:10px;}
+.md input,.md textarea{width:100%;background:#020a05;border:1px solid var(--bd);color:var(--g);border-radius:4px;padding:10px;font-family:var(--mono);font-size:11.5px;margin-bottom:8px;outline:none;}
+.md input:focus,.md textarea:focus{border-color:var(--bdb);}
+.md textarea{font-size:9.5px;height:56px;resize:none;word-break:break-all;}
+.md .rw{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}.md .rw .bn{flex:1;min-width:80px;text-align:center;}
 .md .bq{display:flex;justify-content:center;padding:8px 0;}
-.tog{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd);font-size:12px;}
-.sw{width:38px;height:21px;border-radius:11px;background:#1a2a1c;cursor:pointer;}.sw.on{background:var(--g);}
-.sw::after{content:'';position:absolute;}
-.sec{padding:12px;border-bottom:1px solid var(--bd);}.sec h4{font-size:10px;letter-spacing:2px;color:var(--dim);margin-bottom:8px;}
-.ri{font-size:11px;padding:5px 0;color:var(--dim);}.ri b{color:var(--g);}
-.tl-f{font-size:9px;color:var(--dim);line-height:1.6;max-height:80px;overflow:auto;font-family:monospace;}
+.tog{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd);font-size:12px;gap:10px;}
+.sw{position:relative;width:40px;height:22px;flex-shrink:0;border-radius:11px;background:#122015;border:1px solid var(--bd);cursor:pointer;transition:background .15s,border-color .15s;}
+.sw.on{background:rgba(61,255,136,.25);border-color:var(--g);box-shadow:0 0 10px rgba(61,255,136,.25);}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--dim);transition:transform .15s,background .15s;}
+.sw.on::after{transform:translateX(18px);background:var(--g);box-shadow:0 0 8px var(--g);}
+.sec{padding:12px;border-bottom:1px solid var(--bd);}.sec h4{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;color:var(--faint);margin-bottom:8px;}
+.ri{font-size:11px;padding:5px 0;color:var(--dim);line-height:1.5;}.ri b{color:var(--g);font-family:var(--mono);}
+.tl-f{font-family:var(--mono);font-size:9px;color:var(--dim);line-height:1.6;max-height:80px;overflow:auto;}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
-.st{background:#010a02;border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center;}
-.st .v{font-size:16px;font-weight:800;color:var(--g);}.st .l{font-size:8px;color:var(--dim);}
+.st{background:#020a05;border:1px solid var(--bd);padding:8px;text-align:center;clip-path:polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px);}
+.st .v{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--g);letter-spacing:1px;word-break:break-all;}.st .l{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:2px;margin-top:3px;}
 .kbd{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px 0;}
-.key{width:52px;height:52px;border-radius:9px;background:rgba(0,255,100,.07);border:1px solid var(--bd);color:var(--g);font-size:18px;font-weight:700;cursor:pointer;}
-.key.wide{width:110px;}
-#pin-display{text-align:center;font-size:32px;letter-spacing:14px;padding:14px;min-height:50px;}
+.key{width:64px;height:64px;border-radius:6px;background:rgba(61,255,136,.06);border:1px solid var(--bd);color:var(--g);font-family:var(--mono);font-size:23px;font-weight:400;cursor:pointer;transition:background .1s,box-shadow .1s;touch-action:manipulation;}
+.key:hover{background:rgba(61,255,136,.14);box-shadow:0 0 10px rgba(61,255,136,.2);}
+.key:active{background:rgba(61,255,136,.25);}
+.key.wide{width:136px;}
+#pin-display{text-align:center;font-family:var(--mono);font-size:30px;letter-spacing:14px;padding:14px;min-height:50px;color:var(--g);text-shadow:0 0 12px rgba(61,255,136,.4);}
+.navbg{display:none;position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:35;}
+.navbg.on{display:block;}
+#breach{font-family:var(--mono);letter-spacing:2px;}
+#veil{display:none;position:fixed;inset:0;background:var(--bg);z-index:9996;}
+body.sguard.winblur .ml,body.sguard.winblur .ch,body.sguard.winblur .comp,body.sguard.winblur .cn,body.sguard.winblur .cit{filter:blur(9px) saturate(.5);transition:filter .18s;}
+.calldot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;animation:p 1s infinite;}
+#mo-pin{background:#020604;backdrop-filter:none;}
+@media (max-width:860px){
+  .sb{position:absolute;left:0;top:0;bottom:0;z-index:40;width:min(280px,82vw);transform:translateX(-102%);transition:transform .22s ease;background:var(--panel);box-shadow:4px 0 30px rgba(0,0,0,.7);}
+  .sb.on{transform:translateX(0);}
+  .hamb{display:flex;}
+  .bk{display:flex;}
+  .tl{font-size:12px;letter-spacing:3px;}
+  .tst .gtag{display:none;}
+  .bub{max-width:88%;}
+  .md{max-width:100%;}
+}
 </style></head>
 <body>
 <div id="breach" style="display:none;position:absolute;top:0;left:0;right:0;z-index:60;background:var(--red);color:#fff;padding:11px;font-size:12px;font-weight:700;text-align:center;">🚨 BREACH</div>
+<div id="veil"></div>
 <div class="sc on" id="s-boot"><div class="bl">CODE MORS</div><div class="bt">MILITARY GRADE · ZERO IDENTITY</div><div class="blog" id="blog"></div><div class="pbar"><div class="pf" id="pfill"></div></div></div>
 
 <div class="sc" id="s-main">
-  <div class="tb"><div class="tl">CODE MORS</div>
-    <div class="tst"><div class="bdg"><div class="dt"></div>E2E</div><div class="gtag" id="my-ghost">VOID-01</div><button class="bn" id="btn-qr" onclick="openModal('qr')">QR</button><button class="bn" id="btn-set" onclick="openModal('settings')">⚙</button></div></div>
+  <div class="clsbar"><span>◤ <span class="hz">CODE MORS v5</span> // EYES ONLY // E2E·PFS·PQ·MESH</span><span id="netstat">NET:0KB</span><span id="utc">--:--:--</span></div>
+  <div class="tb"><button class="hamb" id="btn-nav" onclick="toggleNav()">☰</button><div class="tl">CODE MORS</div>
+    <div class="tst"><div class="bdg"><div class="dt"></div>E2E</div><div class="gtag" id="my-ghost">VOID-01</div><button class="bn" id="btn-lang" onclick="toggleLang()">EN</button><button class="bn" id="btn-qr" onclick="openModal('qr')">QR</button><button class="bn" id="btn-set" onclick="openModal('settings')">⚙</button></div></div>
   <div class="main">
-    <div class="sb"><div class="sbh"><span>CONTACTS</span><button class="bn" onclick="openModal('qr')" style="width:auto;padding:3px 8px">+ LINK</button></div><div class="cl" id="clist"></div></div>
-    <div class="cw"><div class="emp" id="empty"><div style="font-size:30px">💬</div><b>NO ACTIVE CHANNEL</b><span>SCAN QR ose LINK për të filluar bisedë të koduar.</span></div>
-      <div class="ca" id="chatarea"><div class="ch"><div><div class="ch-t" id="ch-name">---</div><div class="ch-s" id="ch-mask"></div></div>
-        <button class="bn" id="btn-verify" onclick="openModal('safety')">VERIFY</button><button class="bn bnd" onclick="endSession()">END SESSION</button></div>
-        <div class="or"><span style="font-size:9px;color:var(--dim)">TIME DELETE:</span>
-          <div class="opt" data-b="-1" onclick="setBurn(-1)">OFF</div>
-          <div class="opt sel" data-b="0" onclick="setBurn(0)">READ-ONCE</div>
+    <div class="navbg" id="navbg" onclick="toggleNav()"></div>
+    <div class="sb" id="sidebar"><div class="sbh"><span data-i18n="contacts">CONTACTS</span><button class="bn" onclick="openModal('qr');toggleNav()" style="width:auto;padding:3px 8px" data-i18n="newlink">+ LINK</button></div><div class="cl" id="clist"></div></div>
+    <div class="cw"><div class="emp" id="empty"><div style="font-size:30px">◈</div><b data-i18n="emptyTitle">NO ACTIVE CHANNEL</b><span data-i18n="emptySub">SKANO QR ose LINK për të filluar bisedë të koduar.</span><button class="bn" style="margin-top:10px" onclick="toggleNav()" data-i18n="openContacts">☰ HAP KONTAKTET</button></div>
+      <div class="ca" id="chatarea"><div class="ch"><button class="bk" onclick="closeChat()">‹</button><div><div class="ch-t" id="ch-name">---</div><div class="ch-s" id="ch-mask"></div></div>
+        <button class="bn" id="btn-call" onclick="startCall()">📞</button><button class="bn" id="btn-verify" onclick="openModal('safety')" data-i18n="verify">VERIFY</button><button class="bn bnd" onclick="endSession()" data-i18n="endSession">END SESSION</button></div>
+        <div class="or"><span style="font-size:9px;color:var(--dim)" data-i18n="timeDelete">TIME DELETE:</span>
+          <div class="opt" data-b="-1" onclick="setBurn(-1)" data-i18n="burnOff">OFF</div>
+          <div class="opt sel" data-b="0" onclick="setBurn(0)" data-i18n="burnRead">READ-ONCE</div>
           <div class="opt" data-b="10" onclick="setBurn(10)">🔥10s</div>
           <div class="opt" data-b="30" onclick="setBurn(30)">🔥30s</div>
           <div class="opt" data-b="60" onclick="setBurn(60)">🔥60s</div></div>
         <div class="ml" id="mlist"></div>
-        <div class="comp"><textarea id="minput" rows="1" placeholder="Encrypted message..."></textarea><button class="snd" id="btn-send">➤</button></div></div></div>
+        <div class="comp"><textarea id="minput" rows="1" data-i18n-ph="msgPh" placeholder="Encrypted message..."></textarea><button class="snd" id="btn-send">➤</button></div></div></div>
   </div>
 </div>
 
-<div class="mo" id="mo-qr"><div class="md"><div class="ti">👻 QR LINK</div><div class="sb">Ndaje QR-in — skanohet nga kontakti.</div>
+<div class="mo" id="mo-qr"><div class="md"><div class="ti" data-i18n="qrTitle">👻 QR LINK</div><div class="sb" data-i18n="qrSub">Ndaje QR-in — skanohet nga kontakti.</div>
   <div class="bq"><canvas id="qr-canvas"></canvas></div>
-  <div class="tog"><span>⏳ Time-Lock (PBKDF2-600k)</span><div class="sw" id="sw-tlp" onclick="toggleSw('tlp')"></div></div>
+  <div class="tog"><span data-i18n="tlp">⏳ Time-Lock (PBKDF2-600k)</span><div class="sw" id="sw-tlp" onclick="toggleSw('tlp')"></div></div>
   <input id="tlp-pass" type="password" placeholder="passionale)" style="display:none">
   <textarea id="qr-code" readonly></textarea>
-  <div class="rw"><button class="bn" onclick="copyCode()">Kopjo</button><button class="bn" onclick="openModal('scan')">📷 Skano</button><button class="bn bnw" onclick="shareInvite()">📤 Dërgo…</button><button class="bn" onclick="closeModal()">Mbyll</button></div></div></div>
+  <div class="rw"><button class="bn" onclick="copyCode()" data-i18n="copy">Kopjo</button><button class="bn" onclick="openModal('scan')" data-i18n="scan">📷 Skano</button><button class="bn bnw" onclick="shareInvite()" data-i18n="send3">📤 Dërgo…</button><button class="bn" onclick="closeModal()" data-i18n="close">Mbyll</button></div></div></div>
 
-<div class="mo" id="mo-share"><div class="md"><div class="ti">📤 Dërgo invite (one-time)</div><div class="sb">Zgjidh kanalin — marrësi e hap me CodeMors dhe e lidh. Përdoret <b>VETËM 1 herë</b>, mbas lidhjes digjet.</div>
-  <div class="rw"><button class="bn" onclick="shareVia('signal')">💬 Signal</button><button class="bn" onclick="shareVia('simplex')">✖️ SimpleX</button></div>
-  <div class="rw" style="margin-top:8px"><button class="bn" onclick="shareVia('wa')">🟢 WhatsApp</button><button class="bn" onclick="shareVia('copy')">📋 Kopjo tekstin</button></div>
-  <div class="rw" style="margin-top:8px"><button class="bn" onclick="closeModal()">Mbyll</button></div></div></div>
+<div class="mo" id="mo-share"><div class="md"><div class="ti" data-i18n="shareTitle">📤 Dërgo invite (one-time)</div><div class="sb" data-i18n="shareSub">Zgjidh kanalin — marrësi e hap me CodeMors dhe e lidh. Përdoret <b>VETËM 1 herë</b>, mbas lidhjes digjet.</div>
+  <div class="rw"><button class="bn" onclick="shareVia('signal')" data-i18n="signal">💬 Signal</button><button class="bn" onclick="shareVia('simplex')" data-i18n="simplex">✖️ SimpleX</button></div>
+  <div class="rw" style="margin-top:8px"><button class="bn" onclick="shareVia('wa')" data-i18n="wa">🟢 WhatsApp</button><button class="bn" onclick="shareVia('copy')" data-i18n="copyTxt">📋 Kopjo tekstin</button></div>
+  <div class="rw" style="margin-top:8px"><button class="bn" onclick="closeModal()" data-i18n="close">Mbyll</button></div></div></div>
 
-<div class="mo" id="mo-scan"><div class="md"><div class="ti">📷 Skano QR</div><div class="sb">Drejto kamerën tek QR-i.</div>
+<div class="mo" id="mo-scan"><div class="md"><div class="ti" data-i18n="scanTitle">📷 Skano QR</div><div class="sb" data-i18n="scanSub">Drejto kamerën tek QR-i.</div>
   <video id="scan-video" playsinline autoplay muted style="width:100%;border-radius:9px;max-height:260px"></video>
   <canvas id="scan-canvas" style="display:none"></canvas>
   <div class="sb" id="scan-status" style="font-size:10px"></div>
-  <textarea id="scan-manual" placeholder="Ose ngjit kodin..."></textarea>
-  <div class="rw"><button class="bn bnd" onclick="closeModal()">Anulo</button><button class="bn" onclick="manualLink()">ADD FRIEND / LINK ➤</button></div></div></div>
-<div class="mo" id="mo-safety"><div class="md"><div class="ti">🔒 Safety Number</div><div class="sb">Verifiko ball-për-ball me kontaktin.</div>
-  <div class="sg"><div class="st"><div class="v" id="sn-a" style="font-size:11px;font-family:monospace">---</div><div class="l">Ti</div></div><div class="st"><div class="v" id="sn-b" style="font-size:11px;font-family:monospace">---</div><div class="l">Kontakti</div></div></div>
-  <div class="ri">Nëse numrat <b>NUK</b> përputhen — mund të jetë MITM!</div>
-  <div class="rw"><button class="bn" onclick="closeModal()">Mbyll</button><button class="bn" id="btn-rotate" onclick="rotateEpoch()">🎭 Rotating Epoch</button></div></div></div>
+  <textarea id="scan-manual" data-i18n-ph="manualPh" placeholder="Ose ngjit kodin..."></textarea>
+  <div class="rw"><button class="bn bnd" onclick="closeModal()" data-i18n="cancel">Anulo</button><button class="bn" onclick="manualLink()" data-i18n="addFriend">ADD FRIEND / LINK ➤</button></div></div></div>
+<div class="mo" id="mo-safety"><div class="md"><div class="ti" data-i18n="safetyTitle">🔒 Safety Number</div><div class="sb" data-i18n="safetySub">Verifiko ball-për-ball me kontaktin.</div>
+  <div class="sg"><div class="st"><div class="v" id="sn-a" style="font-size:11px;font-family:monospace">---</div><div class="l" data-i18n="you">Ti</div></div><div class="st"><div class="v" id="sn-b" style="font-size:11px;font-family:monospace">---</div><div class="l" data-i18n="contact">Kontakti</div></div></div>
+  <div class="ri" data-i18n="snWarn">Nëse numrat <b>NUK</b> përputhen — mund të jetë MITM!</div>
+  <div class="rw"><button class="bn" onclick="closeModal()" data-i18n="close">Mbyll</button></div></div></div>
 
-<div class="mo" id="mo-end"><div class="md"><div class="ti" style="color:var(--red)">⚠ END SESSION</div><div class="sb">Fshin TË GJITHË mesazhet. Emrat MBIJNË për rilidhje.</div>
-  <div class="rw"><button class="bn" onclick="closeModal()">Anulo</button><button class="bn bnd" onclick="confirmEnd()">🗑 FSHIJE</button></div></div></div>
+<div class="mo" id="mo-end"><div class="md"><div class="ti" style="color:var(--red)" data-i18n="endTitle">⚠ END SESSION</div><div class="sb" data-i18n="endSub">Fshin TË GJITHË mesazhet. Emrat MBIJNË për rilidhje.</div>
+  <div class="rw"><button class="bn" onclick="closeModal()" data-i18n="cancel">Anulo</button><button class="bn bnd" onclick="confirmEnd()" data-i18n="del">🗑 FSHIJE</button></div></div></div>
 
-<div class="mo" id="mo-settings"><div class="md"><div class="ti">⚙ Security Center</div><div class="sb">Të gjitha mbrojtjet punojnë në background.</div>
-  <div class="sec"><h4>👻 TRAFIKU &amp; MJEDISI</h4>
-    <div class="tog"><span>👻 Ghost Noise</span><div class="sw on" id="sw-noise" onclick="toggleSw('noise')"></div></div>
-    <div class="tog"><span>🧊 Whisper Zeroize</span><div class="sw on" id="sw-zero" onclick="toggleSw('zero')"></div></div>
-    <div class="tog"><span>🔒 Auto-Lock 5 min</span><div class="sw on" id="sw-lock" onclick="toggleSw('lock')"></div></div>
-    <div class="tog"><span>🛡 Local-Only</span><div class="sw" id="sw-local" onclick="toggleSw('local')"></div></div><div class="tog"><span>WIPE ON CLOSE (zeroize)</span><div class="sw on" id="sw-woc" onclick="toggleSw('woc')"></div></div><div class="ri">PQ: <b id="pq-state">--</b></div></div>
-  <div class="sec"><h4>🔫 PANIK &amp; DURESS</h4>
-    <div class="ri">7 klikime të shpejta mbi emër = <b>nuclear wipe</b></div>
-    <button class="bnw btn-bl" id="btn-pin-change" onclick="changePin()">🔑 Ndrysho PIN</button></div>
-  <div class="sec"><h4>💾 BACKUP</h4>
-    <input id="bk-pass" type="password" placeholder="passphrase">
-    <div class="rw"><button class="bn" id="btn-bk" onclick="doBackup()">💾 Ruaj</button><button class="bn" id="btn-rs" onclick="restoreBackup()">📂 Rikthe</button></div></div>
-  <div class="sec"><h4>🛡 PRM Anti-Pegasus</h4>
-    <div class="ri">Risk Score: <b id="prm-score" style="color:var(--g)">--</b>/100</div>
+<div class="mo" id="mo-settings"><div class="md"><div class="ti" data-i18n="setTitle">⚙ Security Center</div><div class="sb" data-i18n="setSub">Të gjitha mbrojtjet punojnë në background.</div>
+  <div class="sec"><h4 data-i18n="secTraffic">👻 TRAFIKU &amp; MJEDISI</h4>
+    <div class="tog"><span data-i18n="ghostNoise">👻 Ghost Noise</span><div class="sw on" id="sw-noise" onclick="toggleSw('noise')"></div></div>
+    <div class="tog"><span data-i18n="zeroize">🧊 Whisper Zeroize</span><div class="sw on" id="sw-zero" onclick="toggleSw('zero')"></div></div>
+    <div class="tog"><span data-i18n="autoLock">🔒 Auto-Lock 5 min</span><div class="sw on" id="sw-lock" onclick="toggleSw('lock')"></div></div>
+    <div class="tog"><span data-i18n="localOnly">🛡 Local-Only</span><div class="sw" id="sw-local" onclick="toggleSw('local')"></div></div><div class="tog"><span data-i18n="screenGuard">🕶 Screen Guard — errës sa të dalësh</span><div class="sw on" id="sw-scr" onclick="toggleSw('scr')"></div></div><div class="tog"><span data-i18n="wipeClose">WIPE ON CLOSE (zeroize)</span><div class="sw on" id="sw-woc" onclick="toggleSw('woc')"></div></div><div class="ri">PQ: <b id="pq-state">--</b></div></div>
+  <div class="sec"><h4 data-i18n="secPanic">🔫 PANIK &amp; DURESS</h4>
+    <div class="ri" data-i18n="panicInfo">7 klikime të shpejta mbi emër = <b>nuclear wipe</b></div>
+    <button class="bnw btn-bl" id="btn-pin-change" onclick="changePin()" data-i18n="changePin">🔑 Ndrysho PIN</button></div>
+  <div class="sec"><h4 data-i18n="secBackup">💾 BACKUP</h4>
+    <input id="bk-pass" type="password" data-i18n-ph="passPh" placeholder="passphrase">
+    <div class="rw"><button class="bn" id="btn-bk" onclick="doBackup()" data-i18n="save">💾 Ruaj</button><button class="bn" id="btn-rs" onclick="restoreBackup()" data-i18n="restore">📂 Rikthe</button></div></div>
+  <div class="sec"><h4 data-i18n="secPrm">🛡 PRM Anti-Pegasus</h4>
+    <div class="ri"><span data-i18n="riskScore">Risk Score</span>: <b id="prm-score" style="color:var(--g)">--</b>/100</div>
     <div class="tl-f" id="prm-log" style="margin-top:6px">—</div></div>
-  <div class="rw"><button class="bn bnd" id="btn-panic" onclick="panicWipe()">☠ PANIC WIPE</button><button class="bn" onclick="closeModal()">Mbyll</button></div></div></div>
+  <div class="rw"><button class="bn bnd" id="btn-panic" onclick="panicWipe()" data-i18n="panicBtn">☠ PANIC WIPE</button><button class="bn" onclick="closeModal()" data-i18n="close">Mbyll</button></div></div></div>
+
+<div class="mo" id="mo-callin"><div class="md"><div class="ti" data-i18n="callInTitle">📞 Thirrje e Hyrëse</div><div class="sb" id="callin-name">---</div>
+  <div class="rw"><button class="bn bnd" onclick="rejectCall()" data-i18n="refuse">REFUZO</button><button class="bn" onclick="acceptCall()" data-i18n="accept">PRANO 📞</button></div></div></div>
+<div class="mo" id="mo-call"><div class="md"><div class="ti" data-i18n="callTitle">📞 THIRRJE</div>
+  <div class="sb" id="call-status">DIALING…</div><div class="sb" id="call-timer" style="font-family:var(--mono);font-size:22px;letter-spacing:3px">00:00</div>
+  <audio id="call-audio" autoplay playsinline></audio>
+  <div class="rw"><button class="bn bnw" id="btn-mute" onclick="toggleMute()" data-i18n="voiceOn">🎙 ZËRI ON</button><button class="bn bnd" onclick="endCall()" data-i18n="hangup">📵 FUNDI</button></div></div></div>
 
 <div class="mo" id="mo-pin"><div class="md"><div class="ti" id="pin-title">🔒 Kyçje</div><div class="sb" id="pin-sub">Vendos PIN-in për hyrje.</div>
   <div id="pin-display" style="text-align:center;font-size:28px;letter-spacing:10px;padding:12px">----</div>
   <div class="kbd" id="pin-pad"></div>
-  <div class="rw" style="margin-top:8px"><button class="bn bnd" id="btn-pin-wipe" onclick="if(confirm(&#39;☠ PANIC WIPE — fshirja të VË sete&#39;))panicWipe(&#39;panic&#39;)">☠ PANIC WIPE</button></div></div></div>
+  <div class="rw" style="margin-top:8px"><button class="bn bnd" id="btn-pin-wipe" onclick="if(confirm(t('wipeMsg')))panicWipe('panic')">☠ PANIC WIPE</button></div></div></div>
 
 <script src="libs/qrcode.js"></script>
 <script src="libs/jsQR.js"></script>
@@ -205,7 +271,10 @@ const RELAY=(()=>{try{
   }
   return 'http://127.0.0.1:7000';
 }catch(e){return 'http://127.0.0.1:7000';}})();
-const api=async(p,o)=>{const r=await fetch(RELAY+p,o);return{status:r.status,data:await r.json().catch(()=>({ok:false,err:'bad'}))};};
+const api=async(p,o)=>{const r=await fetch(RELAY+p,o);const data=await r.json().catch(()=>({ok:false,err:'bad'}));
+  S.bytes=(S.bytes||0)+JSON.stringify(data).length+(o&&o.body?String(o.body).length:0);
+  const ns=$('netstat');if(ns)ns.textContent='NET:'+(S.bytes/1024).toFixed(1)+'KB';
+  return{status:r.status,data};};
 const postJson=(p,data)=>api(p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}).then(x=>x.data);
 const mkQ=()=>api('/v1/queue',{method:'POST'}).then(x=>x.data);
 const pushB=(id,t,b)=>api(`/v1/queue/${id}/msg?t=${encodeURIComponent(t)}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({blob:b})}).then(x=>x.data);
@@ -215,17 +284,11 @@ const rotT=(id,t,e)=>api(`/v1/queue/${id}/rotate?token=${encodeURIComponent(t)}&
 /* SHA-256 i vertete (WebCrypto) - marker i perdorimit lokal te ftesave one-time (burn). */
 const sha256hex=async s=>hex(new Uint8Array(await subtle.digest('SHA-256',TE.encode(s))));
 const S={myKP:null,myPub:'',myPQ:null,myPQpk:'',myPQsk:null,ghost:'',sess:{},pull:{},burn:0,last:{},cur:null,usedInv:{},
-  sw:{noise:true,zero:true,lock:true,local:false,tlp:false,woc:true},
+  sw:{noise:true,zero:true,lock:true,local:false,tlp:false,woc:true,scr:true},
   duress:null,lockTimer:null,pinTapCount:0,pinTapTimer:null,poller:null,noiseTimer:null};const REL_ONLINE={v:false};
 function $(q){if(q.charAt(0)==='.')return document.querySelectorAll(q);return document.getElementById(q);}
 function bootLog(m){const b=$('blog');b.textContent+=m+'\n';}
 function bootP(p){$('pfill').style.width=p+'%';}
-function encMsg(ch,text,burn){return ch.send().then(async({mk,ephPub,seq})=>{
-  const iv=crypto.getRandomValues(new Uint8Array(12));
-  const ct=new Uint8Array(await subtle.encrypt({name:'AES-GCM',iv:iv},await aesKey(mk),pad(TE.encode(text))));
-  return JSON.stringify({v:1,seq,eph:ephPub,burn:burn!==undefined?burn:S.burn,body:{iv:b2s(iv),ct:b2s(ct)}});});}
-const decMsg=async(ch,blob)=>{const h=JSON.parse(blob);const mk=await ch.recv(h.eph);
-  return TD.decode(unpad(new Uint8Array(await subtle.decrypt({name:'AES-GCM',iv:s2b(h.body.iv)},await aesKey(mk),s2b(h.body.ct)))));};
 /* Whisper Zeroize — pastron çelësat nga memoria */
 function zeroize(...a){a.forEach(x=>{if(x&&x.fill)x.fill(0);});}
 async function addContact(name,pubHex,submask){
@@ -233,15 +296,19 @@ async function addContact(name,pubHex,submask){
   const ss=await makeSession(S.myKP,pubHex);
   S.sess[name]=ss;S.pull[name]={tok:'',epoch:0,since:0,queueId:''};
   return ss;}
+function toggleNav(){$('sidebar').classList.toggle('on');$('navbg').classList.toggle('on');}
+function closeChat(){$('chatarea').classList.remove('on');$('empty').style.display='';}
 async function startChat(name,submask,opts){
   $('ch-name').textContent=name;$('ch-mask').textContent=submask||('MASK-'+Math.random().toString(16).slice(2,6).toUpperCase());
   $('chatarea').classList.add('on');$('empty').style.display='none';S.cur=name;
+  $('sidebar').classList.remove('on');$('navbg').classList.remove('on');
   const c=S.sess[name];
   // Safety Numbers
-  const snMy=hex(await dh(S.myKP.privateKey,await impPub(getPub(name)))).slice(0,20).toUpperCase().replace(/(.{4})/g,'$1 ').trim();
-  $('sn-a').textContent=snMy.slice(0,14);
+  try{const peer=getPub(name);if(peer)$('sn-a').textContent=hex(await dh(S.myKP.privateKey,await impPub(peer))).slice(0,20).toUpperCase().replace(/(.{4})/g,'$1 ').trim().slice(0,14);}catch(e){}
   // nis polling
   if(!S.poller)S.poller=setInterval(pollAll,2000);
+  // MESH WiFi: vetëm joiner-ofron (shmanget glare); host pret mesh-offer
+  if(c&&c.meshRole==='joiner')startMesh(name).catch(()=>{});
 }
 function getPub(name){
   // gjen pub e kontaktit nga sesioni — ruajmë në last
@@ -253,6 +320,7 @@ async function sendMessage(){
   try{
     const blob=await encMsg(S.sess[S.cur].new,t,S.burn);
     const ss=S.sess[S.cur];
+    if(meshSend(S.cur,blob)){addBubble(t,'me',S.burn);return;}
     const r=await pushB(ss.pushQueue,ss.pushTok,blob);
     addBubble(t,'me',S.burn);
     if(!r.ok)addBubble('⚠ dështoi','me',-1);
@@ -269,7 +337,7 @@ async function pollAll(){
       S.last[obj.ghost]={pub:obj.pub};
       const ss=await addContact(obj.ghost,obj.pub);
       S.pull[obj.ghost]={queueId:inv.qRecv.queueId,tok:inv.qRecv.pullToken,epoch:inv.qRecv.pullEpoch,since:m.seq,mask:''};
-      ss.pushQueue=inv.qSend.queueId;ss.pushTok=inv.qSend.pushToken;if(obj.pq)await pqOnConnect(obj.ghost,ss,obj.pq);
+      ss.pushQueue=inv.qSend.queueId;ss.pushTok=inv.qSend.pushToken;if(obj.pq)await pqOnConnect(obj.ghost,ss,obj.pq);ss.meshRole='host';
       S.invite=null;renderContacts();await startChat(obj.ghost,'');
       break;
     }
@@ -283,13 +351,15 @@ async function pollAll(){
       if(obj.type==='connect')continue;
       if(obj.v===1&&S.sess[name]){
         try{const txt=await decMsg(S.sess[name].inr,m.blob);let inn=null;try{inn=JSON.parse(txt);}catch(e2){}if(inn&&inn.type==='pq'){await pqOnUpgrade(name,inn.ct);continue;}
+          if(inn&&typeof inn.type==='string'&&inn.type.indexOf('call')===0){handleCallMsg(name,inn);continue;}
+          if(inn&&typeof inn.type==='string'&&inn.type.indexOf('mesh')===0){handleMeshMsg(name,inn);continue;}
           addBubble(txt,'them',typeof obj.burn==='number'?obj.burn:-1);
         }catch(e){breach('🚨 GCM FAIL — mesazh i ndryshuar!');}}
     }
-    if(r.msgs.length){await doRotate(name);}}
+    if(r.msgs.length){doRotate(name).catch(()=>{});}}
   }catch(e){bootLog('[⏸] Relay i padisponueshëm');}finally{S.polling=false;}
 }
-async function doRotate(name){const p=S.pull[name];const tok=await S.sess[name].inr.rbqrToken();
+async function doRotate(name){const p=S.pull[name];
   const r=await rotT(p.queueId,p.tok,p.epoch);
   if(r.ok){p.tok=r.pullToken;p.epoch=r.pullEpoch;}
   else if(['bad_pull_token','stale_epoch'].includes(r.err))breach('🚨 RBQR refuzim: '+r.err);}
@@ -314,11 +384,6 @@ function startGhostNoise(){if(S.noiseTimer)clearInterval(S.noiseTimer);
   if(!S.sw.noise)return;
   S.noiseTimer=setInterval(async()=>{try{await api('/v1/queue',{method:'POST'});}catch(e){}},30000+Math.random()*90000);}
 function breach(msg){clearInterval(S.poller);$('breach').textContent=msg||'🚨 BREACH';$('breach').style.display='block';}
-let epochCounter=0;
-async function rotateEpoch(){if(!S.cur)return;const ss=S.sess[S.cur];
-  const nr=await hkdf(await dh(S.myKP.privateKey,ss.new.peerPub),S32(),TE.encode('GHOST-EPOCH-'+Date.now()),32);
-  ss.new.rk=nr;ss.new.chain=null;ss.new.seq=0;ss.new.eph=null;
-  ss.inr.rk=nr;ss.inr.chain=null;ss.inr.seq=0;ss.inr.eph=null;epochCounter=0;}
 async function applyTLP(code,pass){if(!pass)return code;
   const salt=crypto.getRandomValues(new Uint8Array(16));
   const km=await subtle.importKey('raw',TE.encode(pass),'PBKDF2',false,['deriveBits']);
@@ -337,23 +402,24 @@ function prmAssess(){let score=0;const log=[];
 function resetLockTimer(){if(S.lockTimer)clearTimeout(S.lockTimer);if(!S.sw.lock)return;S.lockTimer=setTimeout(showPinScreen,300000);}
 let pinInput='';let pinMode='lock';
 let pinFails=0;const MAX_PIN_FAILS=3;
-function changePin(){closeModal();pinMode='changeOld';pinInput='';renderPin();$('pin-title').textContent='🔑 PIN-i aktual';$('pin-sub').textContent='Vendos PIN-in aktual (0000 në fillim).';$('mo-pin').classList.add('on');}
+function changePin(){closeModal();pinMode='changeOld';pinInput='';renderPin();$('pin-title').textContent=t('pinCur');$('pin-sub').textContent=t('pinCurSub');$('mo-pin').classList.add('on');}
 function setupDuress(){S.duress=prompt('Duress PIN (4 shifra):');if(S.duress&&S.duress.length===4)bootLog('[🔫] Duress PIN aktiv');}
-function showPinScreen(){pinMode='lock';pinInput='';renderPin();$('pin-title').textContent='🔒 Kyçje';$('pin-sub').textContent='Vendos PIN-in për hyrje.';$('mo-pin').classList.add('on');}
-function showPinSetup(){pinMode='lock';S.pin='0000';pinInput='';renderPin();$('pin-title').textContent='🔒 PIN fillestar: 0000';$('pin-sub').textContent='Futu 0000 për hyrje. Ndryshoje në ⚙ Settings → 🔑 Ndrysho PIN.';$('mo-pin').classList.add('on');}
+function showPinScreen(){pinMode='lock';pinInput='';renderPin();$('pin-title').textContent=t('pinLock');$('pin-sub').textContent=t('pinSub2');$('mo-pin').classList.add('on');}
+function showPinSetup(){pinMode='lock';S.pin='0000';pinInput='';renderPin();$('pin-title').textContent=t('pinSetup');$('pin-sub').textContent=t('pinSetupSub');$('mo-pin').classList.add('on');}
 function renderPin(){$('pin-display').textContent=(pinInput+'----').slice(0,4);$('pin-pad').innerHTML='';
   const keys=fisher([1,2,3,4,5,6,7,8,9,null,0,'⌫']);
   keys.forEach(k=>{const b=document.createElement('button');b.className='key';b.textContent=k!==null?k:'';
     b.onclick=()=>{if(k==='⌫')pinInput=pinInput.slice(0,-1);else if(k!==null&&pinInput.length<4)pinInput+=k;
-      $('pin-display').textContent=(pinInput+'----').slice(0,4);if(pinInput.length===4)checkPin();};$('pin-pad').appendChild(b);});}
+      $('pin-display').textContent=(pinInput+'----').slice(0,4);if(pinInput.length===4)checkPin().catch(()=>{});};$('pin-pad').appendChild(b);});}
 function fisher(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function offerPendingInvite(){if(!S.pendingInvite)return;$('scan-manual').value=S.pendingInvite;S.pendingInvite=null;$('scan-status').textContent='Ftesë e marrë. Shtyp ADD FRIEND për ta pranuar.';$('mo-scan').classList.add('on');}
-function checkPin(){if(S.duress&&pinInput===S.duress){panicWipe('duress');return;}
-  if(pinMode==='changeOld'){if(pinInput===S.pin){pinMode='changeNew';pinInput='';renderPin();$('pin-title').textContent='🔑 PIN i ri';$('pin-sub').textContent='Vendos PIN-in e ri (4 shifra).';return;}pinFails++;if(pinFails>=MAX_PIN_FAILS){panicWipe('pin-fails');return;}pinInput='';$('pin-display').textContent='✖';return;}
-  if(pinMode==='changeNew'){S.pin=pinInput;localStorage.setItem('cm_pin',pinInput);$('pin-title').textContent='✔ PIN-i ndryshuar';$('pin-sub').textContent='Hape aplikacionin me PIN-in e ri.';setTimeout(()=>{$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();},450);return;}
-  if(S.pin&&pinInput===S.pin){pinFails=0;$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();offerPendingInvite();}else{pinFails++;if(pinFails>=MAX_PIN_FAILS){panicWipe('pin-fails');return;}pinInput='';$('pin-display').textContent='✖';}}
-function panicWipe(reason){Object.keys(S.sess).forEach(k=>{delete S.sess[k];delete S.pull[k];});
-  if(S.myPQsk)zeroize(S.myPQsk);S.myPQsk=null;S.myPQ=null;S.myPQpk=0;S.myKP=null;S.duress=null;pinInput='';localStorage.clear();sessionStorage.clear();
+function offerPendingInvite(){if(!S.pendingInvite)return;$('scan-manual').value=S.pendingInvite;S.pendingInvite=null;$('scan-status').textContent=t('linkWait');$('mo-scan').classList.add('on');}
+async function checkPin(){const h=await sha256hex('CM1|'+pinInput);
+  if(S.duress&&pinInput===S.duress){panicWipe('duress');return;}
+  if(pinMode==='changeOld'){if((S.pinHash?h===S.pinHash:pinInput===S.pin)){pinMode='changeNew';pinInput='';renderPin();$('pin-title').textContent=t('pinNew');$('pin-sub').textContent=t('pinNewSub');return;}pinFails++;if(pinFails>=MAX_PIN_FAILS){panicWipe('pin-fails');return;}pinInput='';$('pin-display').textContent='✖';return;}
+  if(pinMode==='changeNew'){S.pinHash=h;S.pin=null;localStorage.setItem('cm_pin_hash',h);localStorage.removeItem('cm_pin');$('pin-title').textContent=t('pinDone');$('pin-sub').textContent=t('pinDoneSub');setTimeout(()=>{$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();},450);return;}
+  if((S.pinHash?h===S.pinHash:pinInput===S.pin)){pinFails=0;$('mo-pin').classList.remove('on');showScreen('main');resetLockTimer();offerPendingInvite();}else{pinFails++;if(pinFails>=MAX_PIN_FAILS){panicWipe('pin-fails');return;}pinInput='';$('pin-display').textContent='✖';}}
+function panicWipe(reason){endCall(true);Object.keys(S.sess).forEach(k=>{delete S.sess[k];delete S.pull[k];});
+  if(S.myPQsk)zeroize(S.myPQsk);S.myPQsk=null;S.myPQ=null;S.myPQpk=0;S.myKP=null;S.duress=null;S.pin=null;S.pinHash=null;pinInput='';localStorage.clear();sessionStorage.clear();AEGIS.wiped=true;
   $('mlist').innerHTML='';$('clist').innerHTML='';$('chatarea').classList.remove('on');$('empty').style.display='';
   showScreen('main');$('breach').textContent='☠ PANIC WIPE ('+(reason||'')+')';$('breach').style.display='block';
   bootLog('[☠] PANIC WIPE ('+reason+')');}
@@ -374,9 +440,10 @@ async function restoreBackup(){const pass=$('bk-pass').value;if(!pass)return;
     try{const pt=new Uint8Array(await subtle.decrypt({name:'AES-GCM',iv:s2b(iB)},await aesKey(new Uint8Array(key)),s2b(cB)));
       const st=JSON.parse(TD.decode(pt));S.last=st.last||{};bootLog('[📂] Riktheu ('+(st.contacts?st.contacts.length:0)+')');}
     catch(er){bootLog('[✖] Fjalëkalim i gabuar');}};inp.click();}
-function setLocalOnly(on){if(on){clearInterval(S.poller);bootLog('[🛡] Local-Only ON');}else{S.poller=setInterval(pollAll,2000);}}
+function setLocalOnly(on){if(on)bootLog('[🛡] Local-Only ON');else bootLog('[🛡] Local-Only OFF');
+  if(!S.poller)S.poller=setInterval(pollAll,2000);}
 function toggleSw(id){S.sw[id]=!S.sw[id];const el=$('sw-'+id);if(el)el.classList.toggle('on',S.sw[id]);
-  if(id==='woc'){try{localStorage.setItem('cm_woc',S.sw.woc?'1':'0');}catch(e){}}if(id==='local')setLocalOnly(S.sw.local);if(id==='noise')startGhostNoise();if(id==='lock')resetLockTimer();}
+  if(id==='woc'||id==='scr'){try{localStorage.setItem('cm_'+id,S.sw[id]?'1':'0');}catch(e){}}if(id==='scr'){document.body.classList.toggle('sguard',S.sw.scr!==false);if(!S.sw.scr)document.body.classList.remove('winblur');}if(id==='local')setLocalOnly(S.sw.local);if(id==='noise')startGhostNoise();if(id==='lock')resetLockTimer();}
 function openModal(m){if(m==='qr')genQr();if(m==='safety')showSafety();if(m==='scan')startScan();
   if(m==='settings'){try{prmAssess();}catch(e){}}$('mo-'+m).classList.add('on');}
 function closeModal(){document.querySelectorAll('.mo').forEach(x=>x.classList.remove('on'));stopScan();}
@@ -414,7 +481,8 @@ async function genQr(){
   if(!S.poller)S.poller=setInterval(pollAll,2000);
   }catch(e){$('qr-code').value='';alert('Ftesa nuk u krijua. Kontrollo relay-in.');}
   finally{S.generating=false;}}
-function copyCode(){navigator.clipboard.writeText($('qr-code').value).then(()=>bootLog('[✓] Kopjuar')).catch(()=>{$('qr-code').select();});}
+function clipClear(t){try{navigator.clipboard.writeText(t).then(()=>setTimeout(()=>{try{navigator.clipboard.writeText('').catch(()=>{});}catch(e){}},30000)).catch(()=>{});}catch(e){}}
+function copyCode(){clipClear($('qr-code').value);bootLog('[✓] Kopjuar');}
 /* Dërgo invite në Signal / SimpleX / WhatsApp */
 function shareInvite(){const fc=$('qr-code').value;if(!fc){alert('Krijo invite me QR LINK.');return;}
   const msg='👻 CODE MORS — one-time invite%0A%0A'+encodeURIComponent(fc)+'%0A%0A⚠️ Përdoret 1 herë — mbas lidhjes digjet. Mos e përcill!';
@@ -424,7 +492,7 @@ async function shareVia(app){const fc=$('qr-code').value;if(!fc)return;
   try{
     if(app==='wa'){window.open('https://wa.me/?text='+encodeURIComponent(txt+'\n'+fc),'_blank','noopener,noreferrer');return;}
     if(app!=='copy'&&navigator.share){await navigator.share({title:'Code Mors',text:txt,url:fc});return;}
-    await navigator.clipboard.writeText(fc);
+    clipClear(fc);
     alert('Linku u kopjua. Ngjite në '+(app==='simplex'?'SimpleX':app==='signal'?'Signal':'bisedën tënde')+'.');
   }catch(e){if(e.name!=='AbortError'){$('qr-code').select();alert('Kopjo linkun nga fusha QR dhe dërgoje në bisedë.');}}}
 let scanStream=null,scanGeneration=0;
@@ -442,10 +510,10 @@ async function startScan(){stopScan();const generation=scanGeneration;try{if(typ
       const cd=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
       if(cd&&cd.data){handleLink(cd.data);stopScan();return;}}catch(e){}
     requestAnimationFrame(tick);};
-  requestAnimationFrame(tick);}catch(e){if(generation===scanGeneration)$('scan-status').textContent='Kamera kërkon leje dhe HTTPS (ose localhost). Përdor linkun manual.';}}
+  requestAnimationFrame(tick);}catch(e){if(generation===scanGeneration)$('scan-status').textContent=t('scanNeed');}}
 function stopScan(){scanGeneration++;if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}$('scan-video').srcObject=null;}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopScan();});
-function manualLink(){try{const v=($('scan-manual').value||'').trim();if(!v){$('scan-status').textContent='Ngjit kodin fillimisht.';return;}handleLink(v);}catch(e){$('scan-status').textContent='Kod i pavlefshëm / i përdorur.';}}
+document.addEventListener('visibilitychange',()=>{try{$('veil').style.display=document.hidden?'block':'none';}catch(e){}if(document.hidden)stopScan();});
+function manualLink(){try{const v=($('scan-manual').value||'').trim();if(!v){$('scan-status').textContent=(LANG==='en'?'Paste the code first.':'Ngjit kodin fillimisht.');return;}handleLink(v);}catch(e){$('scan-status').textContent=(LANG==='en'?'Invalid / used code.':'Kod i pavlefshëm / i përdorur.');}}
 async function handleLink(raw){
   try{
     if(S.linking||$('mo-pin').classList.contains('on'))return;S.linking=true;
@@ -465,24 +533,166 @@ async function handleLink(raw){
     const claimed=await postJson('/v1/invite/'+o.i+'/claim',{pub:S.myPub,ghost:S.ghost,pq:S.myPQpk});
     if(!claimed.ok)throw new Error('used');
     S.usedInv[o.i]=await sha256hex(o.i);
-    S.last[o.n]={pub:o.k};S.sess[o.n]=ss;
+    S.last[o.n]={pub:o.k};S.sess[o.n]=ss;ss.meshRole='joiner';
     S.pull[o.n]={queueId:claimed.send.id,tok:claimed.send.tok,epoch:claimed.send.ep,since:0,mask:''};
     ss.pushQueue=claimed.recv.id;ss.pushTok=claimed.recv.tok;
     closeModal();renderContacts();await startChat(o.n,'');showScreen('main');
-  }catch(e){$('scan-status').textContent='Ftesë e pavlefshme, e përdorur, e skaduar ose relay offline.';}
+  }catch(e){$('scan-status').textContent=t('linkBad');}
   finally{S.linking=false;}}
 function renderContacts(){const c=$('clist');c.innerHTML='';
   Object.keys(S.sess).forEach(n=>{const d=document.createElement('div');d.className='cit'+(n===S.cur?' active':'');
     d.innerHTML='<div class="av">'+n[0].toUpperCase()+'</div><div><div class="cn">'+n+'</div><div class="cmm">E2E koduar</div></div>';
     d.onclick=()=>{S.cur=n;startChat(n,S.pull[n]?S.pull[n].mask:'');renderContacts();};c.appendChild(d);});}
 function endSession(){openModal('end');}
-function confirmEnd(){if(S.cur){delete S.sess[S.cur];delete S.pull[S.cur];S.cur=null;}
+function confirmEnd(){endCall(true);if(S.cur){delete S.sess[S.cur];delete S.pull[S.cur];S.cur=null;}
   $('mlist').innerHTML='';$('chatarea').classList.remove('on');$('empty').style.display='';closeModal();renderContacts();showScreen('main');bootLog('[✂] Session përfundoi');}
-function showSafety(){$('sn-a').textContent=hex(crypto.getRandomValues(new Uint8Array(16))).slice(0,14).toUpperCase();
-  $('sn-b').textContent=hex(crypto.getRandomValues(new Uint8Array(16))).slice(0,14).toUpperCase();}
+async function showSafety(){
+  const peer=getPub(S.cur);
+  if(!peer){$('sn-a').textContent='---';$('sn-b').textContent='---';return;}
+  const fp=await sha256hex([S.myPub,peer].sort().join('|'));
+  const fmt=fp.slice(0,30).toUpperCase().replace(/(.{5})/g,'$1 ').trim();
+  $('sn-a').textContent=fmt;$('sn-b').textContent=fmt;}
 
+/* =================== I18N — SHQIP / ENGLISH =================== */
+const I18N={
+sq:{contacts:'CONTACTS',newlink:'+ LINK',emptyTitle:'NO ACTIVE CHANNEL',emptySub:'SKANO QR ose LINK për të filluar bisedë të koduar.',openContacts:'☰ HAP KONTAKTET',verify:'VERIFY',endSession:'END SESSION',timeDelete:'TIME DELETE:',burnOff:'OFF',burnRead:'READ-ONCE',msgPh:'Encrypted message...',qrTitle:'👻 QR LINK',qrSub:'Ndaje QR-in — skanohet nga kontakti.',tlp:'⏳ Time-Lock (PBKDF2-600k)',copy:'Kopjo',scan:'📷 Skano',send3:'📤 Dërgo…',close:'Mbyll',shareTitle:'📤 Dërgo invite (one-time)',shareSub:'Zgjidh kanalin — marrësi e hap me CodeMors dhe e lidh. Përdoret <b>VETËM 1 herë</b>, mbas lidhjes digjet.',signal:'💬 Signal',simplex:'✖️ SimpleX',wa:'🟢 WhatsApp',copyTxt:'📋 Kopjo tekstin',scanTitle:'📷 Skano QR',scanSub:'Drejto kamerën tek QR-i.',scanStatus0:'',manualPh:'Ose ngjit kodin...',addFriend:'ADD FRIEND / LINK ➤',safetyTitle:'🔒 Safety Number',safetySub:'Verifiko ball-për-ball me kontaktin.',you:'Ti',contact:'Kontakti',snWarn:'Nëse numrat <b>NUK</b> përputhen — mund të jetë MITM!',endTitle:'⚠ END SESSION',endSub:'Fshin TË GJITHË mesazhet. Emrat MBIJNË për rilidhje.',cancel:'Anulo',del:'🗑 FSHIJE',setTitle:'⚙ Security Center',setSub:'Të gjitha mbrojtjet punojnë në background.',secTraffic:'👻 TRAFIKU & MJEDISI',ghostNoise:'👻 Ghost Noise',zeroize:'🧊 Whisper Zeroize',autoLock:'🔒 Auto-Lock 5 min',localOnly:'🛡 Local-Only',screenGuard:'🕶 Screen Guard — errës sa të dalësh',wipeClose:'WIPE ON CLOSE (zeroize)',secPanic:'🔫 PANIK & DURESS',panicInfo:'7 klikime të shpejta mbi emër = nuclear wipe',changePin:'🔑 Ndrysho PIN',secBackup:'💾 BACKUP',passPh:'passphrase',save:'💾 Ruaj',restore:'📂 Rikthe',secPrm:'🛡 PRM Anti-Pegasus',riskScore:'Risk Score',clean:'Pastër',panicBtn:'☠ PANIC WIPE',callInTitle:'📞 Thirrje e Hyrëse',refuse:'REFUZO',accept:'PRANO 📞',callTitle:'📞 THIRRJE',dialing:'📳 DIALING…',ringing:'📳 RINGING…',active:'◉ E ACTIVE · E2E·P2P',voiceOn:'🎙 ZËRI ON',voiceOff:'🔇 ZËRI OFF',hangup:'📵 FUNDI',callEnded:'📞 THIRRJA U MBYLL',pinLock:'🔒 Kyçje',pinSetup:'🔒 PIN fillestar: 0000',pinSetupSub:'Futu 0000 për hyrje. Ndryshoje në ⚙ Settings → 🔑 Ndrysho PIN.',pinSub2:'Vendos PIN-in për hyrje.',pinCur:'🔑 PIN-i aktual',pinCurSub:'Vendos PIN-in aktual (0000 në fillim).',pinNew:'🔑 PIN i ri',pinNewSub:'Vendos PIN-in e ri (4 shifra).',pinDone:'✔ PIN-i ndryshuar',pinDoneSub:'Hape aplikacionin me PIN-in e ri.',mesh:'MESH',scanNeed:'Kamera kërkon leje dhe HTTPS (ose localhost). Pëvdor linkun manual.',linkBad:'Ftesë e pavlefshme, e përdorur, e skaduar ose relay offline.',linkWait:'Ftesë e marrë. Shtyp ADD FRIEND për ta pranuar.',copied:'[✓] Kopjuar',wipeMsg:'☠ PANIC WIPE — fshirja të VË sete'},
+en:{contacts:'CONTACTS',newlink:'+ LINK',emptyTitle:'NO ACTIVE CHANNEL',emptySub:'SCAN QR or LINK to start an encrypted chat.',openContacts:'☰ OPEN CONTACTS',verify:'VERIFY',endSession:'END SESSION',timeDelete:'SELF-DESTRUCT:',burnOff:'OFF',burnRead:'READ-ONCE',msgPh:'Encrypted message...',qrTitle:'👻 QR LINK',qrSub:'Share the QR — scanned by your contact.',tlp:'⏳ Time-Lock (PBKDF2-600k)',copy:'Copy',scan:'📷 Scan',send3:'📤 Send…',close:'Close',shareTitle:'📤 Send invite (one-time)',shareSub:'Pick a channel — recipient opens it with CodeMors and links. USED <b>ONLY ONCE</b>, deleted after linking.',signal:'💬 Signal',simplex:'✖️ SimpleX',wa:'🟢 WhatsApp',copyTxt:'📋 Copy text',scanTitle:'📷 Scan QR',scanSub:'Point the camera at the QR.',scanStatus0:'',manualPh:'Or paste code...',addFriend:'ADD FRIEND / LINK ➤',safetyTitle:'🔒 Safety Number',safetySub:'Verify face-to-face with your contact.',you:'You',contact:'Contact',snWarn:'If numbers <b>DO NOT</b> match — possible MITM!',endTitle:'⚠ END SESSION',endSub:'Deletes ALL messages. Names REMAIN for relinking.',cancel:'Cancel',del:'🗑 DELETE',setTitle:'⚙ Security Center',setSub:'All protections run in background.',secTraffic:'👻 TRAFFIC & ENV',ghostNoise:'👻 Ghost Noise',zeroize:'🧊 Whisper Zeroize',autoLock:'🔒 Auto-Lock 5 min',localOnly:'🛡 Local-Only',screenGuard:'🕶 Screen Guard — blur when you leave',wipeClose:'WIPE ON CLOSE (zeroize)',secPanic:'🔫 PANIC & DURESS',panicInfo:'7 quick taps on name = nuclear wipe',changePin:'🔑 Change PIN',secBackup:'💾 BACKUP',passPh:'passphrase',save:'💾 Save',restore:'📂 Restore',secPrm:'🛡 PRM Anti-Pegasus',riskScore:'Risk Score',clean:'Clean',panicBtn:'☠ PANIC WIPE',callInTitle:'📞 Incoming Call',refuse:'DECLINE',accept:'ACCEPT 📞',callTitle:'📞 CALL',dialing:'📳 DIALING…',ringing:'📳 RINGING…',active:'◉ ACTIVE · E2E·P2P',voiceOn:'🎙 VOICE ON',voiceOff:'🔇 VOICE OFF',hangup:'📵 HANG UP',callEnded:'📞 CALL ENDED',pinLock:'🔒 Locked',pinSetup:'🔒 Initial PIN: 0000',pinSetupSub:'Enter 0000 to log in. Change it in ⚙ Settings → 🔑 Change PIN.',pinSub2:'Enter your PIN.',pinCur:'🔑 Current PIN',pinCurSub:'Enter current PIN (0000 initially).',pinNew:'🔑 New PIN',pinNewSub:'Enter new PIN (4 digits).',pinDone:'✔ PIN changed',pinDoneSub:'Open the app with the new PIN.',mesh:'MESH',scanNeed:'Camera needs permission and HTTPS (or localhost). Use manual link.',linkBad:'Invalid, used, expired invite or relay offline.',linkWait:'Invite received. Tap ADD FRIEND to accept.',copied:'[✓] Copied',wipeMsg:'☠ PANIC WIPE — erases EVERYTHING'}};
+let LANG=localStorage.getItem('cm_lang')||'sq';
+function t(k){return (I18N[LANG]&&I18N[LANG][k])||I18N.sq[k]||k;}
+function applyLang(){document.querySelectorAll('[data-i18n]').forEach(e=>{e.innerHTML=t(e.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-ph]').forEach(e=>{e.placeholder=t(e.dataset.i18nPh);});
+  const lb=$('btn-lang');if(lb)lb.textContent=LANG==='sq'?'EN':'SQ';}
+function toggleLang(){LANG=LANG==='sq'?'en':'sq';try{localStorage.setItem('cm_lang',LANG);}catch(e){}applyLang();}
+/* =================== MESH — WiFi P2P si Meshtastic (hybrid) ===================
+   Pas handshake-it përmes relay-it (i vetmi rendezvous i mundur në browser),
+   të dhënat kalojnë DataChannel P2P mbi WiFi/LAN — DTLS-SRTP, asgjë në server. */
+function wireMesh(name,pc,dc){S.sess[name].meshDc=dc;S.sess[name].meshPc=pc;
+  dc.onopen=()=>{try{$('ch-s').textContent='E2E · '+t('mesh');}catch(e){}};
+  dc.onclose=()=>{try{S.sess[name].meshDc=null;S.sess[name].meshPc=null;$('ch-s').textContent=S.pull[name]?S.pull[name].mask:'';}catch(e){}};
+  dc.onerror=()=>{};
+  dc.onmessage=async ev=>{try{const raw=String(ev.data);const h=JSON.parse(raw);
+    if(h&&h.v===1&&h.body){const txt=await decMsg(S.sess[name].inr,raw);
+      let inn=null;try{inn=JSON.parse(txt);}catch(e2){}
+      if(inn&&inn.type==='pq'){await pqOnUpgrade(name,inn.ct);return;}
+      if(inn&&typeof inn.type==='string'&&inn.type.indexOf('call')===0){handleCallMsg(name,inn);return;}
+      addBubble(txt,'them',typeof h.burn==='number'?h.burn:-1);}else if(h&&typeof h.type==='string'&&h.type.indexOf('mesh-')===0){handleMeshMsg(name,h);}}catch(e){}};}
+async function startMesh(name){const ss=S.sess[name];if(!ss||ss.meshDc||ss.meshTry)return;ss.meshTry=true;
+  try{const pc=new RTCPeerConnection(RTC_CFG);const dc=pc.createDataChannel('chat');wireMesh(name,pc,dc);
+    pc.onicecandidate=e=>{if(e.candidate)sendRaw(name,{type:'mesh-ice',cand:e.candidate.toJSON()}).catch(()=>{});};
+    await pc.setLocalDescription(await pc.createOffer());
+    await sendRaw(name,{type:'mesh-offer',sdp:pc.localDescription});
+    setTimeout(()=>{try{if(!ss.meshDc||ss.meshDc.readyState!=='open'){pc.close();ss.meshPc=null;}}catch(e){}},9000);}catch(e){}}
+async function handleMeshMsg(name,m){const ss=S.sess[name];if(!ss)return;try{
+  if(m.type==='mesh-offer'&&!ss.meshPc){const pc=new RTCPeerConnection(RTC_CFG);ss.meshPc=pc;
+    pc.ondatachannel=e=>{wireMesh(name,pc,e.channel);};
+    pc.onicecandidate=e=>{if(e.candidate)sendRaw(name,{type:'mesh-ice',cand:e.candidate.toJSON()}).catch(()=>{});};
+    await pc.setRemoteDescription(m.sdp);
+    await pc.setLocalDescription(await pc.createAnswer());
+    await sendRaw(name,{type:'mesh-answer',sdp:pc.localDescription});}
+  else if(m.type==='mesh-answer'&&ss.meshPc&&ss.meshPc.signalingState!=='stable'){await ss.meshPc.setRemoteDescription(m.sdp);}
+  else if(m.type==='mesh-ice'&&ss.meshPc){try{await ss.meshPc.addIceCandidate(m.cand);}catch(e){}}
+  else if(m.type==='mesh-end'){try{if(ss.meshPc)ss.meshPc.close();}catch(e){}ss.meshPc=null;ss.meshDc=null;}
+}catch(e){}}
+function meshSend(name,obj){const dc=S.sess[name]&&S.sess[name].meshDc;
+  if(dc&&dc.readyState==='open'){dc.send(typeof obj==='string'?obj:JSON.stringify(obj));return true;}return false;}
+/* =================== THIRRJET — WebRTC P2P (zero server media) ===================
+   Audio shkon PEER-TO-PEER me DTLS-SRTP; relay-i sheh vetëm sinjalimin e enkriptuar
+   (offer/answer/ICE si mesazhe E2E). Pas mbylljes: tracks stop, pc close, srcObject
+   null — asgjë nuk ruhet askund. */
+const CALL={pc:null,local:null,name:null,outgoing:false,pending:null,timer:null,t0:0,muted:false,iceQ:[]};
+async function flushIce(){const q=CALL.iceQ.splice(0);for(const c of q){try{await CALL.pc.addIceCandidate(c);}catch(e){}}}
+const RTC_CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+async function sendRaw(name,obj){const ss=S.sess[name];if(!ss)return false;
+  const blob=await encMsg(ss.new,JSON.stringify(obj),-1);
+  const r=await pushB(ss.pushQueue,ss.pushTok,blob);return !!(r&&r.ok);}
+function callHandlers(pc){pc.onicecandidate=e=>{if(e.candidate&&CALL.name)sendRaw(CALL.name,{type:'call-ice',cand:e.candidate.toJSON()}).catch(()=>{});};
+  pc.ontrack=e=>{try{const au=$('call-audio');au.srcObject=e.streams[0];au.play().catch(()=>{});}catch(x){}};
+  pc.onconnectionstatechange=()=>{try{if(pc.connectionState==='connected'){ $('call-status').textContent='◉ E ACTIVE · E2E·P2P';startCallTimer();}
+    if(['failed','closed'].includes(pc.connectionState))endCall(true);}catch(x){}};}
+async function startCall(){if(!S.cur||CALL.pc||CALL.pending)return;
+  try{CALL.local=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});}
+  catch(e){addBubble('📞 Mikrofoni u refuzua (duhet HTTPS/localhost)','me',-1);return;}
+  CALL.name=S.cur;CALL.outgoing=true;
+  try{CALL.pc=new RTCPeerConnection(RTC_CFG);CALL.local.getTracks().forEach(t=>CALL.pc.addTrack(t,CALL.local));callHandlers(CALL.pc);
+    await CALL.pc.setLocalDescription(await CALL.pc.createOffer());
+    await sendRaw(CALL.name,{type:'call-offer',sdp:CALL.pc.localDescription});
+    $('call-status').textContent=t('dialing');$('call-timer').textContent='00:00';$('mo-call').classList.add('on');
+    addBubble('📞 '+t('dialing').toLowerCase(),'me',-1);}catch(e){endCall(true);addBubble('📞 '+t('dialing')+' ✖','me',-1);}}
+async function acceptCall(){const p=CALL.pending;if(!p)return;CALL.pending=null;$('mo-callin').classList.remove('on');
+  try{CALL.local=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});}
+  catch(e){sendRaw(p.name,{type:'call-end'}).catch(()=>{});return;}
+  CALL.name=p.name;CALL.outgoing=false;
+  try{CALL.pc=new RTCPeerConnection(RTC_CFG);CALL.local.getTracks().forEach(t=>CALL.pc.addTrack(t,CALL.local));callHandlers(CALL.pc);
+    await CALL.pc.setRemoteDescription(p.sdp);await flushIce();
+    await CALL.pc.setLocalDescription(await CALL.pc.createAnswer());
+    await sendRaw(CALL.name,{type:'call-answer',sdp:CALL.pc.localDescription});
+    $('call-status').textContent=t('ringing');$('mo-call').classList.add('on');}catch(e){endCall(true);}}
+function rejectCall(){const p=CALL.pending;CALL.pending=null;$('mo-callin').classList.remove('on');
+  if(p)sendRaw(p.name,{type:'call-end'}).catch(()=>{});addBubble('📞 '+(LANG==='en'?'call declined':'thirrja u refuzua'),'me',-1);}
+function startCallTimer(){if(CALL.timer)return;CALL.t0=Date.now();CALL.timer=setInterval(()=>{const s=Math.floor((Date.now()-CALL.t0)/1000);
+  $('call-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);}
+function toggleMute(){CALL.muted=!CALL.muted;if(CALL.local)CALL.local.getAudioTracks().forEach(t=>t.enabled=!CALL.muted);
+  $('btn-mute').textContent=CALL.muted?t('voiceOff'):t('voiceOn');}
+function endCall(byRemote){const nm=CALL.name||(CALL.pending&&CALL.pending.name)||null;const was=!!(CALL.pc||CALL.pending);
+  if(CALL.timer){clearInterval(CALL.timer);CALL.timer=null;}
+  try{if(CALL.pc){CALL.pc.close();CALL.pc=null;}}catch(e){}
+  try{if(CALL.local){CALL.local.getTracks().forEach(t=>t.stop());CALL.local=null;}}catch(e){}
+  try{$('call-audio').srcObject=null;}catch(e){}
+  CALL.outgoing=false;CALL.name=null;CALL.pending=null;CALL.muted=false;CALL.iceQ=[];
+  $('mo-call').classList.remove('on');$('mo-callin').classList.remove('on');$('btn-mute').textContent=t('voiceOn');
+  if(was&&!byRemote&&nm)sendRaw(nm,{type:'call-end'}).catch(()=>{});
+  if(was)addBubble(t('callEnded'),'me',-1);}
+async function handleCallMsg(name,m){try{
+  if(m.type==='call-offer'){if(CALL.pc||CALL.pending){sendRaw(name,{type:'call-end'}).catch(()=>{});return;}
+    CALL.pending={name,sdp:m.sdp};$('callin-name').textContent=name+' — E2E·P2P';$('mo-callin').classList.add('on');}
+  else if(m.type==='call-answer'&&CALL.pc&&CALL.outgoing){await CALL.pc.setRemoteDescription(m.sdp);await flushIce();}
+  else if(m.type==='call-ice'&&CALL.pc){const c=m.cand;if(CALL.pc.remoteDescription){try{await CALL.pc.addIceCandidate(c);}catch(e){}}else CALL.iceQ.push(c);}
+  else if(m.type==='call-end'){if(CALL.pending&&CALL.pending.name===name){CALL.pending=null;$('mo-callin').classList.remove('on');addBubble('📞 '+(LANG==='en'?'call declined/ended':'thirrja u refuzua/mbyll'),'them',-1);}else endCall(true);}
+  else if(m.type==='call-busy'){addBubble('📞 '+(LANG==='en'?'busy (in another call)':'zënë (në thirrje tjetër)'),'them',-1);}
+}catch(e){}}
+/* =================== AEGIS — ANTI-TAMPER / ANTI-DEBUG / ANTI-EXFIL ===================
+   Shënim i sinqertë: JS në browser nuk është i pamundur për t'u lexuar — AEGIS e rrit
+   shumë koston e sulmit (monkey-patch, devtools, exfil, shortcut inspektimi) dhe
+   bën vetë-shpërthimin pa konfirmim. */
+const AEGIS={score:0,hits:[],pins:new Map(),locked:false,wiped:false};
+function aegisHit(code,w,detail){if(AEGIS.wiped)return;AEGIS.score+=w;AEGIS.hits.push({t:Date.now(),code,w,d:String(detail||'').slice(0,120)});
+  if(AEGIS.score>=80&&!AEGIS.locked){AEGIS.locked=true;try{breach('🛡 AEGIS LOCKDOWN: '+code);}catch(e){}
+    if(S.poller){clearInterval(S.poller);S.poller=null;}}
+  if(AEGIS.score>=160){try{panicWipe('aegis-'+code);}catch(e){}}}
+async function pinFn(n){try{const f=(0,eval)('typeof '+n+'!=="undefined"?'+n+':null');
+  if(typeof f!=='function')return;const d=await crypto.subtle.digest('SHA-256',TE.encode(String(f)));
+  AEGIS.pins.set(n,{h:hex(new Uint8Array(d)).slice(0,20),n});}catch(e){}}
+async function verifyPins(){for(const pin of AEGIS.pins.values()){try{
+  const f=(0,eval)('typeof '+pin.n+'!=="undefined"?'+pin.n+':null');
+  if(typeof f!=='function')continue;
+  const d=await crypto.subtle.digest('SHA-256',TE.encode(String(f)));
+  if(hex(new Uint8Array(d)).slice(0,20)!==pin.h)aegisHit('HL1_CODE_SWAP',60,pin.n+' u ndryshua');
+}catch(e){}}}
+let _dtOpen=false;
+function devtoolsCheck(){try{const d=Math.max(0,window.outerWidth-window.innerWidth)+Math.max(0,window.outerHeight-window.innerHeight);
+  const open=d>170;if(open&&!_dtOpen){_dtOpen=true;aegisHit('HL2_DEVTOOLS',30,'delta='+d);}
+  else if(!open)_dtOpen=false;}catch(e){}}
+function dbgTrap(){try{const t=performance.now();(0,eval)('(function(){debugger})()');
+  const d=performance.now()-t;if(d>80)aegisHit('HL2_DEBUGGER',50,'dt='+d.toFixed(0)+'ms');}catch(e){}}
+const _fetch0=window.fetch;
+window.fetch=function(...a){try{const u=new URL(String(a[0]&&a[0].url?a[0].url:a[0]),location.href);
+  const ro=new URL(RELAY).origin;
+  const ok=u.origin===location.origin||u.origin===ro||['localhost','127.0.0.1'].includes(u.hostname)||u.hostname.endsWith('jsdelivr.net');
+  if(!ok)aegisHit('HL3_SOURCE_EXFIL',25,u.origin);}catch(e){}return _fetch0.apply(this,a);};
+document.addEventListener('keydown',e=>{try{
+  const k=(e.key||'').toLowerCase();
+  if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['i','j','c','k'].includes(k))||(e.ctrlKey&&!e.altKey&&['u','s','p'].includes(k))){
+    e.preventDefault();e.stopPropagation();aegisHit('SHORTCUT',8,k);}}catch(x){}},true);
+document.addEventListener('contextmenu',e=>{try{if(!e.target.closest('input,textarea,[contenteditable]')){e.preventDefault();aegisHit('CTXMENU',3,'rc');}}catch(x){}});
+function aegisSweep(){devtoolsCheck();verifyPins().catch(()=>{});}
+function aegisBoot(){
+  ['encMsg','decMsg','sendMessage','pollAll','panicWipe','zeroize','addBubble','checkPin','makeSession','pqRekey','doBackup','handleLink','renderContacts','showSafety','toggleSw','startCall','endCall','acceptCall','rejectCall','handleCallMsg','sendRaw']
+    .forEach(pinFn);
+  setInterval(aegisSweep,10000);setInterval(dbgTrap,30000);dbgTrap();
+}
 /* =================== BOOT =================== */
 async function boot(){
+  try{applyLang();}catch(e){}
   if(location.hash.startsWith('#invite=')){S.pendingInvite=location.href;history.replaceState(null,'',location.pathname+location.search);}
   bootP(10);bootLog('[1/8] 🟢');
   S.myKP=await genKP();S.myPub=await expPub(S.myKP);try{const M=await import('/libs/mlkem.mjs');S.pq=await M.createMlKem768();const[pqk,pqs]=S.pq.generateKeyPair();S.myPQpk=b2s(new Uint8Array(pqk));S.myPQsk=new Uint8Array(pqs);const pe=$('pq-state');if(pe)pe.textContent='ML-KEM-768 aktiv';}catch(e){S.pq=null;}bootP(25);bootLog('[2/8] 🟢');
@@ -495,17 +705,37 @@ async function boot(){
   try{const r=await api('/v1/queue',{method:'POST'});REL_ONLINE.v=!!(r.data&&r.data.queueId);bootLog(REL_ONLINE.v?'[7/8] 🟢':'[7/8] ⏸');}
   catch(e){REL_ONLINE.v=false;bootLog('[7/8] ⏸');}
   bootP(100);bootLog('[8/8] 🟢 GATI');
+  aegisBoot();
   let taps=0,tmr=null;$('my-ghost').onclick=()=>{taps++;if(taps===1)tmr=setTimeout(()=>taps=0,1500);if(taps>=7){taps=0;panicWipe('panic-gesture');}};
   $('btn-send').onclick=sendMessage;
   $('minput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
-  $('btn-panic').onclick=()=>{if(confirm('☠ NUCLEAR WIPE?'))panicWipe('manual');};
-  $('btn-bk').onclick=doBackup;$('btn-rs').onclick=restoreBackup;$('btn-rotate').onclick=rotateEpoch;
+  $('btn-panic').onclick=()=>{if(confirm(t('wipeMsg')))panicWipe('manual');};
+  $('btn-bk').onclick=doBackup;$('btn-rs').onclick=restoreBackup;
   $('btn-verify').onclick=()=>openModal('safety');
-  try{S.sw.woc=localStorage.getItem('cm_woc')!=='0';const we=$('sw-woc');if(we)we.classList.toggle('on',S.sw.woc);}catch(e){}S.pin=localStorage.getItem('cm_pin')||'0000';
-  setTimeout(()=>{showScreen('main');if(localStorage.getItem('cm_pin'))showPinScreen();else showPinSetup();},1400);
+  try{S.sw.woc=localStorage.getItem('cm_woc')!=='0';const we=$('sw-woc');if(we)we.classList.toggle('on',S.sw.woc);
+    S.sw.scr=localStorage.getItem('cm_scr')!=='0';const ws=$('sw-scr');if(ws)ws.classList.toggle('on',S.sw.scr);
+    document.body.classList.toggle('sguard',S.sw.scr!==false);}catch(e){}
+  try{const legacy=localStorage.getItem('cm_pin');
+    if(legacy){S.pinHash=await sha256hex('CM1|'+legacy);localStorage.removeItem('cm_pin');localStorage.setItem('cm_pin_hash',S.pinHash);S.pin=null;}
+    else{S.pinHash=localStorage.getItem('cm_pin_hash')||null;S.pin=S.pinHash?null:'0000';}}catch(e){S.pin='0000';S.pinHash=null;}
+  setTimeout(()=>{showScreen('main');if(S.pinHash)showPinScreen();else showPinSetup();},1400);
+  setInterval(()=>{const u=$('utc');if(u)u.textContent=new Date().toISOString().slice(11,19)+'Z';},1000);
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
-addEventListener('pagehide',()=>{try{if(S.sw.woc){if(S.myPQsk)zeroize(S.myPQsk);panicWipe('close');localStorage.setItem('cm_woc','1');}}catch(e){}});document.addEventListener('DOMContentLoaded',()=>boot());
+addEventListener('pagehide',()=>{try{endCall(true);}catch(e){}try{if(S.sw.woc){if(S.myPQsk)zeroize(S.myPQsk);panicWipe('close');localStorage.setItem('cm_woc','1');}}catch(e){}});document.addEventListener('DOMContentLoaded',()=>boot());
+addEventListener('blur',()=>{try{if(S.sw.scr!==false)document.body.classList.add('winblur');}catch(e){}});
+addEventListener('focus',()=>{try{document.body.classList.remove('winblur');}catch(e){}});
 </script>
 <!--@@P2-->
+    <!-- reticle:connect (dev only) -->
+    <script type="module">
+      if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
+        Promise.all([
+          import('https://cdn.jsdelivr.net/npm/@reticlehq/browser@3.10.11/+esm'),
+          import('./reticle.local.js').catch(() => ({})),
+        ]).then(([{ reticle }, local]) => reticle.connect({ ...{ projectId: 'code-mors-83493e9f' }, token: local.token }));
+      }
+    </script>
+    <!-- /reticle:connect -->
 </body>
 </html>

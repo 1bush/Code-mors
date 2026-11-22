@@ -1,12 +1,13 @@
-// CODE MORS v4 — Service Worker
-const CACHE_NAME = 'code-mors-v4';
+// CODE MORS v5 — Service Worker
+const CACHE_NAME = 'code-mors-v5';
 const ASSETS = [
   '/',
-  '/index.html',
+  '/mors-app.html',
   '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
-  'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap'
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
+  'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap'
 ];
 
 // INSTALL — cache all assets
@@ -41,7 +42,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         }
         return response;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match('/mors-app.html'));
     })
   );
 });
